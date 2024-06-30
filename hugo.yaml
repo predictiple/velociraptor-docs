@@ -1,8 +1,8 @@
-baseURL: https://docs.velociraptor.app/
+baseURL: https://predictiple.github.io/velociraptor-docs/
 languageCode: en-us
 title: "Velociraptor - Digging deeper!"
 
-theme: "hugo-theme-learn"
+theme: "hugo-theme-relearn"
 disqusShortname: velocidex-velociraptor
 #security:
 #  enableInlineShortcodes: true
@@ -68,5 +68,4 @@ outputs:
   page: ["HTML"]
   home: ["HTML"]
   section: ["HTML"]
-  taxonomyTerm: ["HTML"]
   taxonomy: ["HTML"]
