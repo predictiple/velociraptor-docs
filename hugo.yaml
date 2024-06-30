@@ -2,7 +2,7 @@ baseURL: https://predictiple.github.io/velociraptor-docs/
 languageCode: en-us
 title: "Velociraptor - Digging deeper!"
 
-theme: "hugo-theme-relearn"
+theme: "hugo-theme-learn"
 disqusShortname: velocidex-velociraptor
 #security:
 #  enableInlineShortcodes: true
