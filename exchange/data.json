@@ -1,5 +1,25 @@
 [
     {
+        "title": "Linux.Event.Network.Nethogs",
+        "author": "misje",
+        "description": "Monitor network bandwidth per process, using \"nethogs\". This artifact will\nlist all processes that produces (non-local) network traffic on the client,\nleveraging the process tracker, and displays the total bytes received and sent\nin the given time frame.",
+        "link": "/exchange/artifacts/pages/linux.event.network.nethogs",
+        "tags": [],
+        "author_link": "https://github.com/misje",
+        "author_avatar": "https://avatars.githubusercontent.com/u/4006538?v=4",
+        "date": "2024-07-23"
+    },
+    {
+        "title": "Linux.Network.Nethogs",
+        "author": "misje",
+        "description": "Monitor network bandwidth per process, using \"nethogs\". This artifact will\nlist all processes that produces (non-local) network traffic on the client,\nleveraging the process tracker, and displays the total bytes received and sent\nin the given time frame.",
+        "link": "/exchange/artifacts/pages/linux.network.nethogs",
+        "tags": [],
+        "author_link": "https://github.com/misje",
+        "author_avatar": "https://avatars.githubusercontent.com/u/4006538?v=4",
+        "date": "2024-07-23"
+    },
+    {
         "title": "Linux.Applications.Docker.Ps",
         "author": "j91321",
         "description": "Get Docker containers by connecting to the docker.socket. Same as running `docker ps`",
