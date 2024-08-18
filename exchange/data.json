@@ -1,5 +1,17 @@
 [
     {
+        "title": "Windows.Utils.DefenderExclusion",
+        "author": "predictiple",
+        "description": "Adds a Microsoft Defender real-time scanning process exclusion for Velociraptor.",
+        "link": "/exchange/artifacts/pages/defenderexclusion",
+        "tags": [
+            "microsoft"
+        ],
+        "author_link": "https://github.com/predictiple",
+        "author_avatar": "https://avatars.githubusercontent.com/u/9843422?v=4",
+        "date": "2024-08-18"
+    },
+    {
         "title": "Linux.Event.Network.Nethogs",
         "author": "misje",
         "description": "Monitor network bandwidth per process, using \"nethogs\". This artifact will\nlist all processes that produces (non-local) network traffic on the client,\nleveraging the process tracker, and displays the total bytes received and sent\nin the given time frame.",
