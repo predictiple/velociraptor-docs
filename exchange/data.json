@@ -1,5 +1,35 @@
 [
     {
+        "title": "Linux.ExtractKthread",
+        "author": "andy99998",
+        "description": "This artifact parses `/proc/[0-9]*/status` files and extracts the `ProcessName` and `Kthread` values. Helpful for identifying imposter processes.\n",
+        "link": "/exchange/artifacts/pages/linux.collection.kthread",
+        "tags": [],
+        "author_link": "https://github.com/andy99998",
+        "author_avatar": "https://avatars.githubusercontent.com/u/6075698?v=4",
+        "date": "2024-08-22"
+    },
+    {
+        "title": "Linux.Forensics.EnvironmentVariables",
+        "author": "ibyf0r3ns1cs",
+        "description": "This artifact detects potential persistence mechanisms on Linux systems by analyzing environment variable files and login scripts.  \nAdversaries may modify these files to establish persistence by injecting commands that execute malicious scripts or binaries upon user login or shell initialization.  \nThis artifact focuses on identifying such modifications by scanning for environment variable alterations, network utilities, and scripting languages commonly used in attacks.  ",
+        "link": "/exchange/artifacts/pages/linux.forensics.environmentvariables",
+        "tags": [],
+        "author_link": "https://github.com/ibyf0r3ns1cs",
+        "author_avatar": "https://avatars.githubusercontent.com/u/50079464?v=4",
+        "date": "2024-08-22"
+    },
+    {
+        "title": "Windows.Veeam.RestorePoints.BackupFiles",
+        "author": "cybiosity-syn",
+        "description": "Parses the metadata found in Veeam full backup files (`.vbk`), Veeam incremental backup files (`.vib`) and Veeam reverse incremental backup files (`.vrb`) to extract relevant fields for each Restore Point.",
+        "link": "/exchange/artifacts/pages/windows.veeam.restorepoints.backupfiles",
+        "tags": [],
+        "author_link": "https://github.com/cybiosity-syn",
+        "author_avatar": "https://avatars.githubusercontent.com/u/158057079?v=4",
+        "date": "2024-08-22"
+    },
+    {
         "title": "Windows.Utils.DefenderExclusion",
         "author": "predictiple",
         "description": "Adds a Microsoft Defender real-time scanning process exclusion for Velociraptor.",
@@ -304,7 +334,7 @@
     {
         "title": "Windows.Veeam.RestorePoints.MetadataFiles",
         "author": "cybiosity-syn",
-        "description": "Parses the metadata found in Veeam backup chain metadata files (.vbm) to extract relevant fields for each Restore Point.",
+        "description": "Parses the metadata found in Veeam backup chain metadata files (`.vbm`) to extract relevant fields for each Restore Point.",
         "link": "/exchange/artifacts/pages/windows.veeam.restorepoints.metadatafiles",
         "tags": [],
         "author_link": "https://github.com/cybiosity-syn",
