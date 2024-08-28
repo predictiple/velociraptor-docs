@@ -1,5 +1,25 @@
 [
     {
+        "title": "Server.Hunt.Comparison",
+        "author": "DenKi42",
+        "description": "This artifact is used to compare other artifacts from two different hunts. The basic idea is that a baseline (Hunt 1) is created from selected artifacts before an attack. A second hunt (Hunt 2) can then be carried out after the attack using the same artifacts. Now, using this script, artifacts from both hunts can be compared. This allows legitimate activities to be filtered out and makes it easier to identify malicious activities in Hunt2.",
+        "link": "/exchange/artifacts/pages/server.hunt.comparison",
+        "tags": [],
+        "author_link": "https://github.com/DenKi42",
+        "author_avatar": "https://avatars.githubusercontent.com/u/174724495?v=4",
+        "date": "2024-08-28"
+    },
+    {
+        "title": "Windows.Sysinternals.PSShutdown",
+        "author": "iboje",
+        "description": "PsShutdown is a command-line utility similar to the shutdown utility from the Windows 2000 Resource Kit, but with the ability to do much more. In addition to supporting the same options for shutting down or rebooting the local or a remote computer, PsShutdown can logoff the console user or lock the console (locking requires Windows 2000 or higher). PsShutdown requires no manual installation of client software.\n",
+        "link": "/exchange/artifacts/pages/windows.sysinternals.psshutdown",
+        "tags": [],
+        "author_link": "https://github.com/iboje",
+        "author_avatar": "https://avatars.githubusercontent.com/u/55198930?v=4",
+        "date": "2024-08-28"
+    },
+    {
         "title": "Linux.ExtractKthread",
         "author": "andy99998",
         "description": "This artifact parses `/proc/[0-9]*/status` files and extracts the `ProcessName` and `Kthread` values. Helpful for identifying imposter processes.\n",
@@ -12,7 +32,7 @@
     {
         "title": "Linux.Forensics.EnvironmentVariables",
         "author": "ibyf0r3ns1cs",
-        "description": "This artifact detects potential persistence mechanisms on Linux systems by analyzing environment variable files and login scripts.  \nAdversaries may modify these files to establish persistence by injecting commands that execute malicious scripts or binaries upon user login or shell initialization.  \nThis artifact focuses on identifying such modifications by scanning for environment variable alterations, network utilities, and scripting languages commonly used in attacks.  ",
+        "description": "This artifact detects potential persistence mechanisms on Linux systems by analyzing environment variable files and login scripts.  ",
         "link": "/exchange/artifacts/pages/linux.forensics.environmentvariables",
         "tags": [],
         "author_link": "https://github.com/ibyf0r3ns1cs",
