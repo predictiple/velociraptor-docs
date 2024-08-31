@@ -1,5 +1,5 @@
 <!doctype html><html lang=en class="js csstransforms3d"><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=generator content="Hugo 0.122.0"><meta name=description content><link rel=icon href=/images/favicon.png type=image/png><title>Linux.Ssh.AuthorizedKeys :: Velociraptor - Digging deeper!</title>
-<link href=/css/nucleus.css?1724820002 rel=stylesheet><link href=/css/fontawesome-all.min.css?1724820002 rel=stylesheet><link href=/css/featherlight.min.css?1724820002 rel=stylesheet><link href=/css/perfect-scrollbar.min.css?1724820002 rel=stylesheet><link href=/css/auto-complete.css?1724820002 rel=stylesheet><link href=/css/theme.css?1724820002 rel=stylesheet><link href=/css/tabs.css?1724820002 rel=stylesheet><link href=/css/hugo-theme.css?1724820002 rel=stylesheet><link href=/css/theme-mine.css?1724820002 rel=stylesheet><link href=/css/dark.css?1724820002 rel=stylesheet><link href=/css/syntax.css?1724820002 rel=stylesheet><link href=/css/light.css?1724820002 rel=stylesheet><link href=/css/hljs.css?1724820002 rel=stylesheet><link href=https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css?1724820002 rel=stylesheet><script src=/js/jquery-3.3.1.min.js?1724820002></script><style>:root #header+#content>#left>#rlblock_left{display:none!important}</style><script async src="https://www.googletagmanager.com/gtag/js?id=G-QYH72LMYCS"></script><script>var doNotTrack=!1;if(!doNotTrack){window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag("js",new Date),gtag("config","G-QYH72LMYCS",{anonymize_ip:!1})}</script><script>var doNotTrack=!1;doNotTrack||(window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)},ga.l=+new Date,ga("create","G-QYH72LMYCS","auto"),ga("send","pageview"))</script><script async src=https://www.google-analytics.com/analytics.js></script><script></script></head><body data-url=/artifact_references/pages/linux.ssh.authorizedkeys/><nav id=sidebar><div id=header-wrapper><div id=header><script>function darkmode(){$("body").addClass("dark").removeClass("light"),document.cookie="theme=darkmode;path=/"}function lightmode(){$("body").removeClass("dark").addClass("light"),document.cookie="theme=lightmode;path=/"}const regex=new RegExp("theme=darkmode");regex.test(document.cookie)?darkmode():lightmode()</script><div class="btn btn-default ThemeSelector darkmode" onclick=darkmode()><i class="fas fa-moon"></i></div><div class="btn btn-default ThemeSelector lightmode" onclick=lightmode()><i class="fas fa-sun"></i></div><a href=https://docs.velociraptor.app/><img src=https://docs.velociraptor.app//images/logo.svg></a></div></div><div class=highlightable><ul class=topics><li data-nav-id=https://docs.velociraptor.app/announcements/ class="dd-item haschildren"><div><i class="fa fa-angle-right fa-sm category-icon"></i>
+<link href=/css/nucleus.css?1725096939 rel=stylesheet><link href=/css/fontawesome-all.min.css?1725096939 rel=stylesheet><link href=/css/featherlight.min.css?1725096939 rel=stylesheet><link href=/css/perfect-scrollbar.min.css?1725096939 rel=stylesheet><link href=/css/auto-complete.css?1725096939 rel=stylesheet><link href=/css/theme.css?1725096939 rel=stylesheet><link href=/css/tabs.css?1725096939 rel=stylesheet><link href=/css/hugo-theme.css?1725096939 rel=stylesheet><link href=/css/theme-mine.css?1725096939 rel=stylesheet><link href=/css/dark.css?1725096939 rel=stylesheet><link href=/css/syntax.css?1725096939 rel=stylesheet><link href=/css/light.css?1725096939 rel=stylesheet><link href=/css/hljs.css?1725096939 rel=stylesheet><link href=https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css?1725096939 rel=stylesheet><script src=/js/jquery-3.3.1.min.js?1725096939></script><style>:root #header+#content>#left>#rlblock_left{display:none!important}</style><script async src="https://www.googletagmanager.com/gtag/js?id=G-QYH72LMYCS"></script><script>var doNotTrack=!1;if(!doNotTrack){window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag("js",new Date),gtag("config","G-QYH72LMYCS",{anonymize_ip:!1})}</script><script>var doNotTrack=!1;doNotTrack||(window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)},ga.l=+new Date,ga("create","G-QYH72LMYCS","auto"),ga("send","pageview"))</script><script async src=https://www.google-analytics.com/analytics.js></script><script></script></head><body data-url=/artifact_references/pages/linux.ssh.authorizedkeys/><nav id=sidebar><div id=header-wrapper><div id=header><script>function darkmode(){$("body").addClass("dark").removeClass("light"),document.cookie="theme=darkmode;path=/"}function lightmode(){$("body").removeClass("dark").addClass("light"),document.cookie="theme=lightmode;path=/"}const regex=new RegExp("theme=darkmode");regex.test(document.cookie)?darkmode():lightmode()</script><div class="btn btn-default ThemeSelector darkmode" onclick=darkmode()><i class="fas fa-moon"></i></div><div class="btn btn-default ThemeSelector lightmode" onclick=lightmode()><i class="fas fa-sun"></i></div><a href=https://docs.velociraptor.app/><img src=https://docs.velociraptor.app//images/logo.svg></a></div></div><div class=highlightable><ul class=topics><li data-nav-id=https://docs.velociraptor.app/announcements/ class="dd-item haschildren"><div><i class="fa fa-angle-right fa-sm category-icon"></i>
 <a href=/announcements/><i class="fas fa-bullhorn"></i>Announcements</a></div><ul><li data-nav-id=https://docs.velociraptor.app/announcements/2023-cves/ class=dd-item><div><i class="fa fa-circleXX fa-sm category-icon"></i>
 <a href=/announcements/2023-cves/>Current CVEs</a></div></li></ul></li><li data-nav-id=https://docs.velociraptor.app/docs/ class="dd-item haschildren"><div><i class="fa fa-angle-right fa-sm category-icon"></i>
 <a href=/docs/><i class="fas fa-book-reader"></i>Documentation</a></div><ul><li data-nav-id=https://docs.velociraptor.app/docs/overview/ class="dd-item haschildren"><div><i class="fa fa-angle-right fa-sm category-icon"></i>
@@ -75,35 +75,77 @@
 <img src=/images/Rapid7_logo.svg class=rapid7><br><i class="fas fa-copyright"></i> 2024</div></section></div></nav><script>$("#sidebar i.fa-angle-right").each(function(){$(this).parent().parent().find("ul").hide()})</script><section id=body><div id=overlay></div><div class="padding highlightable"><div><div id=top-bar><div id=top-github-link><a class=github-link title='Edit this page' href=https://github.com/Velocidex/velociraptor-docs/edit/master/content/artifact_references/pages/linux.ssh.authorizedkeys.md target=blank><i class="fas fa-code-branch"></i>
 <span id=top-github-link-text>Edit this page</span></a></div><div id=breadcrumbs itemscope itemtype=http://data-vocabulary.org/Breadcrumb><span id=sidebar-toggle-span><a href=# id=sidebar-toggle data-sidebar-toggle><i class="fas fa-bars"></i>
 </a></span><span id=toc-menu><i class="fas fa-list-alt"></i></span>
-<span class=links>Linux.Ssh.AuthorizedKeys</span></div><div class=progress><div class=wrapper><nav id=TableOfContents></nav></div></div></div></div><div id=head-tags><div class=tags><a class=tag-link href=/tags/client-artifact>Client Artifact</a></div></div><div id=body-inner><h1>Linux.Ssh.AuthorizedKeys</h1><p>Find and parse ssh authorized keys files.</p><pre><code class=language-yaml>
+<span class=links>Linux.Ssh.AuthorizedKeys</span></div><div class=progress><div class=wrapper><nav id=TableOfContents></nav></div></div></div></div><div id=head-tags><div class=tags><a class=tag-link href=/tags/client-artifact>Client Artifact</a></div></div><div id=body-inner><h1>Linux.Ssh.AuthorizedKeys</h1><p>Find and parse ssh authorized keys files.</p><p>From <code>man authorized_keys</code>:</p><p><code>AUTHORIZED_KEYS FILE FORMAT</code>: Each line of the file contains one
+key (empty lines and lines starting with a ‘#’ are ignored as
+comments). Public keys consist of the following space-separated
+fields: options, keytype, base64-encoded key, comment. The options
+field is optional.</p><pre><code class=language-yaml>
 name: Linux.Ssh.AuthorizedKeys
-description: Find and parse ssh authorized keys files.
+description: |
+  Find and parse ssh authorized keys files.
+
+  From `man authorized_keys`:
+
+  `AUTHORIZED_KEYS FILE FORMAT`: Each line of the file contains one
+  key (empty lines and lines starting with a ‘#’ are ignored as
+  comments). Public keys consist of the following space-separated
+  fields: options, keytype, base64-encoded key, comment. The options
+  field is optional.
+
 parameters:
   - name: sshKeyFiles
     default: '.ssh/authorized_keys*'
     description: Glob of authorized_keys file relative to a user's home directory.
+  - name: keyTypes
+    type: regex
+    description: A regex to identify supported key types
+    default: "sk-ecdsa-sha2-nistp256|ecdsa-sha2-nistp256|ecdsa-sha2-nistp384|ecdsa-sha2-nistp521|sk-ssh-ed25519|ssh-ed25519|ssh-dss|ssh-rsa"
+
+  - name: AlsoUpload
+    type: bool
+    description: Also upload the raw files for closer inspection.
 
 sources:
   - precondition: |
       SELECT OS From info() where OS = 'linux'
 
     query: |
+      -- Find all eligible files.
       LET authorized_keys = SELECT * from foreach(
           row={
              SELECT Uid, User, Homedir from Artifact.Linux.Sys.Users()
           },
           query={
-             SELECT OSPath, Mtime, Ctime, User, Uid
+             SELECT OSPath,
+                    if(condition=AlsoUpload, then=upload(file=OSPath)) AS _Upload,
+                    Mtime, Ctime, User, Uid
              FROM glob(root=Homedir, globs=sshKeyFiles)
+             WHERE log(message="Parsing file %v", args=OSPath, dedup=-1)
           })
 
-      SELECT * from foreach(
-          row=authorized_keys,
-          query={
-            SELECT Uid, User, OSPath, Key, Comment, Mtime
-            FROM split_records(
-               filenames=OSPath, regex=" +", columns=["Type", "Key", "Comment"])
-               WHERE Type =~ "ssh"
-          })
+      -- Split each line into parts considering possible quoting
+      LET Parse(OSPath) =
+         -- Pad a bit so index does not wrap.
+         SELECT ParseParts(Parts=commandline_split(command=Line, bash_style=TRUE) + ("", "", "", "", "")) AS Parsed
+         FROM parse_lines(filename=OSPath)
+         WHERE NOT Line =~ "^#" AND Parsed.keytype =~ keyTypes
 
-</code></pre><footer class=footline></footer></div></div></section><div style=left:-1000px;overflow:scroll;position:absolute;top:-1000px;border:none;box-sizing:content-box;height:200px;margin:0;padding:0;width:200px><div style=border:none;box-sizing:content-box;height:200px;margin:0;padding:0;width:200px></div></div><script src=/js/clipboard.min.js?1724820002></script><script src=/js/perfect-scrollbar.min.js?1724820002></script><script src=/js/perfect-scrollbar.jquery.min.js?1724820002></script><script src=/js/jquery.sticky.js?1724820002></script><script src=/js/featherlight.min.js?1724820002></script><script src=/js/highlight.min.js?1724820002></script><script>hljs.highlightAll()</script><script src=/js/modernizr.custom-3.6.0.js?1724820002></script><script src=/js/learn.js?1724820002></script><script src=/js/hugo-learn.js?1724820002></script></body></html>
+      -- The option may or may not be there - determine by the key regex
+      LET ParseParts(Parts) = if(condition= Parts[0] =~ keyTypes,
+        -- No options
+        then=dict(options="", keytype=Parts[0], base64key=Parts[1], comment=Parts[2] || ""),
+
+        -- The line has options
+        else=dict(options=ParseOptions(Opts=Parts[0]),
+                  keytype=Parts[1], base64key=Parts[2], comment=Parts[3] || ""))
+
+      -- Option can have value or just be bare
+      LET ParseOptions(Opts) = split(string=Opts, sep_string=",")
+
+      SELECT * FROM foreach(row=authorized_keys,
+      query={
+        SELECT Uid, User, OSPath, _Upload, *
+        FROM foreach(column="Parsed", row= Parse(OSPath=OSPath))
+      })
+
+</code></pre><footer class=footline></footer></div></div></section><div style=left:-1000px;overflow:scroll;position:absolute;top:-1000px;border:none;box-sizing:content-box;height:200px;margin:0;padding:0;width:200px><div style=border:none;box-sizing:content-box;height:200px;margin:0;padding:0;width:200px></div></div><script src=/js/clipboard.min.js?1725096939></script><script src=/js/perfect-scrollbar.min.js?1725096939></script><script src=/js/perfect-scrollbar.jquery.min.js?1725096939></script><script src=/js/jquery.sticky.js?1725096939></script><script src=/js/featherlight.min.js?1725096939></script><script src=/js/highlight.min.js?1725096939></script><script>hljs.highlightAll()</script><script src=/js/modernizr.custom-3.6.0.js?1725096939></script><script src=/js/learn.js?1725096939></script><script src=/js/hugo-learn.js?1725096939></script></body></html>

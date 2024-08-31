@@ -1,5 +1,5 @@
 <!doctype html><html lang=en class="js csstransforms3d"><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=generator content="Hugo 0.122.0"><meta name=description content><link rel=icon href=/images/favicon.png type=image/png><title>Windows.Forensics.RDPCache :: Velociraptor - Digging deeper!</title>
-<link href=/css/nucleus.css?1724820003 rel=stylesheet><link href=/css/fontawesome-all.min.css?1724820003 rel=stylesheet><link href=/css/featherlight.min.css?1724820003 rel=stylesheet><link href=/css/perfect-scrollbar.min.css?1724820003 rel=stylesheet><link href=/css/auto-complete.css?1724820003 rel=stylesheet><link href=/css/theme.css?1724820003 rel=stylesheet><link href=/css/tabs.css?1724820003 rel=stylesheet><link href=/css/hugo-theme.css?1724820003 rel=stylesheet><link href=/css/theme-mine.css?1724820003 rel=stylesheet><link href=/css/dark.css?1724820003 rel=stylesheet><link href=/css/syntax.css?1724820003 rel=stylesheet><link href=/css/light.css?1724820003 rel=stylesheet><link href=/css/hljs.css?1724820003 rel=stylesheet><link href=https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css?1724820003 rel=stylesheet><script src=/js/jquery-3.3.1.min.js?1724820003></script><style>:root #header+#content>#left>#rlblock_left{display:none!important}</style><script async src="https://www.googletagmanager.com/gtag/js?id=G-QYH72LMYCS"></script><script>var doNotTrack=!1;if(!doNotTrack){window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag("js",new Date),gtag("config","G-QYH72LMYCS",{anonymize_ip:!1})}</script><script>var doNotTrack=!1;doNotTrack||(window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)},ga.l=+new Date,ga("create","G-QYH72LMYCS","auto"),ga("send","pageview"))</script><script async src=https://www.google-analytics.com/analytics.js></script><script></script></head><body data-url=/artifact_references/pages/windows.forensics.rdpcache/><nav id=sidebar><div id=header-wrapper><div id=header><script>function darkmode(){$("body").addClass("dark").removeClass("light"),document.cookie="theme=darkmode;path=/"}function lightmode(){$("body").removeClass("dark").addClass("light"),document.cookie="theme=lightmode;path=/"}const regex=new RegExp("theme=darkmode");regex.test(document.cookie)?darkmode():lightmode()</script><div class="btn btn-default ThemeSelector darkmode" onclick=darkmode()><i class="fas fa-moon"></i></div><div class="btn btn-default ThemeSelector lightmode" onclick=lightmode()><i class="fas fa-sun"></i></div><a href=https://docs.velociraptor.app/><img src=https://docs.velociraptor.app//images/logo.svg></a></div></div><div class=highlightable><ul class=topics><li data-nav-id=https://docs.velociraptor.app/announcements/ class="dd-item haschildren"><div><i class="fa fa-angle-right fa-sm category-icon"></i>
+<link href=/css/nucleus.css?1725096940 rel=stylesheet><link href=/css/fontawesome-all.min.css?1725096940 rel=stylesheet><link href=/css/featherlight.min.css?1725096940 rel=stylesheet><link href=/css/perfect-scrollbar.min.css?1725096940 rel=stylesheet><link href=/css/auto-complete.css?1725096940 rel=stylesheet><link href=/css/theme.css?1725096940 rel=stylesheet><link href=/css/tabs.css?1725096940 rel=stylesheet><link href=/css/hugo-theme.css?1725096940 rel=stylesheet><link href=/css/theme-mine.css?1725096940 rel=stylesheet><link href=/css/dark.css?1725096940 rel=stylesheet><link href=/css/syntax.css?1725096940 rel=stylesheet><link href=/css/light.css?1725096940 rel=stylesheet><link href=/css/hljs.css?1725096940 rel=stylesheet><link href=https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css?1725096940 rel=stylesheet><script src=/js/jquery-3.3.1.min.js?1725096940></script><style>:root #header+#content>#left>#rlblock_left{display:none!important}</style><script async src="https://www.googletagmanager.com/gtag/js?id=G-QYH72LMYCS"></script><script>var doNotTrack=!1;if(!doNotTrack){window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag("js",new Date),gtag("config","G-QYH72LMYCS",{anonymize_ip:!1})}</script><script>var doNotTrack=!1;doNotTrack||(window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)},ga.l=+new Date,ga("create","G-QYH72LMYCS","auto"),ga("send","pageview"))</script><script async src=https://www.google-analytics.com/analytics.js></script><script></script></head><body data-url=/artifact_references/pages/windows.forensics.rdpcache/><nav id=sidebar><div id=header-wrapper><div id=header><script>function darkmode(){$("body").addClass("dark").removeClass("light"),document.cookie="theme=darkmode;path=/"}function lightmode(){$("body").removeClass("dark").addClass("light"),document.cookie="theme=lightmode;path=/"}const regex=new RegExp("theme=darkmode");regex.test(document.cookie)?darkmode():lightmode()</script><div class="btn btn-default ThemeSelector darkmode" onclick=darkmode()><i class="fas fa-moon"></i></div><div class="btn btn-default ThemeSelector lightmode" onclick=lightmode()><i class="fas fa-sun"></i></div><a href=https://docs.velociraptor.app/><img src=https://docs.velociraptor.app//images/logo.svg></a></div></div><div class=highlightable><ul class=topics><li data-nav-id=https://docs.velociraptor.app/announcements/ class="dd-item haschildren"><div><i class="fa fa-angle-right fa-sm category-icon"></i>
 <a href=/announcements/><i class="fas fa-bullhorn"></i>Announcements</a></div><ul><li data-nav-id=https://docs.velociraptor.app/announcements/2023-cves/ class=dd-item><div><i class="fa fa-circleXX fa-sm category-icon"></i>
 <a href=/announcements/2023-cves/>Current CVEs</a></div></li></ul></li><li data-nav-id=https://docs.velociraptor.app/docs/ class="dd-item haschildren"><div><i class="fa fa-angle-right fa-sm category-icon"></i>
 <a href=/docs/><i class="fas fa-book-reader"></i>Documentation</a></div><ul><li data-nav-id=https://docs.velociraptor.app/docs/overview/ class="dd-item haschildren"><div><i class="fa fa-angle-right fa-sm category-icon"></i>
@@ -75,22 +75,24 @@
 <img src=/images/Rapid7_logo.svg class=rapid7><br><i class="fas fa-copyright"></i> 2024</div></section></div></nav><script>$("#sidebar i.fa-angle-right").each(function(){$(this).parent().parent().find("ul").hide()})</script><section id=body><div id=overlay></div><div class="padding highlightable"><div><div id=top-bar><div id=top-github-link><a class=github-link title='Edit this page' href=https://github.com/Velocidex/velociraptor-docs/edit/master/content/artifact_references/pages/windows.forensics.rdpcache.md target=blank><i class="fas fa-code-branch"></i>
 <span id=top-github-link-text>Edit this page</span></a></div><div id=breadcrumbs itemscope itemtype=http://data-vocabulary.org/Breadcrumb><span id=sidebar-toggle-span><a href=# id=sidebar-toggle data-sidebar-toggle><i class="fas fa-bars"></i>
 </a></span><span id=toc-menu><i class="fas fa-list-alt"></i></span>
-<span class=links>Windows.Forensics.RDPCache</span></div><div class=progress><div class=wrapper><nav id=TableOfContents></nav></div></div></div></div><div id=head-tags><div class=tags><a class=tag-link href=/tags/client-artifact>Client Artifact</a></div></div><div id=body-inner><h1>Windows.Forensics.RDPCache</h1><p>This artifact views and enables simplified upload of RDP
-cache files.</p><p>Filters include User regex to target a user and Accessor to target
+<span class=links>Windows.Forensics.RDPCache</span></div><div class=progress><div class=wrapper><nav id=TableOfContents></nav></div></div></div></div><div id=head-tags><div class=tags><a class=tag-link href=/tags/client-artifact>Client Artifact</a></div></div><div id=body-inner><h1>Windows.Forensics.RDPCache</h1><p>This artifact parses, views and enables simplified upload of RDP
+cache files.</p><p>By default the artifact will parse .BIN RDPcache files.</p><p>Filters include User regex to target a user and Accessor to target
 vss via ntfs_vss.</p><p>Best combined with:</p><ul><li>Windows.EventLogs.RDPAuth to collect RDP focused event logs.</li><li>Windows.Registry.RDP to collect user RDP mru and server info</li></ul><pre><code class=language-yaml>
 name: Windows.Forensics.RDPCache
 author: Matt Green - @mgreen27
 description: |
-   This artifact views and enables simplified upload of RDP 
-   cache files. 
-   
-   Filters include User regex to target a user and Accessor to target
-   vss via ntfs_vss.
-
-   Best combined with:
-
-   - Windows.EventLogs.RDPAuth to collect RDP focused event logs.
-   - Windows.Registry.RDP to collect user RDP mru and server info
+    This artifact parses, views and enables simplified upload of RDP 
+    cache files. 
+    
+    By default the artifact will parse .BIN RDPcache files.
+       
+    Filters include User regex to target a user and Accessor to target
+    vss via ntfs_vss.
+    
+    Best combined with:
+    
+       - Windows.EventLogs.RDPAuth to collect RDP focused event logs.
+       - Windows.Registry.RDP to collect user RDP mru and server info
 
 reference:
    - https://github.com/ANSSI-FR/bmc-tools
@@ -105,19 +107,142 @@ parameters:
      default: .
      description: Regex filter of user to target. StartOf(^) and EndOf($)) regex may behave unexpectanly.
      type: regex
+   - name: ParseCache
+     description: If selected will parse .BIN RDPcache files.
+     type: bool
+   - name: Workers
+     default: 100
+     type: int
+     description: Number of workers to use for ParseCache
    - name: UploadRDPCache
+     description: If selected will upload raw cache files. Can be used for offline processing/preservation.
      type: bool
 
 sources:
-  - query: |
+  - name: TargetFiles
+    description: RDP BitmapCache files in scope. 
+    query: |
       LET results = SELECT OSPath, Size, Mtime, Atime, Ctime, Btime
         FROM glob(globs=RDPCacheGlob,accessor=Accessor)
         WHERE OSPath =~ UserRegex
-      
+        
       LET upload_results = SELECT *, upload(file=OSPath) as CacheUpload
         FROM results
-      
+    
       SELECT * FROM if(condition= UploadRDPCache,
         then= upload_results,
         else= results )
-</code></pre><footer class=footline></footer></div></div></section><div style=left:-1000px;overflow:scroll;position:absolute;top:-1000px;border:none;box-sizing:content-box;height:200px;margin:0;padding:0;width:200px><div style=border:none;box-sizing:content-box;height:200px;margin:0;padding:0;width:200px></div></div><script src=/js/clipboard.min.js?1724820003></script><script src=/js/perfect-scrollbar.min.js?1724820003></script><script src=/js/perfect-scrollbar.jquery.min.js?1724820003></script><script src=/js/jquery.sticky.js?1724820003></script><script src=/js/featherlight.min.js?1724820003></script><script src=/js/highlight.min.js?1724820003></script><script>hljs.highlightAll()</script><script src=/js/modernizr.custom-3.6.0.js?1724820003></script><script src=/js/learn.js?1724820003></script><script src=/js/hugo-learn.js?1724820003></script></body></html>
+        
+  - name: Parsed
+    description: Parsed RDP BitmapCache files. 
+    query: |
+      LET PROFILE = '''[
+        ["BIN_CONTAINER", 0, [
+            [Magic, 0, String, {length: 8, term_hex : "FFFFFF" }],
+            [Version, 8, uint32],
+            [CachedFiles, 12, Array, {
+                "type": "rgb32b",
+                "count": 10000,
+                "max_count": 2000,
+                "sentinel": "x=&gt;x.__Size &lt; 15",
+            }],
+        ]],
+        ["rgb32b","x=&gt;x.__Size",[
+            [__key1, 0, uint32],
+            [__key1, 4, uint32],
+            ["Width", 8, "uint16"],
+            ["Height", 10, "uint16"],
+            [DataLength, 0, Value,{ value: "x=&gt; 4 * x.Width * x.Height"}],
+            [DataOffset, 0, Value,{ "value": "x=&gt;x.StartOf + 12"}],
+            ["__Size", 0, Value,{ "value": "x=&gt;x.DataLength + 12"}],
+            ["Index", 0, Value,{ "value": "x=&gt;count() - 1 "}],
+        ]]]'''
+        
+      LET parse_rgb32b(data) = SELECT
+            _value  as Offset,
+            _value + 3 as EndOffset,
+            len(list=data) as Length,
+            data[(_value):(_value + 3)] + unhex(string="FF") as Buffer
+        FROM range(step=4,end=len(list=data))
+        
+      LET fix_bmp(data) = SELECT 
+            _value  as Offset,
+            _value + 255 as EndOffset,
+            join(array=data[ (_value):(_value + 256 ) ],sep='') as Buffer
+        FROM range(step=256, end= len(list=data) )
+        ORDER BY Offset DESC
+        
+      LET parse_container = SELECT * OSPath,Name,Size as FileSize,
+            read_file(filename=OSPath,length=12) as Header,
+            parse_binary(filename=OSPath,profile=PROFILE,struct='BIN_CONTAINER') as Parsed
+        FROM foreach(row={
+            SELECT * FROM glob(globs=RDPCacheGlob,accessor=Accessor) 
+            WHERE OSPath =~ '\.bin$'
+                AND OSPath =~ UserRegex
+                AND NOT IsDir
+        })
+        
+      LET find_index_differential = SELECT *, 0 - Parsed.CachedFiles.Index[0] as IndexDif
+        FROM parse_container
+      
+      LET parse_cache = SELECT * FROM foreach(row=find_index_differential, query={
+        SELECT OSPath, IndexDif,
+            OSPath.Dirname + ( OSPath.Basename + '_' + format(format='%04v',args= Index + IndexDif ) + '.bmp' ) as BmpName,
+            FileSize,Header,Width,Height,DataLength,DataOffset
+        FROM foreach(row=Parsed.CachedFiles)
+      })
+      
+      LET extract_data = SELECT *
+        FROM foreach(row=parse_cache,query={
+            SELECT
+                OSPath,BmpName,FileSize,Header,Width,Height,DataLength,DataOffset,
+                join(array=parse_rgb32b(data=read_file(filename=OSPath,offset=DataOffset,length=DataLength)).Buffer,sep='') as Data 
+            FROM scope()
+        }, workers=Workers)
+      
+      -- change endianess for unint32
+      LET pack_lt_l(data) = unhex(string=join(array=[ 
+        format(format='%02x',args=unhex(string=format(format='%08x',args=data))[3]), 
+        format(format='%02x',args=unhex(string=format(format='%08x',args=data))[2]),
+        format(format='%02x',args=unhex(string=format(format='%08x',args=data))[1]),
+        format(format='%02x',args=unhex(string=format(format='%08x',args=data))[0]) 
+            ],sep=''))
+            
+      -- build bmp file, adding appropriate header
+      LET build_bmp(data,width,height) = join(array=[ 
+                "BM",
+                pack_lt_l(data=len(list=data) + 122),
+                unhex(string="000000007A0000006C000000"),
+                pack_lt_l(data=width),
+                pack_lt_l(data=height),
+                unhex(string="0100200003000000"),
+                pack_lt_l(data=len(list=data)),
+                unhex(string="000000000000000000000000000000000000FF0000FF0000FF000000000000FF"),
+                " niW",
+                unhex(string="00" * 36),
+                unhex(string="000000000000000000000000"),
+                data 
+            ], sep='')
+        
+        SELECT * FROM if(condition= ParseCache,
+            then={
+                SELECT 
+                    BmpName, Header, Width, Height, DataLength, DataOffset,
+                    upload(
+                        file=build_bmp(data=join(array=fix_bmp(data=Data).Buffer,sep=''), 
+                        width=Width, height=Height),
+                        name=BmpName,
+                        accessor='data' ) as BmpUpload,
+                    OSPath as SourceFile
+                FROM extract_data
+                ORDER BY BmpName
+            }, 
+            else= Null )
+            
+      
+column_types:
+  - name: BmpUpload
+    type: upload_preview
+  - name: CacheUpload
+    type: upload_preview
+</code></pre><footer class=footline></footer></div></div></section><div style=left:-1000px;overflow:scroll;position:absolute;top:-1000px;border:none;box-sizing:content-box;height:200px;margin:0;padding:0;width:200px><div style=border:none;box-sizing:content-box;height:200px;margin:0;padding:0;width:200px></div></div><script src=/js/clipboard.min.js?1725096940></script><script src=/js/perfect-scrollbar.min.js?1725096940></script><script src=/js/perfect-scrollbar.jquery.min.js?1725096940></script><script src=/js/jquery.sticky.js?1725096940></script><script src=/js/featherlight.min.js?1725096940></script><script src=/js/highlight.min.js?1725096940></script><script>hljs.highlightAll()</script><script src=/js/modernizr.custom-3.6.0.js?1725096940></script><script src=/js/learn.js?1725096940></script><script src=/js/hugo-learn.js?1725096940></script></body></html>
