@@ -1,5 +1,15 @@
 [
     {
+        "title": "Windows.LastDomainUsers",
+        "author": "AnthoLaMalice",
+        "description": "Enumerate Domain Users by creation date. This artifact can be used to quickly detect new domain accounts that may have been created by attackers. This artifact must be run on Domain Joined systems with the PowerShell Active Directory module installed.",
+        "link": "/exchange/artifacts/pages/windows.lastdomainusers",
+        "tags": [],
+        "author_link": "https://github.com/AnthoLaMalice",
+        "author_avatar": "https://avatars.githubusercontent.com/u/78861013?v=4",
+        "date": "2024-10-09"
+    },
+    {
         "title": "FreeBSD.Sys.Utx",
         "author": "Herbert-Karl",
         "description": "Parse the utx file of the system (similar to wtmp on Linux). This covers user sessions, boots, shutdowns and system time changes.\nBecause FreeBSD discards fields for the entries of the utx file based on type (see `man getutxent`), no direct parsing of the file using \"vtypes\" is done (too complicated for me to define a structure for parsing), but rather native tools are used for accessing the data.",
