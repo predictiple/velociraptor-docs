@@ -113,14 +113,15 @@ collection or hunt. As with most things in the Velociraptor GUI, we provide VQL
 functions that perform the equivalent actions. In fact, most of the time your
 actions in the GUI are actually performed by VQL under the hood.
 
-In VQL, we have two functions that kick off the creation of collection archives:
+In VQL, we have two functions that kick off the creation of collection container
+zips:
 - [create_flow_download]({{< ref "/vql_reference/server/create_flow_download/" >}})
 - [create_hunt_download]({{< ref "/vql_reference/server/create_hunt_download/" >}})
 
-These functions can be used manually in notebooks, or you could create a
-[server monitoring]({{< ref "/docs/server_automation/server_monitoring/" >}})
-artifact that automates the zip creation whenever collections that contain a
-selected artifact complete.
+These functions can be used manually in VQL queries in notebooks, or you could
+create a [server monitoring]({{< ref "/docs/server_automation/server_monitoring/" >}})
+artifact that automates the zip creation process whenever a collection
+containing selected artifacts completes.
 
 For example:
 
@@ -135,8 +136,8 @@ sources:
 ```
 
 Depending on the total size of the export it may take a while to prepare, but
-it will eventually appear under the collection's Available Downloads without
-any manual GUI interaction.
+it will eventually appear under the collection's **Available Downloads** without
+any manual GUI actions.
 
 ## Generating individual file download links
 

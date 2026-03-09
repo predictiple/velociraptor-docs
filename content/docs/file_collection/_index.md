@@ -270,8 +270,8 @@ function, if necessary.
 
 #### For an individual collection
 
-It's easy to enumerate the file uploads associated with any collection in a
-notebook.
+It's easy to enumerate the file uploads associated with any collection in VQL,
+typically in a notebook.
 
 ###### Example
 
@@ -290,7 +290,7 @@ scope.
 
 #### For a hunt
 
-File uploads associated with a hunt can be similarly enumerated in a notebook by
+File uploads associated with a hunt can be similarly enumerated in VQL by
 iterating over the flows linked to the hunt.
 
 ###### Example
