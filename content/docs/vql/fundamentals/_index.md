@@ -100,6 +100,9 @@ FROM glob(`**`=args)
 Note that the `**` has to be enclosed in backticks because
 [it is an identifier that uses non-alphanumeric characters]({{< ref "/docs/vql/fundamentals/#identifiers-with-spaces" >}}).
 
+Also, when this method is used any other arguments specified are
+ignored.
+
 #### Free-form Args
 
 Certain plugins and functions, namely:
