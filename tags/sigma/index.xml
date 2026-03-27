@@ -1,0 +1,2557 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Sigma on Velociraptor - Digging deeper!</title><link>https://docs.velociraptor.app/tags/sigma/</link><description>Recent content in Sigma on Velociraptor - Digging deeper!</description><generator>Hugo</generator><language>en-us</language><lastBuildDate>Wed, 12 Feb 2025 13:01:38 +1000</lastBuildDate><atom:link href="https://docs.velociraptor.app/tags/sigma/index.xml" rel="self" type="application/rss+xml"/><item><title>Detection Engineering</title><link>https://docs.velociraptor.app/blog/2024/2024-05-09-detection-engineering/</link><pubDate>Wed, 08 May 2024 23:25:17 +0000</pubDate><guid>https://docs.velociraptor.app/blog/2024/2024-05-09-detection-engineering/</guid><description>
+&lt;div class="mynotices note"&gt;
+ &lt;div heading=" "&gt;&lt;p&gt;This post accompanies the presentation &lt;a href="https://present.velocidex.com/presentations/2024-auscert-detection_engineering/index.html" target="_blank" &gt;Advances in Detection Engineering&lt;/a&gt;
+ presented at the annual &lt;a href="https://conference.auscert.org.au/program/" target="_blank" &gt;Auscert 2024 Conference&lt;/a&gt;
+ on the 24th May 2024&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+
+&lt;p&gt;As defenders, we rely on having an efficient and effective detection
+capabilities so we can shut down attacks quickly before the damage is
+done. To do this effectively, defenders rely on automated detection,
+driven by specific rules. While there are many detection platforms
+available with different ways of writing rules, there is a lot of
+commonality in the type of rules that are needed for effective
+detection - this new discipline is called &amp;ldquo;Detection Engineering&amp;rdquo;.&lt;/p&gt;
+&lt;h2 id="what-is-detection-engineering"&gt;What is Detection Engineering?&lt;/h2&gt;
+&lt;p&gt;While intrusion detection systems and tools have always been in use in
+the enterprise space, it has only been a recent realization that tools
+alone are not sufficient for effective detection. Organizations must
+dedicate resources and expertise to specialists in tuning and
+architecting effective detection system.&lt;/p&gt;
+&lt;p&gt;The discipline of &lt;code&gt;Detection Engineering&lt;/code&gt; is a science of writing,
+maintaining and testing detection rules and systems against an
+evolving threat landscape. It is now considered an important integral
+part for an effective and mature security program.&lt;/p&gt;
+&lt;p&gt;This blog post discusses some of the challenges in testing and
+maintaining detection rules, specifically Sigma rules. We also cover
+some emerging scenarios where detection engineering can be employed,
+such as in Forensic Triage and wider Threat Hunting.&lt;/p&gt;
+&lt;h2 id="traditional-siem-based-detection"&gt;Traditional SIEM based detection&lt;/h2&gt;
+&lt;p&gt;Traditionally detection focuses on event logs as the main source of
+information. Event logs are parsed and shipped from the endpoints to a
+central data mining server where queries are run over the data.&lt;/p&gt;
+&lt;p&gt;For example, using the ELK stack, the Winlogbeats endpoint agent:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;Parses certain raw event logs on the endpoint (For example Sysmon
+event log)&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Applies normalization of fields (mostly renaming fields) to the
+Elastic Common Schema (ECS).&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Forwards events to an Elastic Cluster.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Queries are run on the Elastic cluster using a specialized query
+language to detect anomalies.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Other stacks collect different sources, implement different
+normalization process and have different query languages and dialects.&lt;/p&gt;
+&lt;p&gt;When comparing various detection technologies we can see that although
+the basic principals are similar (collect logs, normalize logs into a
+schema, forward to data mining system and then query the data) the
+specifics are very different.&lt;/p&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/blog/2024/2024-05-09-detection-engineering//blog/2024/2024-05-09-detection-engineering/edr_env_.svg" alt=""
+ class="inline"
+ height="878.888889"
+ width="1425.555556" /&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="edr_env.svg"&gt;&lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ 
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;h2 id="the-sigma-rule-format"&gt;The Sigma Rule format&lt;/h2&gt;
+&lt;p&gt;Because each system is different, it is difficult to exchange
+detection rules within the community. For example an Elastic query
+might apply to those running the ELK stack but will not be applicable
+to those running Splunk or another system.&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;Sigma&lt;/code&gt; standard was designed to try to address the situation by
+creating another layer of abstraction over the actual detection stack,
+in order to facilitate rule exchange. The hope is that rules can be
+immediately usable across different detection stacks.&lt;/p&gt;
+&lt;p&gt;This is achieved by defining an abstract YAML based format for writing
+detection rules. These rules are then fed to specialized &lt;code&gt;Sigma Compilers&lt;/code&gt; to produce stack specific queries for difference SIEM
+vendors.&lt;/p&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/blog/2024/2024-05-09-detection-engineering//blog/2024/2024-05-09-detection-engineering/sigma_architecture_.svg" alt=""
+ class="inline"
+ height="1295.3333333333335"
+ width="1032.2222222222222" /&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="sigma_architecture.svg"&gt;&lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ 
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;p&gt;Sigma addresses the differences between the detection stacks by
+introducing abstractions at various levels:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;The differences in internal Schema normalization is addressed by
+abstracting field names. Rather than selecting a standard, well
+defined taxonomy of field names, Sigma leaves the precise fields
+allowed within a rule to the Sigma Compiler &lt;code&gt;Field Mapping&lt;/code&gt;
+configuration.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Different detection stacks collect different event logs. However,
+instead of specifying the precise event logs a rule applies to,
+Sigma defines an abstract &lt;code&gt;log source&lt;/code&gt; which is mapped to the
+concrete source using the Sigma Compiler&amp;rsquo;s &lt;code&gt;Log Source Mappings&lt;/code&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;This lack of rigorous definitions leads to inaccuracies and
+compatibility problems as we shall see shortly, however let&amp;rsquo;s first
+examine a typical &lt;code&gt;Sigma Rule&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-yaml"&gt;logsource:
+ category: process_creation
+ product: windows
+detection:
+ process_creation:
+ EventID: 4688
+ Channel: Security
+ selection:
+ - CommandLine|contains|all:
+ - \AppData\Roaming\Oracle
+ - \java
+ - '.exe '
+ - CommandLine|contains|all:
+ - cscript.exe
+ - Retrive
+ - '.vbs '
+ condition: process_creation and selection
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id="log-sources"&gt;Log sources&lt;/h3&gt;
+&lt;p&gt;Sigma rules are written to target certain events from particular log
+sources. The Sigma rule specifies the log source in the &lt;code&gt;logsource&lt;/code&gt;
+section, breaking it by category, product and service etc.&lt;/p&gt;
+&lt;p&gt;This example rule specifies that it applies on events collected from
+the &lt;code&gt;process_creation&lt;/code&gt; log. But what does &lt;code&gt;process_creation&lt;/code&gt; mean
+exactly? The &lt;a href="https://sigmahq.io/docs/basics/log-sources.html" target="_blank" &gt;Sigma
+documentation&lt;/a&gt;
+ doesn&amp;rsquo;t
+really specify what that means.&lt;/p&gt;
+&lt;p&gt;Typically we can get process creation information for various sources,
+for example &lt;code&gt;Sysmon Event ID 1&lt;/code&gt; is a common source of process
+creation. Similarly the Windows &lt;code&gt;Security Log&lt;/code&gt; generates &lt;code&gt;Event ID 4688&lt;/code&gt;. Of course we could always forward events from a local EDR or
+other security software which records process execution, but the
+rule&amp;rsquo;s &lt;code&gt;logsource&lt;/code&gt; section does not specify precisely what the event
+log actually is.&lt;/p&gt;
+&lt;h3 id="field-mappings"&gt;Field mappings&lt;/h3&gt;
+&lt;p&gt;The above rule specifies a &lt;code&gt;detection&lt;/code&gt; section. This section consists
+of a condition which when satisfied, causes the rule to fire. The
+above rule compares the command line to a number of strings. The rule
+refers to the command line using the &lt;code&gt;CommandLine&lt;/code&gt; field.&lt;/p&gt;
+&lt;p&gt;In practice, the event itself consists of various fields, but the
+exact name of each field depends on the data normalization that takes
+place at the sensor level. For example Elastic Common Schema
+&lt;a href="https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-command-line" target="_blank" &gt;normalizes&lt;/a&gt;
+
+the &lt;code&gt;CommandLine&lt;/code&gt; field to &lt;code&gt;process.command_line&lt;/code&gt; in the ECS Schema.&lt;/p&gt;
+&lt;p&gt;Therefore &lt;code&gt;Sigma&lt;/code&gt; uses a target-specific translation between abstract
+Sigma fields to the actual field in the event record in the target
+SIEM. This translation is called &lt;code&gt;Field Mapping&lt;/code&gt; and depends on the
+target detection stack used and its event normalization (and to some
+extent its own configuration).&lt;/p&gt;
+&lt;h3 id="using-sigma-rules-effectively"&gt;Using Sigma Rules effectively&lt;/h3&gt;
+&lt;p&gt;When using &lt;code&gt;Sigma rules&lt;/code&gt; in practice, there are many false
+positive. Usually the rules need to be tailored for the
+environment. For example, in some environments running &lt;code&gt;PsExec&lt;/code&gt; is a
+common practice between system administrators and so alerting on
+lateral movement using &lt;code&gt;PsExec&lt;/code&gt; is going to be a false positive.&lt;/p&gt;
+&lt;p&gt;The detection engineer&amp;rsquo;s main challenge is to understand what rules
+can be ignored and how they can be bypassed. This takes a lot of
+practice and experience.&lt;/p&gt;
+&lt;p&gt;Consider the following &lt;a href="https://github.com/Yamato-Security/hayabusa-rules/blob/dfcce330da37d49610f63f7923ba54dc5d930c9a/hayabusa/builtin/System/Sys_7045_Med_LateralMovement-PSEXEC.yml" target="_blank" &gt;Sigma
+rule&lt;/a&gt;
+
+excerpt:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-yaml"&gt;title: PSExec Lateral Movement
+logsource:
+ product: windows
+ service: system
+detection:
+ selection:
+ Channel: System
+ EventID: 7045
+ selection_PSEXESVC_in_service:
+ Service: PSEXESVC
+ selection_PSEXESVC_in_path:
+ ImagePath|contains: PSEXESVC
+ condition: selection and (selection_PSEXESVC_in_service or selection_PSEXESVC_in_path)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This rule detects when a new service is created with the name
+&lt;code&gt;PSEXESVC&lt;/code&gt; or a service is created with that name included in the path.
+While this is the default behavior of &lt;code&gt;PsExec&lt;/code&gt; it is trivial to bypass this
+rule. Viewing the &lt;a href="https://learn.microsoft.com/en-us/sysinternals/downloads/psexec" target="_blank" &gt;PsExec
+Documentation&lt;/a&gt;
+
+we can see that the &lt;code&gt;-r&lt;/code&gt; flag can change this service name to anything
+while the filename itself can be changed as well.&lt;/p&gt;
+&lt;p&gt;An experienced detection engineer will recognize that better telemetry
+can help detect when a program is renamed by using the
+&lt;code&gt;OriginalFileName&lt;/code&gt; field from Sysmon&amp;rsquo;s process execution logs with &lt;a href="https://github.com/SigmaHQ/sigma/blob/6412c1a02bb60e631c6d341f6fc41d6f3c507f98/rules/windows/process_creation/proc_creation_win_renamed_binary_highly_relevant.yml" target="_blank" &gt;the following rule&lt;/a&gt;
+ excerpt:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-yaml"&gt;title: Potential Defense Evasion Via Rename Of Highly Relevant Binaries
+author: Matthew Green - @mgreen27, Florian Roth (Nextron Systems), frack113
+logsource:
+ category: process_creation
+ product: windows
+detection:
+ selection:
+ - Description: 'Execute processes remotely'
+ - Product: 'Sysinternals PsExec'
+ - OriginalFileName:
+ - 'psexec.exe'
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This is an excellent example where additional information (in the form
+of the executable&amp;rsquo;s &lt;code&gt;VersionInformation&lt;/code&gt; resource) gathered from the
+endpoint can help improve detection efficiency significantly. We will
+see below how adding more details to the collected data (perhaps
+beyond the event log itself) can vastly improve the quality and
+fidelity of detection rules.&lt;/p&gt;
+&lt;p&gt;As a second example, let&amp;rsquo;s explore the use of hashes in detection
+rules. Consider the &lt;a href="https://github.com/SigmaHQ/sigma/blob/6412c1a02bb60e631c6d341f6fc41d6f3c507f98/deprecated/windows/driver_load_win_vuln_lenovo_driver.yml" target="_blank" &gt;following
+rule&lt;/a&gt;
+
+excerpt which detects the loading of a known vulnerable driver:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-yaml"&gt;title: Vulnerable Lenovo Driver Load
+author: Florian Roth (Nextron Systems)
+logsource:
+ category: driver_load
+ product: windows
+detection:
+ selection_sysmon:
+ Hashes|contains:
+ - 'SHA256=F05B1EE9E2F6AB704B8919D5071BECBCE6F9D0F9D0BA32A460C41D5272134ABE'
+ - 'SHA1=B89A8EEF5AEAE806AF5BA212A8068845CAFDAB6F'
+ - 'MD5=B941C8364308990EE4CC6EADF7214E0F'
+ selection_hash:
+ - sha256: 'f05b1ee9e2f6ab704b8919d5071becbce6f9d0f9d0ba32a460c41d5272134abe'
+ - sha1: 'b89a8eef5aeae806af5ba212a8068845cafdab6f'
+ - md5: 'b941c8364308990ee4cc6eadf7214e0f'
+ condition: 1 of selection*
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Attackers often load vulnerable drivers so they can exploit them to
+gain access to kernel space. While it is well known that hashes are
+usually a weak signal (because the attacker can trivially change the
+file) in the case of loaded drivers, the driver must be signed to be
+successfully inserted into the kernel.&lt;/p&gt;
+&lt;p&gt;This had led to a misconception that driver files cannot be
+modified - otherwise their digital signature will be invalidated
+making them unable to be loaded into the kernel.&lt;/p&gt;
+&lt;p&gt;Unfortunately this is not true - a signed binary file
+can easily be modified in such as a way that it&amp;rsquo;s authenticode hash
+(which is signed) remains the same but its file hash changes. This is
+because a file hash covers the entire file, while the authenticode
+hash only covers selected regions of the binary. It is very easy to
+modify a binary in those regions which are not covered by the
+authenticode hash (usually some padding areas towards the end of the
+file) while retaining its authenticode hash.&lt;/p&gt;
+&lt;p&gt;An experienced detection engineer is aware of this shortcoming and
+would not use hashes directly in a Sigma rule. Instead &lt;a href="https://github.com/SigmaHQ/sigma/blob/6412c1a02bb60e631c6d341f6fc41d6f3c507f98/rules/windows/driver_load/driver_load_win_vuln_hevd_driver.yml" target="_blank" &gt;the following
+rule&lt;/a&gt;
+
+may be used:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-yaml"&gt;title: Vulnerable HackSys Extreme Vulnerable Driver Load
+author: Nasreddine Bencherchali (Nextron Systems)
+logsource:
+ product: windows
+ category: driver_load
+detection:
+ selection_name:
+ ImageLoaded|endswith: '\HEVD.sys'
+ selection_sysmon:
+ Hashes|contains:
+ - 'IMPHASH=f26d0b110873a1c7d8c4f08fbeab89c5' # Version 3.0
+ - 'IMPHASH=c46ea2e651fd5f7f716c8867c6d13594' # Version 3.0
+ selection_other:
+ Imphash:
+ - 'f26d0b110873a1c7d8c4f08fbeab89c5' # Version 3.0
+ - 'c46ea2e651fd5f7f716c8867c6d13594' # Version 3.0
+ condition: 1 of selection*
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This rule uses the &lt;code&gt;ImpHash&lt;/code&gt; which is a hash of the import table of
+the executable. Since the import table &lt;strong&gt;is&lt;/strong&gt; covered within the
+authenticode hash it is not possible to modify the binary in such a
+way that its digital signature remains valid while the &lt;code&gt;ImpHash&lt;/code&gt;
+changes.&lt;/p&gt;
+
+&lt;div class="mynotices note"&gt;
+ &lt;div heading=" Sysmon Hash Reporting "&gt;&lt;p&gt;Sadly Sysmon currently does not report the &lt;strong&gt;Authenticode Hash&lt;/strong&gt; of
+the binary which would be ideal as it can not be changed without
+invalidating the signature and covers all the important parts of the
+executable file. Currently Sysmon only reports file hashes (which are
+easily changed) and &lt;code&gt;ImpHash&lt;/code&gt; which can be easily changed as well
+but will invalidate signature.&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+
+&lt;h2 id="sigma-shortcomings"&gt;Sigma shortcomings&lt;/h2&gt;
+&lt;p&gt;While Sigma rules are supposed to be directly usable between detection
+stacks, by simply changing the compiler backend. However this is rarely the
+case. Because the Sigma standard is not well specified and lacks a
+common taxonomy it is difficult to use a rule designed to operate on
+the output of Sysmon event logs with a detection stack that only uses
+System logs or EDR logs.&lt;/p&gt;
+&lt;p&gt;For example, in the above example rule, we see that the rule requires
+the &lt;code&gt;Channel&lt;/code&gt; to match &lt;code&gt;Security&lt;/code&gt; and the &lt;code&gt;EventID&lt;/code&gt; to match &lt;code&gt;4688&lt;/code&gt; -
+clearly this rule can only apply on the security event log
+source. Replacing the log source with Sysmon provided events (which do
+technically provide the &lt;code&gt;process_creation&lt;/code&gt; log source) will simply
+never fire this rule!&lt;/p&gt;
+
+&lt;div class="mynotices note"&gt;
+ &lt;div heading=" Sanitizing Sigma Rules "&gt;&lt;p&gt;Because the &lt;code&gt;logsource&lt;/code&gt; section of the Sigma specification is not
+really specific enough, most rules have a further &lt;code&gt;detection&lt;/code&gt; clause
+to better define the precise log source. Although technically it is
+not always accurate to use that clause instead of the &lt;code&gt;logsource&lt;/code&gt;
+because the clause can be use in an arbitrary logical context, most of
+the time it is a filter so can be taken as a substitute for the real
+log source.&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+
+&lt;p&gt;The &lt;code&gt;logsource&lt;/code&gt; section is simply redundant at best and misleading at
+worst; a user can assume the rule will detect an attack when Sysmon
+logs are available but this is simply not the case. It would be better
+if Sigma rules were less ambiguous and simply contained precise log
+source information.&lt;/p&gt;
+&lt;p&gt;There is also little error checking due to a lack of precise
+taxonomy. A sigma rule can specify an unknown field that is simply not
+present in the event but there is no way to know that the rule will
+fail to match. Apart from the obvious problem of a rule specifying a
+mis-typed field, the field may not be collected at all from the
+endpoint.&lt;/p&gt;
+&lt;p&gt;The example above uses the &lt;code&gt;CommandLine&lt;/code&gt; field of the System event
+4688, however this is not always present! According to the &lt;a href="https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/manage/component-updates/command-line-process-auditing" target="_blank" &gt;Microsoft
+Documentation&lt;/a&gt;
+
+this field is only present sometimes:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;In order to see the additions to event ID 4688, you must enable the
+new policy setting: Include command line in process creation events.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Without knowledge of the endpoint policy in the specific deployment it
+is impossible to know if this rule will ever fire.&lt;/p&gt;
+&lt;p&gt;The following example rule is invalid and exists within &lt;a href="https://github.com/SigmaHQ/sigma/blob/6412c1a02bb60e631c6d341f6fc41d6f3c507f98/rules/windows/create_remote_thread/create_remote_thread_win_susp_uncommon_source_image.yml" target="_blank" &gt;the official
+Sigma repository&lt;/a&gt;
+:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;title: Remote Thread Creation By Uncommon Source Image
+logsource:
+ product: windows
+ category: create_remote_thread
+detection:
+ create_remote_thread:
+ EventID: 8
+ Channel: Microsoft-Windows-Sysmon/Operational
+ selection:
+ SourceImage|endswith:
+ - \bash.exe
+ - \cscript.exe
+ ...
+ - \wmic.exe
+ - \wscript.exe
+ filter_main_winlogon_1:
+ SourceImage: C:\Windows\System32\winlogon.exe
+ TargetImage:
+ - C:\Windows\System32\services.exe
+ - C:\Windows\System32\wininit.exe
+ - C:\Windows\System32\csrss.exe
+ filter_main_winlogon_2:
+ SourceImage: C:\Windows\System32\winlogon.exe
+ TargetParentImage: System
+ TargetParentProcessId: 4
+ ...
+ condition: create_remote_thread and (selection and not 1 of filter_main_* and
+ not 1 of filter_optional_*)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;At first sight this looks like a good rule - It targets Sysmon process
+execution logs (EventID 8) using a channel detection section (the
+&lt;code&gt;logsource&lt;/code&gt; section is as usual meaningless and should be
+ignored). However on very close examination we can see this rule
+references the fields &lt;code&gt;TargetParentProcessId&lt;/code&gt; and
+&lt;code&gt;TargetParentImage&lt;/code&gt;. Consulting the &lt;a href="https://learn.microsoft.com/en-us/sysinternals/downloads/sysmon#event-id-8-createremotethread" target="_blank" &gt;Sysmon
+Documentation&lt;/a&gt;
+
+we can see that there is no such field in the Sysmon output. Therefore
+this rule will generally not work for standard Sysmon installs.&lt;/p&gt;
+&lt;h2 id="on-endpoint-detection"&gt;On-endpoint detection&lt;/h2&gt;
+&lt;p&gt;The previously described model relies on forwarding events from the
+endpoint to a central location, where detection is actually made. This
+approach is challenging in practice:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;There is a trade-off between the volume and type of events relayed
+to the SIEM: On a typical Windows system there are hundreds of
+different event logs and event types. It is impossible to forward
+all events from the endpoint to the SIEM without increasing the
+network, storage and processing cost on the SIEM itself. A choice
+must be made of which events to forward.&lt;/li&gt;
+&lt;li&gt;Some of the normalization steps taken aim to reduce the total data
+transferred by removing some redundant fields from certain
+events. We have already seen before that &lt;code&gt;CommandLine&lt;/code&gt; for Event ID
+4688 is an optional field which needs to be deliberately enabled in
+practice.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Detection capabilities are slowly migrating from a purely centralized
+detection engine that processes forwarded events from the endpoint, to
+more endpoint-focused detection capabilities where the endpoint can
+autonomously enrich and respond to detection events. This allows the
+endpoint to triage the events by applying detection rules on the
+endpoint directly. Therefore only high value events are forwarded to
+the SIEM.&lt;/p&gt;
+&lt;h2 id="case-study-velociraptor"&gt;Case study: Velociraptor&lt;/h2&gt;
+&lt;p&gt;Velociraptor is a powerful endpoint incident response and triaging
+tool. At its core, Velociraptor uses the Velociraptor Query Languages
+(VQL) to perform flexible triaging on the endpoint.&lt;/p&gt;
+&lt;p&gt;Recently, Velociraptor gained a native &lt;code&gt;sigma()&lt;/code&gt; plugin, allowing the
+endpoint agent to directly evaluate Sigma rules. A VQL artifact is
+sent to the endpoint over the network containing several main
+sections:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;A set of &lt;code&gt;Sigma&lt;/code&gt; rules to evaluate&lt;/li&gt;
+&lt;li&gt;A list of &lt;code&gt;logsource&lt;/code&gt; queries to evaluate directly from the on disk
+event log files.&lt;/li&gt;
+&lt;li&gt;A mapping between Sigma rules and their corresponding event fields.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/blog/2024/2024-05-09-detection-engineering//blog/2024/2024-05-09-detection-engineering/velociraptor_sigma_flow_.svg" alt="Velociraptor Sigma Workflow"
+ class="inline"
+ height="525.4545454545455"
+ width="1082.383226927995" /&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="velociraptor_sigma_flow.svg"&gt;&lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ Velociraptor Sigma Workflow
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;h2 id="velociraptor-curated-rules"&gt;Velociraptor curated rules&lt;/h2&gt;
+&lt;p&gt;As described previously, it is difficult to directly use &lt;code&gt;Sigma&lt;/code&gt; rules
+without careful verification. The &lt;a href="https://sigma.velocidex.com/" target="_blank" &gt;Velociraptor Sigma
+Project&lt;/a&gt;
+ implements a Velociraptor
+artifact compiler which builds a VQL Artifact with a curated and
+verified set of rules.&lt;/p&gt;
+&lt;p&gt;The compiler verifies the following things&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;Many rules do not have accurate &lt;code&gt;logsource&lt;/code&gt; sections but instead
+specify the event log to be read in their first detection
+clause. Therefore the compiler overrides the &lt;code&gt;logsource&lt;/code&gt; with a
+more accurate source based on the &lt;code&gt;detection&lt;/code&gt; clause.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;The compiler compares the known set of event fields to the set of
+fields specified in the Sigma rule and flags any rules which refer
+to unknown fields.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Remove rules with non-standard or unsupported Sigma modifiers.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;The Velociraptor Sigma project curates a number of rule sets from
+sources such as:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="https://github.com/Yamato-Security/hayabusa-rules" target="_blank" &gt;Hayabusa&lt;/a&gt;
+ is a
+project to maintain Sigma rules for on endpoint analysis. Hayabusa is
+also a standalone engine to match the Sigma rules on the endpoint&amp;rsquo;s
+event logs (similar to Velociraptor&amp;rsquo;s &lt;code&gt;sigma()&lt;/code&gt; plugin)&lt;/li&gt;
+&lt;li&gt;&lt;a href="https://github.com/WithSecureLabs/chainsaw" target="_blank" &gt;ChainSaw&lt;/a&gt;
+ is a
+repository of Sigma rules with more of a focus on Linux systems.&lt;/li&gt;
+&lt;li&gt;&lt;a href="https://github.com/SigmaHQ/sigma/" target="_blank" &gt;SigmaHQ&lt;/a&gt;
+ is the official rule
+repository of the Sigma project. These rules are cleaned up,
+corrected and included into the Hayabusa project rule sets.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id="using-on-endpoint-detection-for-incident-response-triage"&gt;Using on-endpoint detection for Incident Response Triage&lt;/h2&gt;
+&lt;p&gt;Traditional SIEM based detection has to balance a number of tradeoffs
+like volume of logs collected, and number of false positives to reduce
+SIEM analyst&amp;rsquo;s churn.&lt;/p&gt;
+&lt;p&gt;However, Incident Response Triaging has a different set of
+requirements. Usually the incident responder needs to understand what
+happened on the system without really knowing what is normal. When
+evaluating Sigma rules in the incident response context, it is ok to
+have more false positives in favor of exposing more possibly
+suspicious activity.&lt;/p&gt;
+&lt;p&gt;In the following example I collect the &lt;code&gt;Velociraptor Hayabusa Ruleset&lt;/code&gt;
+artifact from the endpoint. The ruleset is extensive and rules are
+broken down by rule level and rule status. However in this case I want
+to try out all the rules - including very noisy ones because I want to
+get an overview of what might have happened on this endpoint.&lt;/p&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+
+
+
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/blog/2024/2024-05-09-detection-engineering//blog/2024/2024-05-09-detection-engineering/collecting_sigma_rules.png"
+ class="inline"
+ alt="Collecting the sigma artifact"
+ width="1661" height="604"&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="collecting_sigma_rules.png"&gt;
+ &lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ Collecting the sigma artifact
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;p&gt;The Hayabusa ruleset is extensive and might collect many false
+positives. In this case it took around 6 minutes to apply the rules on
+all the event log files and returned over 60k hits from about 4200
+rules.&lt;/p&gt;
+&lt;p&gt;Generally it is impractical to review every single hit, so we
+typically rely on Stacking the results. Within the Velociraptor GUI I
+will stack by the Rule&amp;rsquo;s &lt;code&gt;Title&lt;/code&gt; by clicking the sort icon at the top
+of the column&lt;/p&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+
+
+
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/blog/2024/2024-05-09-detection-engineering//blog/2024/2024-05-09-detection-engineering/stacking_a_column.png"
+ class="inline"
+ alt="Stacking rules by title"
+ width="1210" height="466"&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="stacking_a_column.png"&gt;
+ &lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ Stacking rules by title
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;p&gt;Once the column is sorted, a stacking icon will appear next to
+it. Clicking on that icon will display the stacking dialog view. This
+view shows the different unique values of the selected column and the
+total number of items of that value. In our case it shows the total
+number of times the specific rule has fired.&lt;/p&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+
+
+
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/blog/2024/2024-05-09-detection-engineering//blog/2024/2024-05-09-detection-engineering/viewing_column_stack.png"
+ class="inline"
+ alt="Viewing the stacking stats"
+ width="1222" height="562"&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="viewing_column_stack.png"&gt;
+ &lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ Viewing the stacking stats
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;p&gt;Clicking the icon in each row seeks the table immediately to view all
+the rows with the same &lt;code&gt;Title&lt;/code&gt; value. In this case I want to quickly
+view the hits from the &lt;code&gt;Windows Defender Threat Detected&lt;/code&gt; rule.&lt;/p&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+
+
+
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/blog/2024/2024-05-09-detection-engineering//blog/2024/2024-05-09-detection-engineering/viewing_common_rows.png"
+ class="inline"
+ alt="Viewing common rows"
+ width="1200" height="373"&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="viewing_common_rows.png"&gt;
+ &lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ Viewing common rows
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;p&gt;Using this technique I can quickly review the most interesting rules
+and their corresponding hits directly in the GUI without needing to
+recalculate anything. I can see what type of potentially suspicious
+activity has taken place on the endpoint and identify outliers
+quickly - despite the high false positive rate.&lt;/p&gt;
+&lt;h2 id="extending-the-capabilities-of-sigma-rules"&gt;Extending the capabilities of Sigma rules&lt;/h2&gt;
+&lt;p&gt;The previous section demonstrated how Sigma can be used for rapid
+triaging - The workflow is simple and effective, simply match a large
+number of rules against the on-host event log files to quickly
+identify and classify suspicious behavior.&lt;/p&gt;
+&lt;p&gt;This works much better than running the Sigma rules at the SIEM
+because the SIEM does not receive all the events on the
+endpoint. Having the ability to view more event sources can improve
+our detection ability without concern for scalability of the SIEM or
+increasing the amount of uploaded event traffic between the endpoint
+and the detection platform.&lt;/p&gt;
+&lt;p&gt;But can we go further? Why stop at event logs at all? Being on the
+endpoint directly actually provides access to a whole class of new data
+sources which are far beyond the simple event logs collected by the
+system. For example, we can directly examine registry keys, search for
+and parse files on the endpoint and much more.&lt;/p&gt;
+&lt;p&gt;Consider the &lt;a href="https://github.com/Velocidex/velociraptor-sigma-rules/blob/master/rules/vql/rclone.yml" target="_blank" &gt;following Velociraptor Sigma
+rule&lt;/a&gt;
+:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-yaml"&gt;title: Rclone
+logsource:
+ category: vql
+ product: windows
+
+detection:
+ selection:
+ &amp;quot;EventData|vql&amp;quot;:
+ x=&amp;gt;x.Files OR x.Registry
+
+ condition: selection
+
+vql: |
+ x=&amp;gt;dict(EventData=dict(
+ Files={
+ SELECT OSPath, Size, read_file(filename=OSPath, length=100) AS Data
+ FROM glob(globs=Path, accessor=&amp;quot;auto&amp;quot;)
+ },
+ Registry=to_dict(item={
+ SELECT Name AS _key, Data.value AS _value
+ FROM glob(globs=Key, accessor=&amp;quot;registry&amp;quot;)
+ })))
+
+vql_args:
+ Path: C:\Users\*\AppData\Roaming\rclone\rclone.conf
+ Key: HKEY_USERS\*\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Compatibility Assistant\Store\*rclone*
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This rule uses the special &lt;code&gt;logsource&lt;/code&gt; of type &lt;code&gt;vql&lt;/code&gt; which allows the
+event to be generated by running arbitrary VQL queries. In this case
+the query looks at both the presence of a registry key &lt;strong&gt;or&lt;/strong&gt; the
+presence of a configuration file on the endpoint. If either of these
+artifacts exist, the rule matches. Note that this rule goes above and
+beyond event logs to directly look at system configuration.&lt;/p&gt;
+&lt;p&gt;Velociraptor has traditionally been used to collect forensic artifacts
+for manual inspection. The ability to write detection rules against
+forensic artifacts allows us to quickly triage the endpoint without
+manually reviewing the forensic artifacts.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Forensic artifacts paint the picture of &lt;strong&gt;what happened on the
+endpoint&lt;/strong&gt; in as much detail as possible.&lt;/li&gt;
+&lt;li&gt;Sigma rules quickly flag the obvious things on the endpoint &lt;strong&gt;which
+are known to be bad&lt;/strong&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Therefore Forensic Sigma rules help to rapidly triage forensic
+findings, they do not replace those but work in tandem with the
+collection and analysis of forensic artifacts.&lt;/p&gt;
+&lt;h2 id="real-time-sigma-alerting"&gt;Real Time Sigma alerting&lt;/h2&gt;
+&lt;p&gt;Velociraptor&amp;rsquo;s VQL language is fully asynchronous and can watch for
+changes on the endpoint in real time. In Velociraptor&amp;rsquo;s terminology we
+can write &lt;a href="https://docs.velociraptor.app/docs/clients/monitoring/" &gt;Event Monitoring Queries&lt;/a&gt;
+.&lt;/p&gt;
+&lt;p&gt;Rather than parsing event log files as log sources for Sigma rule
+matching, we can tweak the VQL slightly to feed real time events into
+the Sigma rule matching. This allows us to apply Sigma rules on log
+sources in real time - in effect creating real time detection rules.&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;Velociraptor Hayabusa Live Detection&lt;/code&gt; option in the Curated
+import artifact will import an event monitoring version of the same
+curated Sigma rules. I can configure the artifact in the usual way.&lt;/p&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+
+
+
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/blog/2024/2024-05-09-detection-engineering//blog/2024/2024-05-09-detection-engineering/configuring_monitoring.png"
+ class="inline"
+ alt="Configuring the Monitoring Sigma detection artifact"
+ width="1251" height="611"&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="configuring_monitoring.png"&gt;
+ &lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ Configuring the Monitoring Sigma detection artifact
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;p&gt;This time the endpoint will forward detection events to the server in
+real time.&lt;/p&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+
+
+
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/blog/2024/2024-05-09-detection-engineering//blog/2024/2024-05-09-detection-engineering/live_sigma_detection.png"
+ class="inline"
+ alt="Live detection of Sigma rules"
+ width="2126" height="677"&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="live_sigma_detection.png"&gt;
+ &lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ Live detection of Sigma rules
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;p&gt;In the above I can see immediately suspicious use of &lt;code&gt;PSExec&lt;/code&gt; in real
+time!&lt;/p&gt;
+&lt;h2 id="conclusions"&gt;Conclusions&lt;/h2&gt;
+&lt;p&gt;This blog post explores the discipline of &lt;code&gt;Detection Engineering&lt;/code&gt;. Although this is not a new idea - people have been
+refining and analysing detection rules since intrusion detection
+systems were invented. By treating detection engineering as an art and
+a science and dedicating specialist roles to it within an
+organization, we can encourage and support this important role.&lt;/p&gt;
+&lt;p&gt;Detection Engineering is about maximizing detection efficacy given the
+limitations of existing detection systems. We discussed the common
+event collection feeding into a central SIEM architecture and how to
+write detection rules for this architecture.&lt;/p&gt;
+&lt;p&gt;The Sigma rule format was designed to abstract the specifics of the
+detection stack by presenting an abstract rule language. The hope was
+that rules can be easily interchanged between different detection
+stacks and so could be easily shared within the detection community.&lt;/p&gt;
+&lt;p&gt;However in practice the lack of rigor and well defined taxonomy in
+Sigma makes porting rules between detection stacks error prone and
+manual. Detection Engineers need to scrutinize rules to determine if
+they are likely to work within their own environment. We discuss some
+of the pitfalls to watch for when scrutinizing Sigma rules. We also
+discussed how detection engineers can assess if a Sigma rule is
+fragile and how it can be strengthened by utilizing more detailed log
+sources.&lt;/p&gt;
+&lt;p&gt;Next we explored how Sigma rules can be applied on the endpoint itself
+to access more log sources than are typically shipped to the SIEM. By
+evaluating the rules directly on the endpoint, it is possible to use
+Sigma rules for incident response triage purposes. I then demonstrate
+the process of triage via Sigma rules using Velociraptor&amp;rsquo;s built in
+Sigma support and the Hayabusa ruleset by using stacking to rapidly
+zero in on the suspicious activity.&lt;/p&gt;
+&lt;p&gt;How can we further improve detection efficacy? Why restrict ourselves
+to event logs? Velociraptor&amp;rsquo;s Sigma engine can use arbitrary VQL to
+generate events from sources like registry keys, paths and many other
+forensic artifacts. This allows detection rules to have unprecedented
+reach.&lt;/p&gt;
+&lt;p&gt;Finally we looked at utilizing Sigma rules with real time event queries
+allowing Velociraptor to alert in real time when Sigma rules match,
+instead of having to post process events from the event log file.&lt;/p&gt;
+&lt;p&gt;If you like to try Sigma in Velociraptor, take &lt;a href="https://github.com/Velocidex/velociraptor" target="_blank" &gt;Velociraptor for a
+spin&lt;/a&gt;
+! It is available on
+GitHub under an open source license. As always please file issues on
+the bug tracker or ask questions on our mailing list
+&lt;a href="mailto:velociraptor-discuss@googlegroups.com" &gt;velociraptor-discuss@googlegroups.com&lt;/a&gt;
+
+. You can also chat with us directly on discord
+&lt;a href="https://www.velocidex.com/discord" target="_blank" &gt;https://www.velocidex.com/discord&lt;/a&gt;
+
+.&lt;/p&gt;</description></item><item><title>Developing Sigma Rules in Velociraptor</title><link>https://docs.velociraptor.app/blog/2025/2025-02-02-sigma/</link><pubDate>Sun, 02 Feb 2025 00:00:00 +0000</pubDate><guid>https://docs.velociraptor.app/blog/2025/2025-02-02-sigma/</guid><description>
+&lt;div class="mynotices note"&gt;
+ &lt;div heading=" Upcoming release 0.74 "&gt;&lt;p&gt;This post discusses some features that will be available in the
+upcoming 0.74 release. Although the general methodology is available
+in earlier releases, some of the GUI features are new.&lt;/p&gt;
+&lt;p&gt;If you want to play with these new features and provide feedback,
+please feel free to &lt;a href="https://github.com/Velocidex/velociraptor/tree/master?tab=readme-ov-file#getting-the-latest-version" target="_blank" &gt;download the latest version&lt;/a&gt;
+ for testing.&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+
+&lt;p&gt;Recent versions of Velociraptor have incorporated a powerful Sigma
+engine built right into Velociraptor. This blog post details how you
+can write custom Sigma rules to leverage Velociraptor&amp;rsquo;s Sigma
+capabilities.&lt;/p&gt;
+&lt;h2 id="what-is-sigma"&gt;What is Sigma?&lt;/h2&gt;
+&lt;p&gt;You can read more about Sigma in our &lt;a href="https://docs.velociraptor.app/blog/2024/2024-05-09-detection-engineering/" &gt;Detection Engineering&lt;/a&gt;
+ blog post. Since
+that post, Sigma has been adopted as the standard detection mechanism
+within Velociraptor.&lt;/p&gt;
+&lt;p&gt;To begin, let&amp;rsquo;s define some terms. In Velociraptor an &lt;code&gt;Event&lt;/code&gt; is
+simply a key/value set (AKA a &lt;code&gt;Dictionary&lt;/code&gt; or &lt;code&gt;Row&lt;/code&gt;). The &lt;code&gt;Event&lt;/code&gt; can
+be produced from a variety of sources as we examine below. The
+producer of a particular type of events is called a &lt;code&gt;Log Source&lt;/code&gt;,
+which in Velociraptor is simply a VQL query, emitting rows as Events.&lt;/p&gt;
+&lt;p&gt;Sigma is a standard for writing &lt;code&gt;Detection Rules&lt;/code&gt;. In this context, a
+detection rule is a rule that processes some &lt;code&gt;Events&lt;/code&gt; to produce a
+&lt;code&gt;Detection&lt;/code&gt; - i.e. a binary classification of whether the event is
+noteworthy for further inspection. You can think of a Sigma rule as a
+filter - events are fed into the rule and the rule filter events which
+do not match and allows through those events that match the rule.&lt;/p&gt;
+&lt;p&gt;This process is illustrated in the diagram below:&lt;/p&gt;
+&lt;p&gt;
+
+
+
+
+
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/blog/2025/2025-02-02-sigma/../../2024/2024-05-09-detection-engineering/velociraptor_sigma_flow.svg"
+ class="inline"
+ alt="Velociraptor Sigma Workflow" /&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ Velociraptor Sigma Workflow
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;Sigma Rules&lt;/code&gt; are pushed to the endpoint into the &lt;code&gt;sigma()&lt;/code&gt;
+plugin. Events are generated via &lt;code&gt;Log Sources&lt;/code&gt; on the client and any
+matching events are forwarded to the server.&lt;/p&gt;
+&lt;h2 id="anatomy-of-a-sigma-rule"&gt;Anatomy of a Sigma Rule&lt;/h2&gt;
+&lt;p&gt;An example Sigma rule can be seen below.&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-yaml"&gt;title: PSExec Lateral Movement
+logsource:
+ product: windows
+ service: system
+detection:
+ selection:
+ Channel: System
+ EventID: 7045
+ selection_PSEXESVC_in_service:
+ Service: PSEXESVC
+ selection_PSEXESVC_in_path:
+ ImagePath|contains: PSEXESVC
+ condition: selection and (selection_PSEXESVC_in_service or selection_PSEXESVC_in_path)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This rule has several sections:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;The &lt;code&gt;logsource&lt;/code&gt; section specifies an event source to match the rule
+against.&lt;/li&gt;
+&lt;li&gt;The &lt;code&gt;detection&lt;/code&gt; clause contains a list of &lt;code&gt;selections&lt;/code&gt; joined into
+a logical &lt;code&gt;condition&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;Selections refer to abstract fields that map to actual fields
+within the event. These mappings are called &lt;code&gt;Field Mappings&lt;/code&gt;.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;The Sigma standard does not define what log sources are actually
+available in any specific environment, nor does it define the specific
+structure of each event. Similarly the &lt;code&gt;Field Mappings&lt;/code&gt; are not
+defined by the standard.&lt;/p&gt;
+&lt;p&gt;The executing environment maps the rule&amp;rsquo;s &lt;code&gt;logsource&lt;/code&gt; section with a
+particular VQL query that generates events. The executing environment
+evaluating the rule also defines a set of &lt;code&gt;Field Mappings&lt;/code&gt; which allow
+selections to address specific fields within the event.&lt;/p&gt;
+&lt;h2 id="sigma-models"&gt;Sigma Models&lt;/h2&gt;
+&lt;p&gt;Because Sigma does not specify exactly how to interpret the rule, we
+need something else to be able to properly evaluate a Sigma rule:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Specific &lt;code&gt;Log Sources&lt;/code&gt; need to be declared - rules can only access
+these pre-defined &lt;code&gt;Log Sources&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;A set of &lt;code&gt;Field Mappings&lt;/code&gt; must be defined to map between abstract
+field names to concrete fields within the event object that is
+returned by the log source.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Therefore a rule can only operate within a specific environment and it
+is generally not guaranteed to evaluate the rule in a different
+environment.&lt;/p&gt;
+&lt;p&gt;In Velociraptor, we call the execution environment the &lt;code&gt;Sigma Model&lt;/code&gt;. The Model defines a specific set of &lt;code&gt;Log Sources&lt;/code&gt; and &lt;code&gt;Field Mappings&lt;/code&gt; designed to operate in concert with Sigma Rules in a
+specific context.&lt;/p&gt;
+&lt;p&gt;Sigma Rules can only be safely interpreted within the context of a
+specific &lt;code&gt;Sigma Model&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;For example, if an organization is running a particular SIEM product
+and use Sigma rules for detection, there is no guarantee that those
+same rules will work in another organization running a different SIEM
+product. We refer to the &lt;code&gt;Sigma Model&lt;/code&gt; specific to each environment -
+for example the &lt;code&gt;Elastic Common Schema Model&lt;/code&gt; allows writing Sigma
+rules against those logs collected by the &lt;code&gt;Elastic SIEM&lt;/code&gt; and their
+respective schema (which is well defined).&lt;/p&gt;
+&lt;p&gt;One of the main criticisms of Sigma is that it is not well defined
+(unlike the &lt;code&gt;Elastic Common Schema&lt;/code&gt; for example), making
+inter-operation fairly error prone and difficult.&lt;/p&gt;
+&lt;p&gt;In Velociraptor, we avoid this issue by defining a &lt;code&gt;Sigma Model&lt;/code&gt;
+precisely and only evaluating rules within that well defined model. We
+end up with various &amp;ldquo;flavors&amp;rdquo; of Sigma rules.&lt;/p&gt;
+&lt;p&gt;Velociraptor separates the implementation of the &lt;code&gt;Sigma Model&lt;/code&gt; from
+the maintainance of the &lt;code&gt;Sigma Rules&lt;/code&gt; themselves. This makes it easier
+to maintain a set of rules separately from the model itself.&lt;/p&gt;
+&lt;p&gt;For example, the &lt;a href="https://sigma.velocidex.com/" target="_blank" &gt;Velociraptor Sigma Project&lt;/a&gt;
+ maintains
+&lt;code&gt;Velociraptor.Hayabusa.Ruleset&lt;/code&gt; artifact which is a port of the Sigma
+rules maintained by the Hayabusa project to the &lt;code&gt;Windows.Sigma.Base&lt;/code&gt;
+triage model.&lt;/p&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/blog/2025/2025-02-02-sigma//blog/2025/2025-02-02-sigma/inheritance_.svg" alt="Curated sets of Sigma Rules can be maintained through artifact delegation"
+ class="inline"
+ height="692"
+ width="1524.9455676516327" /&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="inheritance.svg"&gt;&lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ Curated sets of Sigma Rules can be maintained through artifact delegation
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;p&gt;This allows users to easily leverage existing model to write and
+maintain their own custom set of rules.&lt;/p&gt;
+&lt;h2 id="writing-custom-sigma-rules"&gt;Writing custom Sigma Rules&lt;/h2&gt;
+&lt;p&gt;While it is common to use curated rule sets for triage, this article
+explains the process of developing and testing custom rules.&lt;/p&gt;
+&lt;p&gt;Below is a worked example of applying the &lt;code&gt;Log Triage Model&lt;/code&gt; to
+develop a Sigma Rule to detect misuse of the &lt;code&gt;BITS&lt;/code&gt; service.&lt;/p&gt;
+&lt;h3 id="the-windowssigmabase-log-triage-model"&gt;The Windows.Sigma.Base Log Triage Model&lt;/h3&gt;
+&lt;p&gt;The &lt;a href="https://sigma.velocidex.com/docs/models/windows_base/" target="_blank" &gt;Windows.Sigma.Base
+Model&lt;/a&gt;
+, is used
+for triaging event log files on Windows:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;The model defines log sources that access static Event Log Files on
+a Windows System.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;The model defines a set of &lt;code&gt;Field Mappings&lt;/code&gt; to access common fields
+within the event log messages, as extracted by the &lt;code&gt;Log Sources&lt;/code&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;This model is useful for &lt;a href="https://docs.velociraptor.app/training/playbooks/triage-logs/" &gt;rapidly triaging event logs&lt;/a&gt;
+ on an endpoint in order to
+quickly surface relevant events. You can view the details of this
+Sigma Model on the Velociraptor Sigma project&amp;rsquo;s pages&lt;/p&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/blog/2025/2025-02-02-sigma//blog/2025/2025-02-02-sigma/windows_base_.svg" alt="Windows Base Sigma Model triages event logs "
+ class="inline"
+ height="793.5862068965519"
+ width="1083.2227488151661" /&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="windows_base.svg"&gt;&lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ Windows Base Sigma Model triages event logs 
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;p&gt;The reference page helps us write the Sigma rules by documenting
+exactly which log sources are available in this model and giving some
+example events produced by these models.&lt;/p&gt;
+
+&lt;div class="mynotices note"&gt;
+ &lt;div heading=" Sigma rules are generally not portable across operating environments! "&gt;&lt;p&gt;Although Sigma is in theory an interchange format between different
+SIEMs products, in practice it is difficult to port rules between
+different evaluation engines (Or different Sigma Models):&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;There is no guarantee that the rule&amp;rsquo;s &lt;code&gt;Log Source&lt;/code&gt; is actually
+available in a different model.&lt;/li&gt;
+&lt;li&gt;Fields may not exist in other models.&lt;/li&gt;
+&lt;li&gt;There may not be field mappings for the same field in different
+models, or the mappings may clash with other fields.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;To achieve portability between SIEM systems we need to develop a Sigma
+Model to fully emulate another environment to be able to directly
+consume the same rules.&lt;/p&gt;
+&lt;p&gt;In Velociraptor we are less concerned with portability and more
+concerned with having Sigma rules as a way of implementing an easy to
+use and powerful detection engine. Velociraptor defines a range of
+different &lt;code&gt;Sigma Models&lt;/code&gt;, some are defined with the intention to
+directly consume a large set of rules from another project (For example
+the
+&lt;a href="https://sigma.velocidex.com/docs/models/windows_base/" target="_blank" &gt;Windows.Sigma.Base&lt;/a&gt;
+
+model was written to consume Hayabusa rules for the
+&lt;a href="https://sigma.velocidex.com/docs/artifacts/velociraptor_hayabusa_ruleset/" target="_blank" &gt;Windows.Hayabusa.Ruleset&lt;/a&gt;
+
+artifact), while others are defined to make powerful telemetry events
+available to rule writers (For example the
+&lt;a href="https://sigma.velocidex.com/docs/models/windows_etw_base/" target="_blank" &gt;Windows.ETW.Base&lt;/a&gt;
+
+model exposes ETW sources not usually available in centralized server
+based SIEM architectures).&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+
+&lt;h2 id="developing-custom-detection-rules"&gt;Developing custom detection rules.&lt;/h2&gt;
+&lt;p&gt;One of the challenges with rapidly developing detection rules is
+iterating through the process of generating events, inspecting the
+produced events, updating the rules and applying the rule on the event
+sources.&lt;/p&gt;
+&lt;p&gt;A simple approach to developing detection rules is to:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Find an exploit or specific tool to emulate the specific attack on
+the target platform. For example, one may use
+&lt;a href="https://www.metasploit.com/" target="_blank" &gt;Metasploit&lt;/a&gt;
+ or &lt;a href="https://github.com/redcanaryco/atomic-red-team" target="_blank" &gt;Atomic Red
+Team&lt;/a&gt;
+ to emulate a
+particular attack on the target platform (e.g. Exchange Server).&lt;/li&gt;
+&lt;li&gt;While the attack is performed, ensure sensors are enabled and
+forwading events to the target SIEM.&lt;/li&gt;
+&lt;li&gt;Implement the detection rules on the SIEM&lt;/li&gt;
+&lt;li&gt;Examine if the rule triggers. If the rule does not trigger go to
+step 1 and try to figure out why it does not trigger.&lt;/li&gt;
+&lt;li&gt;Finally try to figure out how to tweak the original exploit to
+ensure the rule may trigger in slight variations of the attack
+(e.g. slightly different command line). This step is essential to
+make the detection robust.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;The more complicated the detection pipeline (with event forwarders,
+data lakes, matching engines etc) the more complicated it is to
+iterate through the above steps.&lt;/p&gt;
+&lt;p&gt;Testing the rules in future also becomes impractical as it requires
+setting up a large infrastructure footprint to be able to successful
+run the exploit. If the original vulnerability is patched, running the
+exploit may not work and an older unpatched system is required.&lt;/p&gt;
+&lt;p&gt;To develop detection rules effectively we must separate the event
+generation step and the event detection step. To generate the raw
+events, we must run the exploit on a real system. However to test
+detection rules, we can simply replay the events into the detection
+engine, testing detection rules in isolation.&lt;/p&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/blog/2025/2025-02-02-sigma//blog/2025/2025-02-02-sigma/detection_workflow_.svg" alt="Detection rule development workflow"
+ class="inline"
+ height="479.5"
+ width="1338" /&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="detection_workflow.svg"&gt;&lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ Detection rule development workflow
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;Sigma Model&lt;/code&gt; already supports this kind of workflow. The model
+defines a set of &lt;code&gt;Log Sources&lt;/code&gt; which emit raw events. We can then
+replay these events back into the detection engine to rapidly develop
+the &lt;code&gt;Sigma Rule&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;The workflow is illustrated above:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;Recording Mode&lt;/code&gt;: We start off by recording the relevant events on
+the detected platform. We use the relevant Sigma Model&amp;rsquo;s Log Source
+to record relevant events into JSON files. This step must
+necessarily be run on the target platform as it records real life
+behavior.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;Replay/Test Mode&lt;/code&gt;: In this mode we can replay the JSON files
+collected previously back into the same &lt;code&gt;Sigma Engine&lt;/code&gt;. Except that
+this time, instead of using the real log source, we substitute a
+mock log source which replays events back from JSON files. This
+step can be done on any platform since the events are
+isolated.&lt;/p&gt;
+&lt;p&gt;In this mode we are able to quickly iterate over the same events
+and even enable debugging mode which assists in figuring out why an
+event would match a specific condition.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;Detection Mode&lt;/code&gt;: Once the rules are validated we can deploy them
+in real life and ensure they match on the real log sources. In
+production the proper log sources are used to feed live events from
+the system to the &lt;code&gt;Sigma Engine&lt;/code&gt; with the validated &lt;code&gt;Sigma Rules&lt;/code&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id="example-workflow-detecting-bits-client-activity"&gt;Example Workflow: Detecting BITS Client Activity&lt;/h3&gt;
+&lt;p&gt;To illustrate the process I will develop a Sigma rule to detect suspicious BITS client activity. BITS is a windows service which is often misused to download malware onto the endpoint.&lt;/p&gt;
+&lt;p&gt;The service may be abused using the &lt;code&gt;bitsadmin&lt;/code&gt; command:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;bitsadmin.exe /transfer /download /priority foreground https://www.google.com c:\Users\Administrator\test.ps1
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;To start off we will use the &lt;code&gt;Windows.Sigma.Base&lt;/code&gt; model, which
+inspects the windows event log files. We have already seen the BITS
+client log source in this model previously and know that the events
+are read from
+&lt;code&gt;C:\Windows\System32\WinEvt\Logs\Microsoft-Windows-Bits-Client%4Operational.evtx&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s take a look at the raw events in this file using the event
+viewer.&lt;/p&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/blog/2025/2025-02-02-sigma//blog/2025/2025-02-02-sigma/bits_event_log_.svg" alt="Viewing the BITS Event Logs"
+ class="inline"
+ height="612.5124716553288"
+ width="924.1453287197232" /&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="bits_event_log.svg"&gt;&lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ Viewing the BITS Event Logs
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;p&gt;The relevant event I am interested in is event ID 59 - which tells me
+the URL where the file was downloaded from. Since the service is used
+legitimately by the system there are many URLs mentioned which are not
+suspicious. My rule will need to exclude those URLs to only
+concentrate on the suspicious uses.&lt;/p&gt;
+&lt;h3 id="step-1-capture-test-events"&gt;Step 1: Capture Test Events&lt;/h3&gt;
+&lt;p&gt;My first step is to collect relevant events from the relevant &lt;code&gt;Sigma Model&lt;/code&gt;. I do this by collecting the
+&lt;code&gt;Windows.Sigma.Base.CaptureTestSet&lt;/code&gt; artifact. This companion artifact
+to the &lt;code&gt;Windows.Sigma.Base&lt;/code&gt; artifact uses the same log sources but
+simply records the raw events.&lt;/p&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/blog/2025/2025-02-02-sigma//blog/2025/2025-02-02-sigma/capturing_events_.svg" alt="Capturing Raw Events from the test system"
+ class="inline"
+ height="771.2285276073619"
+ width="1054.4266103484688" /&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="capturing_events.svg"&gt;&lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ Capturing Raw Events from the test system
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;p&gt;In this case I will only collect events from the &lt;code&gt;bits_client&lt;/code&gt; log
+source and only those events that mention URLs. I can time box the
+events to only collect recent events if I want but in this case I will
+collect from all available time to get a good selection of URLs used.&lt;/p&gt;
+&lt;p&gt;Once the collection is done (I can collect this remotely from the
+server), I have the raw events available. I can download the raw JSON
+from the GUI table view, after possibly filtering them further using
+the GUI.&lt;/p&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/blog/2025/2025-02-02-sigma//blog/2025/2025-02-02-sigma/raw_events_.svg" alt="The Raw Events from the Log Source"
+ class="inline"
+ height="697"
+ width="1439.0393013100436" /&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="raw_events.svg"&gt;&lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ The Raw Events from the Log Source
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;p&gt;I can pre-filter these events in the notebook to see what is
+representative of normal behavior and what is unusual. In this case, I
+identify that event ID 59 is associates with transfer job started for
+example &lt;code&gt;BITS started the Chrome Component Updater transfer job that is associated with the XXX&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;I will extract the domain name part from the URL and group by it so I
+can see all unique URLs collected.&lt;/p&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/blog/2025/2025-02-02-sigma//blog/2025/2025-02-02-sigma/narrowing_events_.svg" alt="Narrowing down events of interest using stacking and filtering"
+ class="inline"
+ height="434"
+ width="1460" /&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="narrowing_events.svg"&gt;&lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ Narrowing down events of interest using stacking and filtering
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;p&gt;In practice I can collect a more representative set of these events by
+collecting the artifact using a hunt (which can include the entire
+deployment). This will give me a more representative set of download
+URLs found in the environment so I can reduce false positives.&lt;/p&gt;
+&lt;h3 id="step-2-developing-rules-with-sigma-studio"&gt;Step 2: Developing rules with Sigma Studio&lt;/h3&gt;
+&lt;p&gt;To effectively develop rules, one must be able to iterate quickly by
+applying the rules against the collected events. To assist with this
+process, I will use the &lt;code&gt;Sigma Studio&lt;/code&gt; notebook template.&lt;/p&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/blog/2025/2025-02-02-sigma//blog/2025/2025-02-02-sigma/sigma_studio_1_.svg" alt="Creating a new Sigma Studio Notebook"
+ class="inline"
+ height="737.1818903891976"
+ width="1001.4478260869564" /&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="sigma_studio_1.svg"&gt;&lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ Creating a new Sigma Studio Notebook
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;p&gt;Velociraptor notebooks are interactive documents allowing users to
+dissect and analyse data using VQL. The &lt;code&gt;Sigma Studio&lt;/code&gt; template is
+specifically designed to make manipulation of Sigma Rules simpler.&lt;/p&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/blog/2025/2025-02-02-sigma//blog/2025/2025-02-02-sigma/sigma_studio_2_.svg" alt="The Sigma Studio Notebook assists in writing rules"
+ class="inline"
+ height="783.3632781717887"
+ width="1162.3443396226412" /&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="sigma_studio_2.svg"&gt;&lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ The Sigma Studio Notebook assists in writing rules
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;p&gt;The notebook has a number of important sections:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;The Sigma Editor button launches a dedicated editor to edit Sigma rules.&lt;/li&gt;
+&lt;li&gt;By clicking the &lt;code&gt;Notebook Uploads&lt;/code&gt; button you can upload the test
+events described in Step 1 above.&lt;/li&gt;
+&lt;li&gt;Once these raw events are uploaded to the cell, the bottom table
+will render the raw events, while the top table renders only those
+events matching the rules.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;I will start off by uploading the test events I collected previously.&lt;/p&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/blog/2025/2025-02-02-sigma//blog/2025/2025-02-02-sigma/sigma_studio_3_.svg" alt="Uploading test events"
+ class="inline"
+ height="488"
+ width="1207.3507014028055" /&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="sigma_studio_3.svg"&gt;&lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ Uploading test events
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;h4 id="editing-the-sigma-rules"&gt;Editing the Sigma Rules&lt;/h4&gt;
+&lt;p&gt;I will launch the &lt;code&gt;Sigma Editor&lt;/code&gt; by clicking on the button.&lt;/p&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/blog/2025/2025-02-02-sigma//blog/2025/2025-02-02-sigma/sigma_studio_4_.svg" alt="Writing the Sigma rule"
+ class="inline"
+ height="763.1516155758078"
+ width="1124.6600985221676" /&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="sigma_studio_4.svg"&gt;&lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ Writing the Sigma rule
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;p&gt;Within the editor I select the &lt;code&gt;Windows.Sigma.Base&lt;/code&gt; model. Next I
+select the &lt;code&gt;bits-client&lt;/code&gt; log source from the pull down. The editor
+will show me available log sources within this model.&lt;/p&gt;
+&lt;p&gt;The editor displays so documentation about the log source and presents
+a syntax highlighted Sigma text editor populated with a template
+rule. For those not familiar with Sigma, comments help to guide the
+user into filling in the desired fields.&lt;/p&gt;
+&lt;p&gt;For this detection, I will search for event ID 59, which reveal the
+URL associated with the bits job. However, I will suppress jobs from
+URLs accessing specific domains.&lt;/p&gt;
+&lt;p&gt;Pressing &lt;code&gt;?&lt;/code&gt; will suggest any of the field mappings defined within
+the model.&lt;/p&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/blog/2025/2025-02-02-sigma//blog/2025/2025-02-02-sigma/sigma_studio_5_.svg" alt="Auto-Completion of Field Mappings"
+ class="inline"
+ height="378"
+ width="1460" /&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="sigma_studio_5.svg"&gt;&lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ Auto-Completion of Field Mappings
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;p&gt;In this case I know that &lt;code&gt;EventID&lt;/code&gt; is a field mapping to extract the
+log message&amp;rsquo;s Event ID, and the &lt;code&gt;Url&lt;/code&gt; field mapping will extract the
+&lt;code&gt;url&lt;/code&gt; field from the &lt;code&gt;EventData&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;The rule I came up with is:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-yaml"&gt;title: Suspicious BITs Jobs
+logsource:
+ product: windows
+ service: bits-client
+
+detection:
+ select_event:
+ EventID: 59
+
+ allowed_urls:
+ Url|re:
+ - edgedl.me.gvt1.com
+
+ condition: select_event and not allowed_urls
+
+details: &amp;quot;Bits Job %JobTitle% accessed URL %Url%&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;The rule consumes events from the &lt;code&gt;windows/bits-client&lt;/code&gt; log source
+(which in this model ends up reading the events from the
+&lt;code&gt;C:\Windows\System32\WinEvt\Logs\Microsoft-Windows-Bits-Client%4Operational.evtx&lt;/code&gt;
+log file.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;There are two selections:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;If the event id equal to 59&lt;/li&gt;
+&lt;li&gt;Does the URL match one of the specified regular expressions&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Finally the rule will match only if the first selection is true and
+the second selection is false (i.e. only event 59 which do not match
+one of the allowed urls).&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;The &lt;code&gt;details&lt;/code&gt; field specified a message that will be emitted when
+the rule matches. This allows us to specify a simple human readable
+alert to explain what the rule has detected. You can add field
+interpolations enclosed in &lt;code&gt;%&lt;/code&gt; to the message.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;When I save the rule, the notebook will be refreshed and recalculated
+using the new rule applied on the sample events I uploaded previously.&lt;/p&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/blog/2025/2025-02-02-sigma//blog/2025/2025-02-02-sigma/sigma_studio_6_.svg" alt="Applying the rule to the test set"
+ class="inline"
+ height="777"
+ width="1595.2601156069363" /&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="sigma_studio_6.svg"&gt;&lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ Applying the rule to the test set
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;p&gt;You can see a detailed description of why the rule matched. For rules
+with many selections and complex condition clauses this allows us to
+inspect each condition in isolation.&lt;/p&gt;
+&lt;h4 id="unavailable-field-mappings"&gt;Unavailable Field Mappings&lt;/h4&gt;
+&lt;p&gt;Sigma strictly requires field mappings to already exist in the model
+so they can be referenced. This makes it impossible to access fields
+in the event which have not previously been defined within the model.&lt;/p&gt;
+&lt;p&gt;To solve this problem, Velociraptor&amp;rsquo;s Sigma implementation allows, as
+a special case, to use field names with &lt;code&gt;.&lt;/code&gt; separating fields within
+the event. The above rule can be written without any field mappings
+as:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-yaml"&gt;title: Suspicious BITs Jobs
+logsource:
+ product: windows
+ service: bits-client
+
+detection:
+ select_event:
+ System.EventID.Value: 59
+
+ allowed_urls:
+ EventData.url|re:
+ - edgedl.me.gvt1.com
+
+ condition: select_event and not allowed_urls
+
+details: &amp;quot;Bits Job %EventData.name% accessed URL %EventData.url%&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;It is better to use model field mappings if they are already defined
+in the model because this makes its easier to port the rule to other
+models, however if one is not available you can fall back to this
+method of referencing fields directly.&lt;/p&gt;
+&lt;h3 id="step-3-test-the-rule-on-the-fleet"&gt;Step 3: Test the rule on the fleet.&lt;/h3&gt;
+&lt;p&gt;Now that we have a working Sigma rule we can apply this rule to the
+wider fleet to assess the rule&amp;rsquo;s false positive rate. As we apply the
+rule more widely we are likely to discover more legitimate uses of the
+BITS service and so we might need to add more URLs to the allow list.&lt;/p&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/blog/2025/2025-02-02-sigma//blog/2025/2025-02-02-sigma/testing_sigma_rules_.svg" alt="Creating a hunt to test the rule widely"
+ class="inline"
+ height="825.2395833333335"
+ width="1512.3359073359075" /&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="testing_sigma_rules.svg"&gt;&lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ Creating a hunt to test the rule widely
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/blog/2025/2025-02-02-sigma//blog/2025/2025-02-02-sigma/sigma_hunt_.svg" alt="Viewing results from Sigma Hunt"
+ class="inline"
+ height="586"
+ width="1483.2675044883304" /&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="sigma_hunt.svg"&gt;&lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ Viewing results from Sigma Hunt
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;h2 id="conclusions"&gt;Conclusions&lt;/h2&gt;
+&lt;p&gt;This Blog post explains the rational behind separating Sigma Rules
+into &lt;code&gt;Sigma Models&lt;/code&gt;. Velociraptor&amp;rsquo;s Sigma implementation allows for
+the creation of many specialized &lt;code&gt;Sigma Models&lt;/code&gt; which can operate in
+completely different environments.&lt;/p&gt;
+&lt;p&gt;For example, the &lt;code&gt;Windows.Sigma.Base&lt;/code&gt; model operates on parsing of
+event log files on the endpoint (triaging existing logs). On the other
+hand the &lt;code&gt;Windows.Sigma.BaseEvents&lt;/code&gt; model watches log files in real
+time to generate Sigma based events on current activity.&lt;/p&gt;
+&lt;p&gt;Similarly the &lt;code&gt;Linux.Sigma.EBPF&lt;/code&gt; model surfaces real time telemetry
+collected from EBPF sensors on Linux and makes these available to
+Sigma rule authors. This flexibility allows applying Sigma in many
+different scenarios, making it a power technique.&lt;/p&gt;
+&lt;p&gt;The main difficulty with writing Sigma rules is being able to iterate
+through generating event data, applying the Sigma Rule, debugging the
+rule and testing the detection at scale.&lt;/p&gt;
+&lt;p&gt;This post describes a new Sigma rule writing workflow that allows to
+rapidly iterate through the detection process, then apply the test to
+the entire fleet quickly to test false positive rates.&lt;/p&gt;</description></item><item><title>Sigma In Velociraptor</title><link>https://docs.velociraptor.app/blog/2023/2023-11-15-sigma_in_velociraptor/</link><pubDate>Sun, 15 Oct 2023 00:14:44 +1000</pubDate><guid>https://docs.velociraptor.app/blog/2023/2023-11-15-sigma_in_velociraptor/</guid><description>&lt;p&gt;This page discusses how Sigma is implemented and used within
+Velociraptor.&lt;/p&gt;
+&lt;h2 id="what-is-sigma"&gt;What is Sigma?&lt;/h2&gt;
+&lt;p&gt;Detection engineering is an evolving field with many practitioners
+developing and evolving signatures rapidly, as new threats emerge and
+better detection capabilities are introduced. However, much of the
+time the specifics of how to write detection rules depend on the
+underlying software and detection engine. For example, a particular
+detection rule written to work on Elastic based SIEM is not easy to
+port to a different platform (e.g. Splunk).&lt;/p&gt;
+&lt;p&gt;Sigma is an attempt to abstract away the specifics of the detection
+engine into a generic high level signature description. The &lt;code&gt;Sigma Rule&lt;/code&gt;, theoretically, does not target a specific detection product,
+but instead described high level concepts like process execution,
+registry access etc.&lt;/p&gt;
+&lt;p&gt;By providing a high level taxonomy for practitioners, detection rules
+can be exchanged with others in the community, even people using
+different backend detection engines.&lt;/p&gt;
+&lt;p&gt;Traditionally, a Sigma rule is not directly usable by many backend
+detection engines. Instead a &lt;code&gt;Sigma Compiler&lt;/code&gt; transforms the Sigma
+rule to a specific query in the backend&amp;rsquo;s native query language. For
+example a Sigma rule may be &amp;ldquo;compiled&amp;rdquo; into an Elastic Query, or
+Splunk Query as needed.&lt;/p&gt;
+&lt;p&gt;While the full details of Sigma are described in the Main Sigma page
+&lt;a href="https://sigmahq.io/" target="_blank" &gt;https://sigmahq.io/&lt;/a&gt;
+ , in this post we will discuss as a high level
+those aspects of Sigma directly relevant to the Velociraptor
+implementation.&lt;/p&gt;
+&lt;h2 id="how-is-sigma-used-traditionally"&gt;How is Sigma used traditionally?&lt;/h2&gt;
+&lt;p&gt;Sigma was designed to write detection rules for traditional SIEM based
+detection engines.&lt;/p&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+
+
+
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/blog/2023/2023-11-15-sigma_in_velociraptor//blog/2023/2023-11-15-sigma_in_velociraptor/traditional_siem.png"
+ class="inline"
+ alt="Traditional SIEM workflow"
+ width="1330" height="490"&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="traditional_siem.png"&gt;
+ &lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ Traditional SIEM workflow
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;p&gt;Such a system is shown above:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Log Sources like event logs are collected by an endpoint agent&lt;/li&gt;
+&lt;li&gt;Events are forwarded over the network to a SIEM or central data lake solution.&lt;/li&gt;
+&lt;li&gt;Sigma Rules are compiled into native queries against the SIEM solution&lt;/li&gt;
+&lt;li&gt;The SIEM or data lake implementation uncovers detections based on this query.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;In practice, each SIEM product has a unique way of normalizing the
+available data to fit within their own database schema. For example
+the Elastic ecosystem uses the &lt;a href="https://www.elastic.co/guide/en/ecs/current/index.html" target="_blank" &gt;Elastic Common Schema
+(ECS)&lt;/a&gt;
+. The
+ECS schema converts from certain fields in the original event log file
+to different field names within the ECS - for example the field
+&lt;code&gt;System.TimeCreated.SystemTime&lt;/code&gt; in the event log file is translated to
+the field &lt;code&gt;@timestamp&lt;/code&gt; by the Elastic agent for storage in the database.&lt;/p&gt;
+
+&lt;div class="mynotices warning"&gt;
+ &lt;div heading="warning"&gt;&lt;p&gt;It is often hard to know exactly what the translation is supposed to
+be because vendors attempt to normalize many different log sources to
+the same schema. In the case of ECS the &lt;a href="https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html" target="_blank" &gt;reference
+documentation&lt;/a&gt;
+
+is incredibly vague and we need to resort to reading the code to
+figure out the exact field mappings to understand exactly where each
+field is gathered from. Additionally, this translation is not always a
+simple renaming, but sometimes involves a non-trivial transformation
+by the Elastic agent which is not always well documented.&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+
+&lt;h2 id="the-sigma-rule"&gt;The Sigma rule&lt;/h2&gt;
+&lt;p&gt;Sigma is designed to be a high level abstracted notation that can
+cater for the differences between the backends. This is achieved by
+defining yet another layer of abstraction over the original
+events. Consider the following reduced Sigma rule (&lt;a href="https://github.com/Yamato-Security/hayabusa-rules/blob/main/sigma/builtin/taskscheduler/win_taskscheduler_lolbin_execution_via_task_scheduler.yml" target="_blank" &gt;The full rule here&lt;/a&gt;
+):&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-yaml"&gt;title: Scheduled Task Executed Uncommon LOLBIN
+logsource:
+ product: windows
+ service: taskscheduler
+detection:
+ taskscheduler:
+ Channel: Microsoft-Windows-TaskScheduler/Operational
+ selection:
+ EventID: 129
+ Path|endswith:
+ - \calc.exe
+ - \cscript.exe
+ - \mshta.exe
+ - \mspaint.exe
+ - \notepad.exe
+ - \regsvr32.exe
+ - \wscript.exe
+ condition: taskscheduler and selection
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Above we only included limited fields for the purpose of this discussion.&lt;/p&gt;
+&lt;p&gt;The rule triggers when the &lt;code&gt;TaskScheduler&lt;/code&gt; event log file contains an
+event id 129 &lt;a href="https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2008-R2-and-2008/cc774964%28v=ws.10%29" target="_blank" &gt;Task Scheduler launched
+task&lt;/a&gt;
+
+and the process launched ends with one of the executables listed.&lt;/p&gt;
+&lt;p&gt;To actually match this rule, The Sigma compiler needs to perform two
+mappings:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;The &lt;code&gt;logsource&lt;/code&gt; is ultimately mapped to the
+&lt;code&gt;C:/Windows/System32/WinEvt/Logs/Microsoft-Windows-TaskScheduler%4Operational.evtx&lt;/code&gt;
+event log file or whatever table the backend SIEM uses to
+collect/store these events.&lt;/li&gt;
+&lt;li&gt;Each field referenced in the Sigma rule needs to be mapped to the
+field in the actual event. For example in this case the field
+&lt;code&gt;Path&lt;/code&gt; needs to be translated to the field &lt;code&gt;EventData.Path&lt;/code&gt; within
+the original event log, or whatever the specific SIEM uses to
+normalize that original field into its own database schema.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id="limitations-of-the-sigma-format"&gt;Limitations of the Sigma format&lt;/h3&gt;
+&lt;p&gt;By introducing yet another layer of abstraction over the original
+event logs, the analyst needs to learn another taxonomy to reference
+the underlying data they are interested in. For example, in the above
+rule, the analyst wants to detect events found in the specific log
+file on the endpoint, but needs to know that Sigma uses the
+&lt;code&gt;logsource&lt;/code&gt; specification with &lt;code&gt;product=windows, service=taskscheduler&lt;/code&gt; to actually refer to that file.&lt;/p&gt;
+&lt;p&gt;In real life, there is a natural trade off between forwarding more
+events from the system (increasing detection capabilities) at the cost
+of more network transmission, storage requirement and scaling the
+backend database to handle the larger data sizes.&lt;/p&gt;
+&lt;p&gt;Typically this means that not &lt;strong&gt;all&lt;/strong&gt; event logs are forwarded off the
+machine, only those that are considered relevant or important are
+forwarded. The exact choice of which event logs to forward depends on
+both the choice of SIEM vendor and the specific configuration of the
+SIEM involved.&lt;/p&gt;
+&lt;p&gt;For example, while there are a number of officially recognized &lt;a href="https://sigmahq.io/docs/basics/log-sources.html" target="_blank" &gt;log
+sources&lt;/a&gt;
+ there is no
+guarantee that the underlying SIEM actually forwards any of these
+logs, and just like in the ECS example given above, there is no
+directly documented mapping between the abstract log sources and the
+actual files on disk.&lt;/p&gt;
+&lt;p&gt;To actually use the Sigma rule, we need to provide both the log source
+mapping and field mapping to the sigma compiler. Sigma is not
+actually its own matching engine, but simply a translation layer
+between an abstract format and the backend SIEM.&lt;/p&gt;
+&lt;p&gt;Sigma provides a set of compiler modules and field translations for a
+number of popular backend SIEMs with varying capabilities and internal
+schemas.&lt;/p&gt;
+&lt;p&gt;In practice, The Sigma rules need to be written with the target SIEM
+solution in mind, as well as the specific configuration of the entire
+system. For example, if a SIEM rule is written to use the &lt;a href="https://learn.microsoft.com/en-us/sysinternals/downloads/sysmon" target="_blank" &gt;Sysmon
+registry events (event ID
+12,13,14)&lt;/a&gt;
+
+there is no guarantee that these events are actually forwarded from
+the endpoint into the SIEM (that depends on collection
+considerations), or that the target SIEM even supports these event
+types at all.&lt;/p&gt;
+&lt;p&gt;As an analyst writing Sigma rules, the additional layer of abstraction
+might seem pointless - they need to think of their rule in a different
+abstract terms to the SIEM that will actually be running these rules,
+but at the same time need to know exactly what backend query will be
+produced and if this query is even supported on their particular
+SIEM. It is very easy to write a rule that simply will not work on
+their particular backend SIEM because it uses some feature, log source
+or event field that is simply not available.&lt;/p&gt;
+&lt;h3 id="advantages-of-sigma"&gt;Advantages of Sigma&lt;/h3&gt;
+&lt;p&gt;Despite these practical limitations, Sigma has grown in popularity in
+recent years because it allows for easy exchange of detection rules
+between users of different SIEM backends.&lt;/p&gt;
+&lt;p&gt;While not perfect, there is a reasonable chance that a Sigma rule
+written with one backend SIEM in mind will also work on another,
+providing it uses fairly common log sources and commonly collected
+event types, and does not use too complicated operators. This allows
+Sigma to be an attractive choice for writing and developing detection
+rules, especially for users who need to switch between many backend
+systems all the time.&lt;/p&gt;
+&lt;h2 id="how-is-sigma-implemented-in-velociraptor"&gt;How is Sigma implemented in Velociraptor?&lt;/h2&gt;
+&lt;p&gt;Velociraptor is not a traditional SIEM and does not rely on a scalable
+large backend data mining engine for querying collected data. Instead,
+Velociraptor&amp;rsquo;s power lies in its &lt;a href="https://docs.velociraptor.app/docs/vql/" target="_blank" &gt;Velociraptor Query
+Language&lt;/a&gt;
+ which allows the
+endpoint agent itself to query data directly on the endpoint.&lt;/p&gt;
+&lt;p&gt;This means that Velociraptor has access to all information available
+on the endpoint without needing to rely on specific log forwarding
+configuration. Instead, queries are run directly on the endpoint and
+only matching events are forwarded to the server. This minimizes the
+total amount of data that needs to be managed by the server to only
+high value, relevant events that already match the Sigma rules.&lt;/p&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/blog/2023/2023-11-15-sigma_in_velociraptor//blog/2023/2023-11-15-sigma_in_velociraptor/velociraptor_sigma_flow_.svg" alt="Velociraptor Sigma Workflow"
+ class="inline"
+ height="525.4545454545455"
+ width="1082.383226927995" /&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="velociraptor_sigma_flow.svg"&gt;&lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ Velociraptor Sigma Workflow
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;p&gt;The above figure outlines the Velociraptor Sigma workflow:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Sigma rules are synced to the endpoint via a Standard Velociraptor
+Collection and are applied to an internal Sigma rule matching
+engine.&lt;/li&gt;
+&lt;li&gt;The engine determines which log sources will be used based on the
+actual rule requirement. Parsing additional log sources is easy to
+implement via a VQL query.&lt;/li&gt;
+&lt;li&gt;Events are collected from the relevant local log sources (e.g. by
+parsing the relevant EVTX files) and are compared efficiently
+against the set of Sigma rules target each log source.&lt;/li&gt;
+&lt;li&gt;Only matches are forwarded to the cloud (tagged by the Sigma rules
+by severity levels - e.g. Critical, High, Medium)&lt;/li&gt;
+&lt;li&gt;The Velociraptor server only deals with high value events by
+writing to local storage or forwarding to a SIEM for
+alerting/escalation.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;In this arrangement, the event volumes sent to the server are very
+small because only post-filtered events are handled.&lt;/p&gt;
+&lt;h3 id="the-sigma-velociraptor-plugin"&gt;The Sigma Velociraptor plugin&lt;/h3&gt;
+&lt;p&gt;As explained above, Sigma is an abstract format which requires
+implementations to provide a mapping between &lt;code&gt;log sources&lt;/code&gt; and actual
+concrete implementations of these sources. Before we can match any
+Sigma rules in Velociraptor we need to teach Velociraptor how to map
+between the log sources mentioned in a Sigma rule and a real VQL query
+that will provide events from that source.&lt;/p&gt;
+&lt;p&gt;This mapping is created using the VQL &lt;code&gt;sigma_log_sources()&lt;/code&gt;
+function. The function receives a list of log source names and their
+corresponding VQL queries.&lt;/p&gt;
+&lt;p&gt;For example, consider the following definition:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-sql"&gt;LET LogSources &amp;lt;= sigma_log_sources(
+ `*/windows/taskscheduler`={
+ SELECT * FROM parse_evtx(
+ filename=ROOT+&amp;quot;/Microsoft-Windows-TaskScheduler%4Operational.evtx&amp;quot;)
+ },
+)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;When Velociraptor encounters the Sigma rule above it will look for a
+defined log source with &lt;code&gt;category=*, product=windows, service=taskscheduler&lt;/code&gt; forming the following key
+&lt;code&gt;*/windows/taskscheduler&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;The second mapping described above is between the rules mentioned in
+the Sigma rule and the underlying fields in the actual
+event. Velociraptor implements these mapping definitions via &lt;code&gt;VQL Lambda&lt;/code&gt; functions.&lt;/p&gt;
+&lt;p&gt;For example consider the following field mapping definitions:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-sql"&gt;LET FieldMapping &amp;lt;= dict(
+ Path=&amp;quot;x=&amp;gt;x.EventData.Path&amp;quot;
+)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;When Velociraptor attempts to evaluate a field mentioned in the Sigma
+rule, the Velociraptor Sigma engine will pass the event to this lambda
+function to resolve the actual field required. This allows us to
+implement any translation operation between Sigma fields and data
+based on the event itself - including more complex enrichment
+operators (more on that later!).&lt;/p&gt;
+&lt;p&gt;After defining the log sources and field mapping, we are ready to
+match Sigma rules using the &lt;code&gt;sigma()&lt;/code&gt; &lt;a href="http://docs.velociraptor.app/vql_reference/misc/sigma/" target="_blank" &gt;VQL
+plugin&lt;/a&gt;
+.&lt;/p&gt;
+&lt;p&gt;This plugin receives a number of arguments:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;rules&lt;/code&gt;: A list of sigma rules to compile and match.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;log_sources&lt;/code&gt;: A log source object as obtained from the
+&lt;code&gt;sigma_log_sources()&lt;/code&gt; VQL function described above.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;field_mapping&lt;/code&gt;: A dict containing a mapping between a rule field
+name and a VQL Lambda to get the value of the field from the
+event.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;debug&lt;/code&gt;: If enabled we emit all match objects with description of
+what would match.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;rule_filter&lt;/code&gt;: If specified we use this callback to filter the rules
+for inclusion.Lambda&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;default_details&lt;/code&gt;: If specified we use this callback to determine a
+details column if the sigma rule does not specify it.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;For an example of a simple Sigma based artifact, See the
+&lt;code&gt;Windows.Sigma.EventLogs&lt;/code&gt; artifact&lt;/p&gt;
+&lt;h2 id="managing-a-large-repository-of-sigma-rules"&gt;Managing a large repository of Sigma rules&lt;/h2&gt;
+&lt;p&gt;The previous section described how Sigma rule matching is implemented
+in Velociraptor, but in practice we typically have a large number of
+Sigma rules, perhaps imported from external sources.&lt;/p&gt;
+&lt;p&gt;There are some challenges with Sigma and some rules are not written
+precisely enough to work in Velociraptor. For example, Sigma rules may
+reference non-existent log sources, or unknown fields that do not
+correspond to anything in the standard field mappings.&lt;/p&gt;
+&lt;p&gt;For this reason it is best to manage a large Sigma rule set using a
+specialized tool &lt;code&gt;velosigmac&lt;/code&gt;. You can find this tool at
+&lt;a href="https://sigma.velocidex.com" target="_blank" &gt;https://sigma.velocidex.com&lt;/a&gt;
+ or
+&lt;a href="https://github.com/Velocidex/velociraptor-sigma-rules" target="_blank" &gt;https://github.com/Velocidex/velociraptor-sigma-rules&lt;/a&gt;
+&lt;/p&gt;
+&lt;p&gt;The repository already contains a large number of rules from the Sigma
+project as well as &lt;a href="https://github.com/Yamato-Security/hayabusa-rules" target="_blank" &gt;Hayabusa
+rules&lt;/a&gt;
+, but you can
+also add your own rules.&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;velosigmac&lt;/code&gt; tool is controlled via a config file specifying the
+various log sources and field mappings, and produces a zip file
+containing a Velociraptor artifact.&lt;/p&gt;
+&lt;p&gt;You can import the curated Sigma rules automatically by collecting the
+&lt;code&gt;Server.Import.CuratedSigma&lt;/code&gt; server artifact.&lt;/p&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+
+
+
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/blog/2023/2023-11-15-sigma_in_velociraptor//blog/2023/2023-11-15-sigma_in_velociraptor/getting_curated_rules.png"
+ class="inline"
+ alt="Getting the Curated Sigma rules"
+ width="1114" height="384"&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="getting_curated_rules.png"&gt;
+ &lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ Getting the Curated Sigma rules
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;p&gt;Currently there are two types of curated artifacts:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;A Curated ruleset based on the Hayabusa rules. This artifact is a
+regular CLIENT type artifact that can be used to scan all EVTX
+files on the endpoint for rules matches.&lt;/li&gt;
+&lt;li&gt;An Event based monitoring artifact that once installed follows all
+EVTX files to alert on Sigma rule matches in real time.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id="sigma-alerting-via-a-client-artifact"&gt;Sigma alerting via a CLIENT artifact&lt;/h2&gt;
+&lt;p&gt;Velociraptor is not the only tool that can apply Sigma rules to a live
+system. Previously Velociraptor was integrated with
+&lt;a href="https://github.com/Yamato-Security/hayabusa" target="_blank" &gt;Hayabusa&lt;/a&gt;
+,
+&lt;a href="https://github.com/WithSecureLabs/chainsaw" target="_blank" &gt;Chainsaw&lt;/a&gt;
+ for quick
+triage using Sigma rules.&lt;/p&gt;
+&lt;p&gt;The ability to triage a system efficiently using Sigma rules allows
+first responders to quickly isolate the machines that need further
+investigation. In this regard the Sigma rules do not have to be
+perfect - they just need to indicate those machines requiring further
+work.&lt;/p&gt;
+&lt;p&gt;By applying a standard set of Sigma signatures to a large numbers of
+machines we can identify the interesting hosts quickly. An excellent
+demonstration of this technique can be seen in the Video &lt;a href="https://youtu.be/Q1IoGX--814?si=sRu1o7uAJqezjIwY&amp;amp;t=3858" target="_blank" &gt;Live
+Incident Response with
+Velociraptor&lt;/a&gt;
+
+where Eric Capuano uses the Hayabusa tool deployed via Velociraptor to
+quickly identify the attack techniques evident on the endpoint.&lt;/p&gt;
+&lt;p&gt;Now that Sigma is built into the Velociraptor engine itself, using
+these signatures is much more efficient. Simple collect the artifact
+imported earlier and collect it from the host in question, or start a
+hunt for all hosts.&lt;/p&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+
+
+
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/blog/2023/2023-11-15-sigma_in_velociraptor//blog/2023/2023-11-15-sigma_in_velociraptor/collecting_sigma_rules.png"
+ class="inline"
+ alt="Collecting sigma rules from the endpoint"
+ width="1180" height="577"&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="collecting_sigma_rules.png"&gt;
+ &lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ Collecting sigma rules from the endpoint
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;p&gt;The artifact has a number of configurable settings:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;code&gt;RuleLevel&lt;/code&gt; specifies which rules to include. Including lower level
+rules may detect interesting events but will also increase the
+false positive rate.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;RuleStatus&lt;/code&gt; specifies which rule status to include - stable rules
+are more tested and less likely to produce false positives.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;In the example below I collected &lt;code&gt;Critical and High&lt;/code&gt; level rules. It
+is instructive to see the query log:&lt;/p&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+
+
+
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/blog/2023/2023-11-15-sigma_in_velociraptor//blog/2023/2023-11-15-sigma_in_velociraptor/query_logs.png"
+ class="inline"
+ alt="Query logs for Sigma collection"
+ width="2113" height="999"&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="query_logs.png"&gt;
+ &lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ Query logs for Sigma collection
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;p&gt;As can be seen the artifact selects 63 rules based on the Rule Level
+and Status parameters. These rules end up referencing only 8 log
+sources, so Velociraptor will only look at 8 log files - the largest
+of these of these is the &lt;code&gt;System&lt;/code&gt; log which contains 178k events.&lt;/p&gt;
+&lt;p&gt;Overall, Velociraptor found 81 hits on these Sigma rules in 57
+seconds, and immediately we can see some critical information:&lt;/p&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+
+
+
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/blog/2023/2023-11-15-sigma_in_velociraptor//blog/2023/2023-11-15-sigma_in_velociraptor/detecting_critical_rules.png"
+ class="inline"
+ alt="Detecting critical level rules"
+ width="2013" height="432"&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="detecting_critical_rules.png"&gt;
+ &lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ Detecting critical level rules
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s select &lt;code&gt;All Rules&lt;/code&gt; with a status of &lt;code&gt;Stable and Experimental&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+
+
+
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/blog/2023/2023-11-15-sigma_in_velociraptor//blog/2023/2023-11-15-sigma_in_velociraptor/query_logs_all.png"
+ class="inline"
+ alt="Query logs for Sigma collection with All Rules"
+ width="2045" height="729"&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="query_logs_all.png"&gt;
+ &lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ Query logs for Sigma collection with All Rules
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;p&gt;This time, there are 1500 rules matching 41 different log sources. The
+additional work required makes Velociraptor take 117 seconds now and
+it returns over 62 thousand hits!&lt;/p&gt;
+&lt;p&gt;The number of hits is too large to manually review, so I typically
+just want to know which rules were matched by stacking on the rule
+Title:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-sql"&gt;SELECT * FROM source(artifact=&amp;quot;Sigma.Windows.Hayabusa.Rules&amp;quot;)
+GROUP BY Title
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This reduces the number of rows to 62. I can immediately see
+interesting hits, even though they may be at low or informational
+level.&lt;/p&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+
+
+
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/blog/2023/2023-11-15-sigma_in_velociraptor//blog/2023/2023-11-15-sigma_in_velociraptor/detecting_all_rules.png"
+ class="inline"
+ alt="Detecting all rules in all levels"
+ width="2019" height="846"&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="detecting_all_rules.png"&gt;
+ &lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ Detecting all rules in all levels
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;p&gt;Typically for this type of collection, I tend to apply most of the
+rules because I can post process the hits later on the server, but you
+might want to collect only critical rules at first to reduce the
+amount of work the Velociraptor client needs to perform.&lt;/p&gt;
+&lt;p&gt;Using Sigma rules for rapid triage is a particularly attractive
+technique as shown above. Previously Velociraptor supported Sigma via
+pushing and launching the Hayabusa tool to the endpoint, and
+collecting the results from it.&lt;/p&gt;
+&lt;p&gt;So what advantages are there for natively supporting Sigma withing
+Velociraptor?&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;By supporting the rules natively, we can control execution more
+closely. In particular, Velociraptor&amp;rsquo;s CPU and memory controls can
+only work when Velociraptor itself is doing the work. By shelling
+out to an external tool we have no control over how many resources
+Hayabusa is using on the endpoint. Having Sigma as a built in
+capability allows Velociraptor to limit CPU utilization in order to
+minimize the impact on the endpoint.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Velociraptor is much more efficient than Hayabusa. Typically
+Velociraptor can match the same number of rules approximately 5
+times faster. However, the most important difference is the much
+reduced memory requirements. In my testing, Hayabusa typically uses
+about 1-2Gb of memory on the endpoint vs. about 200-300mb used by
+Velociraptor, making Hayabusa too risky to deploy very widely.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+
+
+
+&lt;img class="inline"
+ src="https://docs.velociraptor.app/blog/2023/2023-11-15-sigma_in_velociraptor/resource_consumption.png"
+ width="990"
+ height="160"/&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;h1 id="sigma-alerting-via-real-time-monitoring-artifacts"&gt;Sigma alerting via real time monitoring artifacts&lt;/h1&gt;
+&lt;p&gt;Velociraptor&amp;rsquo;s VQL queries are streaming queries. This means they
+deliver rows as soon as they become available, while the query itself
+does not have to terminate. This facility is called &lt;a href="https://docs.velociraptor.app/docs/client_monitoring/" target="_blank" &gt;&lt;code&gt;Client Monitoring&lt;/code&gt; or &lt;code&gt;Event&lt;/code&gt;
+queries&lt;/a&gt;
+.&lt;/p&gt;
+&lt;p&gt;Since the built-in Sigma matching engine is also streaming and
+asynchronous, it is also possible to use event queries for log
+sources.&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;Velociraptor Hayabusa Live Detection&lt;/code&gt; option in the Curated
+import artifact will import an event monitoring version of the same
+curated Sigma rules. I can configure the artifact in the usual way.&lt;/p&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+
+
+
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/blog/2023/2023-11-15-sigma_in_velociraptor//blog/2023/2023-11-15-sigma_in_velociraptor/configuring_monitoring.png"
+ class="inline"
+ alt="Configuring the Monitoring Sigma detection artifact"
+ width="1251" height="611"&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="configuring_monitoring.png"&gt;
+ &lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ Configuring the Monitoring Sigma detection artifact
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;p&gt;This time the endpoint will forward detection events to the server in
+real time.&lt;/p&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+
+
+
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/blog/2023/2023-11-15-sigma_in_velociraptor//blog/2023/2023-11-15-sigma_in_velociraptor/live_sigma_detection.png"
+ class="inline"
+ alt="Live detection of Sigma rules"
+ width="2126" height="677"&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="live_sigma_detection.png"&gt;
+ &lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ Live detection of Sigma rules
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;p&gt;In the above I can see immediately suspicious use of &lt;code&gt;PSExec&lt;/code&gt; in real
+time!&lt;/p&gt;
+&lt;h1 id="conclusions"&gt;Conclusions&lt;/h1&gt;
+&lt;p&gt;While Sigma itself is not a matching engine, it presents a convenient
+abstraction over other matching engines. Integrating a Sigma matching
+engine within Velociraptor allows users to add easy to read and
+maintainable rules specifically designed for detection. The built in
+Sigma matching engine is extremely fast while being built on top of
+VQL.&lt;/p&gt;
+&lt;p&gt;This makes is flexible - it is possible to add arbitrary logs sources
+from any VQL query. For example log sources based on ETW are already
+in the works. This engine can efficiently match thousands of rules on
+the endpoint, either in real time, or from historical sources.&lt;/p&gt;
+&lt;p&gt;Sigma presents a lot of opportunities to extend the detection
+capabilities when running directly on the endpoint. Unlike using Sigma
+as an interface to a SIEM where we are really at the mercy of the log
+sources and fields that are forwarded by the collection agent and the
+SIEM, Sigma rules on the endpoint can refer to any log source - be it
+an event log or other more traditional sources of evidence, such as
+Volatile information like process information, registry keys or
+networking information.&lt;/p&gt;</description></item></channel></rss>

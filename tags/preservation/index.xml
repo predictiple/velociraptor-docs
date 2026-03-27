@@ -1,0 +1,706 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Preservation on Velociraptor - Digging deeper!</title><link>https://docs.velociraptor.app/tags/preservation/</link><description>Recent content in Preservation on Velociraptor - Digging deeper!</description><generator>Hugo</generator><language>en-us</language><atom:link href="https://docs.velociraptor.app/tags/preservation/index.xml" rel="self" type="application/rss+xml"/><item><title>Finding Files</title><link>https://docs.velociraptor.app/training/playbooks/finding_files/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://docs.velociraptor.app/training/playbooks/finding_files/</guid><description>&lt;h2 id="scenario"&gt;Scenario&lt;/h2&gt;
+&lt;p&gt;One of the most common operations in DFIR is searching for files
+efficiently. When searching for a file, we may search by filename,
+file content, size or other properties.&lt;/p&gt;
+&lt;h2 id="main-takeaways"&gt;Main takeaways&lt;/h2&gt;
+&lt;ol&gt;
+&lt;li&gt;This technique can be used to find files on the endpoint.&lt;/li&gt;
+&lt;li&gt;Turning this into a hunt can search for a file across the entire fleet in minutes.&lt;/li&gt;
+&lt;li&gt;You can transfer the content of the file or just detect its presence.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id="steps-to-take"&gt;Steps to take&lt;/h2&gt;
+&lt;p&gt;The most common artifacts to use are:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;code&gt;Windows.Search.FileFinder&lt;/code&gt; or &lt;code&gt;Linux.Search.FileFinder&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Windows.NTFS.MFT&lt;/code&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id="more-details"&gt;More details&lt;/h2&gt;
+&lt;p&gt;The &lt;code&gt;Windows.Search.FileFinder&lt;/code&gt; is the Swiss army knife of file
+searching.&lt;/p&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/training/playbooks/finding_files//training/playbooks/finding_files/file_finder_.svg" alt="The File Finder artifact"
+ class="inline"
+ height="797"
+ width="1496.0949868073878" /&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="file_finder.svg"&gt;&lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ The File Finder artifact
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;p&gt;You can use the &lt;code&gt;File Finder&lt;/code&gt; artifacts to find files by several criteria:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;File names: Adding one or more Glob expressions (i.e. expressions
+with wildcards) will search for files by name.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;In addition to the filename, you can restrict the file by times -
+by adding a time box (before and after times), only files with any
+of their timestamps inside the time box will be selected.&lt;/p&gt;
+&lt;p&gt;This allows us to restrict questions to &amp;ldquo;only files added in the past week&amp;rdquo;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;You can search file content by adding a Yara rule. Yara is a simple
+matching language allowing sophisticated search expressions.&lt;/p&gt;
+&lt;p&gt;By pressing &lt;code&gt;?&lt;/code&gt; inside the Yara editor, Velociraptor will suggest a
+Yara template you can use to get started.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+
+
+
+&lt;img class="inline"
+ src="https://docs.velociraptor.app/training/playbooks/finding_files/yara_rule.png"
+ width="1222"
+ height="196"/&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;ol start="4"&gt;
+&lt;li&gt;Matching files can be uploaded to the server. NOTE: This may
+generate a lot of traffic so it is only suitable for a small number
+of very targeted matches. Alternatively simply calculate the hash
+of matching files.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;The artifact also supports Windows Volume Shadow Copies, if
+available. Velociraptor will automatically deduplicate VSS so only a
+single file match will be reported, even if the same file exists in
+multiple VSS snapshots - unless the file is changed between them.&lt;/p&gt;
+
+&lt;div class="mynotices tip"&gt;
+ &lt;div heading=" Searching the registry "&gt;&lt;p&gt;Although the artifact is named &lt;code&gt;File Finder&lt;/code&gt;, the artifact can also be
+used to search for registry keys and values. This is because
+Velociraptor accesses files by way of an &lt;code&gt;accessor&lt;/code&gt;. The accessor
+abstracts access for files and file-like objects.&lt;/p&gt;
+&lt;p&gt;In Velociraptor the &lt;code&gt;registry&lt;/code&gt; accessor makes the registry appear as a
+filesystem: Registry keys appear as directories and Registry Values
+appear as Files (with binary content).&lt;/p&gt;
+&lt;p&gt;This allows the File Finder to search the registry as well - simply
+change the &lt;code&gt;Accessor&lt;/code&gt; option from &lt;code&gt;auto&lt;/code&gt; to &lt;code&gt;registry&lt;/code&gt; to search the
+registry. Remember, top level directory is the registry hive, for
+example &lt;code&gt;HKLM&lt;/code&gt;, or &lt;code&gt;HKEY_LOCAL_MACHINE&lt;/code&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+
+&lt;h3 id="example-detect-persistence"&gt;Example: Detect persistence&lt;/h3&gt;
+&lt;p&gt;Office executables like &lt;code&gt;WINWORD.exe&lt;/code&gt; look for &lt;code&gt;AI.exe&lt;/code&gt; under the
+&lt;code&gt;%ProgramFiles%\Microsoft Office\root\&amp;lt;Office Version&amp;gt;&lt;/code&gt; and
+&lt;code&gt;%ProgramFiles(x86)%\Microsoft Office\root\&amp;lt;Office Version&amp;gt;&lt;/code&gt;
+directories. An attacker may place a malicious &lt;code&gt;AI.exe&lt;/code&gt; there in order
+to have persistence whenever a user interacts with the Microsoft
+Office Suite. &lt;a href="https://twitter.com/laughing_mantis/status/1645268114966470662" target="_blank" &gt;1&lt;/a&gt;
+, &lt;a href="https://github.com/last-byte/PersistenceSniper/blob/main/PersistenceSniper/PersistenceSniper.psm1" target="_blank" &gt;2&lt;/a&gt;
+&lt;/p&gt;
+&lt;p&gt;Search for file glob &lt;code&gt;C:\Program File*\Microsoft Office\root\Office*\ai.exe&lt;/code&gt; and hash it.&lt;/p&gt;
+&lt;h3 id="example-detect-registry-keys"&gt;Example: Detect registry keys&lt;/h3&gt;
+&lt;p&gt;The .NET DLLs listed in the &lt;code&gt;DOTNET_STARTUP_HOOKS&lt;/code&gt; environment variable
+are loaded into .NET processes at runtime.
+&lt;a href="https://persistence-info.github.io/Data/dotnetstartuphooks.html" target="_blank" &gt;1&lt;/a&gt;
+,
+&lt;a href="https://github.com/last-byte/PersistenceSniper/blob/main/PersistenceSniper/PersistenceSniper.psm1" target="_blank" &gt;2&lt;/a&gt;
+&lt;/p&gt;
+&lt;p&gt;Solution: Change the Accessor to &amp;ldquo;registry&amp;rdquo; and search for the following globs.&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;code&gt;HKEY_USERS\*\Environment\DOTNET_STARTUP_HOOKS&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment\DOTNET_STARTUP_HOOKS&lt;/code&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Select &lt;code&gt;Upload file&lt;/code&gt; to view the content of the matching values.&lt;/p&gt;
+&lt;h3 id="example-detect-mark-of-the-web-files"&gt;Example: Detect Mark of the Web files&lt;/h3&gt;
+&lt;p&gt;When files are downloaded from the internet, browsers will add an
+Alternate Data Stream (ADS) to the file called &lt;code&gt;Zone.Identifier&lt;/code&gt;. This
+stream will contain additional information about where the file was
+downloaded from.&lt;/p&gt;
+&lt;p&gt;Solution:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Change the accessor to &lt;code&gt;ntfs&lt;/code&gt; which will allow us to see
+Alternate Data Streams (ADS).&lt;/li&gt;
+&lt;li&gt;Search for files containing the &lt;code&gt;Zone.Identifier&lt;/code&gt; (ADS names are
+appended to the filename with a colon): &lt;code&gt;C:\Users\*\Downloads\**\*:Zone.Identifier&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Enable uploading to get the data.&lt;/li&gt;
+&lt;li&gt;You can preview the data within the GUI in the &lt;code&gt;Uploaded Files&lt;/code&gt; tab.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;div class="mynotices tip"&gt;
+ &lt;div heading=" Using dedicated artifacts "&gt;&lt;p&gt;You can also use &lt;code&gt;Windows.NTFS.ADSHunter&lt;/code&gt; or
+&lt;code&gt;Exchange.Windows.Detection.ZoneIdentifier&lt;/code&gt; to further parse the
+contents of the &lt;code&gt;Zone.Identifier&lt;/code&gt; stream.&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+
+&lt;h2 id="performance"&gt;Performance&lt;/h2&gt;
+&lt;p&gt;Searching for files can be an expensive operation, using a lot of CPU
+and IO resources on the end point. Some rules of thumb:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;Searching by filename is fairly cheap.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;It is better if you can narrow down the number of directories we
+have to scan. For example rather than search
+&lt;code&gt;C:/**/*:Zone.Identifier&lt;/code&gt;, limit to search to only user files
+&lt;code&gt;C:/Users/**/*:Zone.Identifier&lt;/code&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;It is expensive to search the content of files with a Yara rule.&lt;/p&gt;
+&lt;p&gt;For example instead of searching for &lt;code&gt;C:/**&lt;/code&gt; then applying a Yara
+rule looking for an executable, it is better to first narrow the
+glob to &lt;code&gt;C:/**/*.exe&lt;/code&gt; and even time box it further. The File Finder
+artifact prioritizes cheaper operations like filename or
+modification time checks before attempting to apply a Yara scan.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;</description></item><item><title>Preserving Forensic Evidence</title><link>https://docs.velociraptor.app/training/playbooks/preservation/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://docs.velociraptor.app/training/playbooks/preservation/</guid><description>&lt;h2 id="scenario"&gt;Scenario&lt;/h2&gt;
+&lt;p&gt;As a system administrator you have a high level of confidence a
+certain endpoint is compromised. You wish to preserve critical
+evidence while arranging for a more experienced DFIR professional to
+examine the evidence.&lt;/p&gt;
+&lt;h2 id="main-takeaways"&gt;Main takeaways&lt;/h2&gt;
+&lt;ol&gt;
+&lt;li&gt;This technique is a &amp;ldquo;shotgun&amp;rdquo; approach - it typically collects a
+lot of data.&lt;/li&gt;
+&lt;li&gt;Not very targeted.&lt;/li&gt;
+&lt;li&gt;Does not scale to many endpoints - use when very confident an
+endpoint is compromised.&lt;/li&gt;
+&lt;li&gt;DFIR skill required - LOW.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id="steps-to-take"&gt;Steps to take&lt;/h2&gt;
+&lt;p&gt;Some common artifacts that are used in a preservation collection:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;code&gt;Windows.KapeFiles.Targets&lt;/code&gt; - collects files such as &lt;code&gt;$MFT&lt;/code&gt;, log files etc.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Windows.Memory.Acquisition&lt;/code&gt; - collects a physical memory image.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id="if-velociraptor-is-already-installed-on-the-endpoint"&gt;If Velociraptor is already installed on the endpoint&lt;/h3&gt;
+&lt;p&gt;For collecting from a single endpoint&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Search for the client you want to acquire from the main search screen.&lt;/li&gt;
+&lt;li&gt;Select &lt;code&gt;Collected Artifacts&lt;/code&gt; from the sidebar, then select &lt;code&gt;New Collection&lt;/code&gt; from the toolbar.&lt;/li&gt;
+&lt;li&gt;For Windows systems, select &lt;code&gt;Windows.KapeFiles.Targets&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;Select the &lt;code&gt;BasicCollection&lt;/code&gt; or &lt;code&gt;Kape Triage&lt;/code&gt; or &lt;code&gt;SANS Triage&lt;/code&gt;
+targets. These targets select the most common raw files used by
+DFIR analysts.&lt;/li&gt;
+&lt;li&gt;This artifact can collect a large amount of data, we recommend to
+place resource limits to ensure that collection is not too
+excessive.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+
+
+
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/training/playbooks/preservation//training/playbooks/preservation/kape_targets.png"
+ class="inline"
+ alt="Selecting the Windows.KapeFiles.Targets artifact"
+ width="1458" height="831"&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="kape_targets.png"&gt;
+ &lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ Selecting the Windows.KapeFiles.Targets artifact
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;p&gt;If you will have a number of endpoints to collect you can use a hunt
+to combine the data together:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;In the &lt;code&gt;Hunt Manager&lt;/code&gt; screen, create a new hunt. Restrict the hunt
+to a label &lt;code&gt;acquisition&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;Proceed to collect the same artifacts as above&lt;/li&gt;
+&lt;li&gt;As the investigation proceeds, when you find a client that warrants
+a preservation collection, simply add a label &lt;code&gt;acquisition&lt;/code&gt; to the
+client. The &lt;code&gt;Windows.KapeFiles.Targets&lt;/code&gt; will be automatically
+scheduled on this client.&lt;/li&gt;
+&lt;li&gt;You can view all acquired clients in the hunt overview page, and
+create a large zip export of all preserved files.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;div class="mynotices warning"&gt;
+ &lt;div heading=" Ensure the hunt is restricted by labels! "&gt;&lt;p&gt;Make sure this hunt is restricted by labels! If it is not, it will be
+scheduled on all clients and may result in a lot of data being
+transferred to the server - this can result in the server&amp;rsquo;s bandwidth
+being saturated, disk becoming full or server becoming unresponsive.&lt;/p&gt;
+&lt;p&gt;If this happens you can stop the hunt in the GUI which will cancel all
+in-flight collections and eventually recover the server&amp;rsquo;s bandwidth.&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+
+&lt;h3 id="if-velociraptor-is-not-installed-on-the-endpoint"&gt;If Velociraptor is not installed on the endpoint&lt;/h3&gt;
+&lt;p&gt;If Velociraptor is not already installed on the endpoint, you can use
+an &lt;code&gt;offline collector&lt;/code&gt;. The Velociraptor &lt;code&gt;Offline Collector&lt;/code&gt; is a
+preconfigured version of Velociraptor which can run on the endpoint
+and write all raw files into a ZIP archive.&lt;/p&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+
+
+
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/training/playbooks/preservation//training/playbooks/preservation/offline_collector.png"
+ class="inline"
+ alt="Creating an offline collector"
+ width="727" height="356"&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="offline_collector.png"&gt;
+ &lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ Creating an offline collector
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;p&gt;You can use a number of methods to push the offline to collection to
+the endpoint:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Use an existing EDR or endpoint security product to run the binary
+and retrieve the collected ZIP file.&lt;/li&gt;
+&lt;li&gt;Use Group Policy to schedule a task that runs the collector from a
+remote share.&lt;/li&gt;
+&lt;li&gt;Use &lt;code&gt;WinRM&lt;/code&gt; or &lt;code&gt;PsExec&lt;/code&gt; to run the collector remotely (by careful
+of pass the hash type attacks though).&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;We recommend using the X509 encryption scheme to store the raw data to
+an encrypted container. This helps to protect it in transit.&lt;/p&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+
+
+
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/training/playbooks/preservation//training/playbooks/preservation/encryoted_collector.png"
+ class="inline"
+ alt="Encrypting the collected data"
+ width="1414" height="955"&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="encryoted_collector.png"&gt;
+ &lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ Encrypting the collected data
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;p&gt;You can also configure the offline collector to automatically upload
+the collection to a cloud storage, such as &lt;code&gt;S3&lt;/code&gt;, &lt;code&gt;Google Cloud Storage&lt;/code&gt; or a &lt;code&gt;Windows file share&lt;/code&gt;.&lt;/p&gt;
+&lt;h2 id="when-to-use-this-technique"&gt;When to use this technique?&lt;/h2&gt;
+&lt;p&gt;This technique should be used sparingly, usually targeting few
+systems, as it can transfer a large amount of data.&lt;/p&gt;
+&lt;p&gt;Typically this technique is used when the endpoint is likely to be
+destroyed (e.g. re-imaged) or become inaccessible in the near
+future. The method is most suitable for preservation of raw data.&lt;/p&gt;
+&lt;h2 id="when-not-to-use-this-technique"&gt;When not to use this technique?&lt;/h2&gt;
+&lt;p&gt;This workflow is not appropriate for triage. A triage workflow is
+about discovering unknown compromised endpoints and therefore by
+definition must be applied to a large number of endpoints. The
+&lt;code&gt;Preserving Forensic Evidence&lt;/code&gt; workflow can not be applied to a large
+number of endpoints.&lt;/p&gt;
+&lt;p&gt;The traditional digital forensics workflow consists of the following
+steps:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;code&gt;Acquisition&lt;/code&gt; step collects a large amount of raw data to a central
+server.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Analysis&lt;/code&gt; step applies parsers and various dedicated tools in a
+central &amp;ldquo;forensics workstation&amp;rdquo; on all the raw data collected.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Interpretation&lt;/code&gt; step involves examining the output from the
+various parsers to answer case specific questions.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Many newcomers to Velociraptor have been trained with this workflow
+and try to apply it to Velociraptor.&lt;/p&gt;
+&lt;p&gt;However this centralist approach to digital forensics does not scale
+in practice. When trying to apply this approach to a large network of
+endpoints, users are often overwhelmed with data (it is almost a right
+of passage for new Velociraptor users to completely fill their
+server&amp;rsquo;s disk because they tried to collect all the log files from all
+the endpoints)&lt;/p&gt;
+&lt;p&gt;Velociraptor&amp;rsquo;s philosophy is different:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Velociraptor considers the endpoint to be the ultimate source of truth.&lt;/li&gt;
+&lt;li&gt;Therefore we rarely need to fetch the raw data from the endpoint!
+Since Velociraptor can parse the raw data directly on the endpoint
+we prefer asking case relevant questions from the entire network
+directly.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;To explain this point, let&amp;rsquo;s consider an example where we want to know
+if an executable file was recently downloaded onto the endpoint. We
+will attempt to parse the USN Journal to answer this question.&lt;/p&gt;
+&lt;p&gt;The very traditional Digital Forensics process (i.e. back in the 90s)
+would require acquiring a bit for bit disk image of the suspected
+endpoint with a write blocker attached! Probably no-one does this any
+more!&lt;/p&gt;
+&lt;p&gt;A more modern approach is to use a digital acquisition tool to copy
+just the &lt;code&gt;C:\$Extend\$UsnJrnl:$J&lt;/code&gt; file in it&amp;rsquo;s entirety for
+&lt;code&gt;Acquisition&lt;/code&gt;, then apply a separate tool to parse the journal and
+search for any files written to the disk with a &lt;code&gt;.exe&lt;/code&gt; extension.&lt;/p&gt;
+&lt;p&gt;While this approach is better than acquiring the entire disk image
+(Average disks are of the range of 1-2Tb these days), it still
+requires collecting several hundred MB of data from each endpoint. If
+you have 10,000 endpoints this quickly becomes intractable.&lt;/p&gt;
+&lt;p&gt;Velociraptor&amp;rsquo;s approach is different: Since the endpoint is considered
+the source of truth, we just directly run our analysis on the
+endpoint. Collecting the &lt;code&gt;Windows.Forensics.Usn&lt;/code&gt; artifact with a
+&lt;code&gt;FileNameRegex&lt;/code&gt; filter of &lt;code&gt;.exe$&lt;/code&gt; will query each machine to parse
+their own local copy of the USN journal to find all executables
+directly.&lt;/p&gt;
+&lt;p&gt;We can collect this artifact using a hunt from the entire network at
+once. Since each endpoint will be doing the analysis in parallel,
+results will return in minutes regardless of how many endpoint there
+are!&lt;/p&gt;
+&lt;p&gt;This is why we consider simple acquisition followed by central
+analysis workflows to be inferior to directly collecting the right
+artifacts.&lt;/p&gt;
+&lt;p&gt;You should use the &lt;code&gt;Preserving Forensic Evidence&lt;/code&gt; workflow only on
+systems that are known to have been compromised and you want to
+preserve the raw files for some reason.&lt;/p&gt;
+&lt;h3 id="other-considerations"&gt;Other considerations&lt;/h3&gt;
+&lt;p&gt;When collecting raw files from the endpoint we need to make a tradeoff:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Collecting fewer files may miss some files that are needed later
+during analysis.&lt;/li&gt;
+&lt;li&gt;Collecting more files will result in larger collection.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Ultimately it is not possible to know in advance what type of evidence
+may be relevant. For example, we might collect the &lt;code&gt;$MFT&lt;/code&gt; in our
+initial acquisition but subsequent analysis can show that certain
+files are critical (e.g. files in the user&amp;rsquo;s &lt;code&gt;Downloads&lt;/code&gt; directory).&lt;/p&gt;
+&lt;p&gt;In a &lt;code&gt;Preserving Forensic Evidence&lt;/code&gt; workflow we can not go back to the
+source of truth and check the files in the &lt;code&gt;Downloads&lt;/code&gt; directory!&lt;/p&gt;
+&lt;p&gt;Therefore it is always better to have Velociraptor already installed
+on the endpoint so we can pivot during the analysis phase and get
+additional information as required.&lt;/p&gt;</description></item><item><title>Triaging Logs</title><link>https://docs.velociraptor.app/training/playbooks/triage-logs/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://docs.velociraptor.app/training/playbooks/triage-logs/</guid><description>&lt;h2 id="scenario"&gt;Scenario&lt;/h2&gt;
+&lt;p&gt;An endpoint is suspected of being compromised but you dont know
+exactly what happened. You want to get an initial idea by examining
+the logs on the actual endpoint.&lt;/p&gt;
+&lt;h2 id="main-takeaways"&gt;Main takeaways&lt;/h2&gt;
+&lt;ol&gt;
+&lt;li&gt;This technique is similar to forwarding logs to a SIEM and applying
+signatures.&lt;/li&gt;
+&lt;li&gt;However we can choose very noisy signatures here&lt;/li&gt;
+&lt;li&gt;We use stacking to quickly categorize the types of activity that
+happens on the endpoint.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id="steps-to-take"&gt;Steps to take&lt;/h2&gt;
+&lt;p&gt;Some common artifacts that are used for &lt;code&gt;Triaging Logs&lt;/code&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;code&gt;Windows.Hayabusa.Rules&lt;/code&gt; should be imported using &lt;code&gt;Server.Import.CuratedSigma&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Exchange.Windows.EventLogs.Hayabusa&lt;/code&gt; should be imported from the
+artifact exchange.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id="importing-windowshayabusarules"&gt;Importing Windows.Hayabusa.Rules&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;Select the &lt;code&gt;Server Artifacts&lt;/code&gt; from the sidebar.&lt;/li&gt;
+&lt;li&gt;Add a collection, search for &lt;code&gt;Server.Import.CuratedSigma&lt;/code&gt; and
+import the &lt;code&gt;Windows.Hayabusa.Rules&lt;/code&gt;. This will import the latest
+version of the artifact.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;This artifact uses the built in &lt;code&gt;Sigma Engine&lt;/code&gt; in Velociraptor. The
+artifact packages the curated &lt;code&gt;Hayabusa&lt;/code&gt; rules in a convenient
+artifact. Rules are categorized by &lt;code&gt;RuleLevel&lt;/code&gt; and &lt;code&gt;RuleStatus&lt;/code&gt; which
+generally try to balance how noisy a rule against its detection
+efficacy.&lt;/p&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/training/playbooks/triage-logs//training/playbooks/triage-logs/velociraptor_sigma_flow_.svg" alt="Sigma workflow in Velociraptor"
+ class="inline"
+ height="525.4545454545455"
+ width="1082.383226927995" /&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="velociraptor_sigma_flow.svg"&gt;&lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ Sigma workflow in Velociraptor
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;p&gt;Because we are trying to triage the endpoint, we actually want to see
+all the hits, even if they are noisy. We will apply stacking later to
+quickly triage the type of activity on the endpoint. So in this case
+we should select to apply all the rules.&lt;/p&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+
+
+
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/training/playbooks/triage-logs//training/playbooks/triage-logs/all_rules.png"
+ class="inline"
+ alt="Applying all Sigma Rules"
+ width="1413" height="965"&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="all_rules.png"&gt;
+ &lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ Applying all Sigma Rules
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;p&gt;Once the artifact is collected from the endpoint we can stack the hits
+in the GUI:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Update the notebook to remove the &lt;code&gt;LIMIT 50&lt;/code&gt;. This will select all
+rows in one table. Typically there should be many thousands of
+rows because we added all the noisy rules.&lt;/li&gt;
+&lt;li&gt;Sort by the rule &lt;code&gt;Title&lt;/code&gt;. Hover the mouse on the column header and
+click the &lt;code&gt;Sort&lt;/code&gt; button.&lt;/li&gt;
+&lt;li&gt;Once the column is sorted, the stacking button should appear.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+
+
+
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/training/playbooks/triage-logs//training/playbooks/triage-logs/stacking_a_column.png"
+ class="inline"
+ alt="Stacking a column"
+ width="1210" height="466"&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="stacking_a_column.png"&gt;
+ &lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ Stacking a column
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;ol start="4"&gt;
+&lt;li&gt;Clicking the stacking button will show a summary of the different
+rules matching and a count of how many times each rule made a hit.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+
+
+
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/training/playbooks/triage-logs//training/playbooks/triage-logs/viewing_column_stack.png"
+ class="inline"
+ alt="Viewing column summaries"
+ width="1222" height="562"&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="viewing_column_stack.png"&gt;
+ &lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ Viewing column summaries
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;ol start="5"&gt;
+&lt;li&gt;Clicking on any of the rules navigates the table to the list of
+rules that actually hit.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+
+
+
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/training/playbooks/triage-logs//training/playbooks/triage-logs/viewing_common_rows.png"
+ class="inline"
+ alt="Viewing common rows"
+ width="1200" height="373"&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="viewing_common_rows.png"&gt;
+ &lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ Viewing common rows
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;p&gt;Using this technique it is possible to quickly identify the types or
+categories of activity on the endpoint and see the most suspicious
+rules. Due to the stacking we dont need to review each individual hit,
+but only the different types of rules.&lt;/p&gt;
+&lt;p&gt;For example, say we see a rule description a &lt;code&gt;PsExec&lt;/code&gt; lateral
+movement, we can quickly identify if &lt;code&gt;PsExec&lt;/code&gt; is expected for this
+environment, or does it represent a potential threat. If I identify
+the rule as important, I can then review each instance to get more
+information about what commands were run.&lt;/p&gt;
+&lt;h2 id="using-the-exchangewindowseventlogshayabusa"&gt;Using the Exchange.Windows.EventLogs.Hayabusa&lt;/h2&gt;
+&lt;p&gt;The &lt;code&gt;Exchange.Windows.EventLogs.Hayabusa&lt;/code&gt; artifact is available in the
+artifact exchange. This artifact uses an external binary &lt;code&gt;Hayabusa&lt;/code&gt; to
+evaluate the &lt;code&gt;Sigma&lt;/code&gt; rules from the &lt;code&gt;Hayabusa&lt;/code&gt; project.&lt;/p&gt;
+&lt;p&gt;Post processing and analysing the results from this artifact is
+similar to the procedure described above.&lt;/p&gt;
+&lt;h2 id="discussion-and-limitations"&gt;Discussion and limitations&lt;/h2&gt;
+&lt;p&gt;This technique is similar to many SIEMs which forward event logs from
+the endpoint and apply matching rules. There are some fundamental
+differences though:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;SIEMs typically only forward a small subset of logs since the more
+logs are collected the more data the SIEM backend needs to
+handle. Typically SIEMs forward logs such as &lt;code&gt;Sysmon Process Execution&lt;/code&gt; but do not forward other logs for example &lt;code&gt;BITS Client Operational Logs&lt;/code&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;SIEM rules are also written to ensure they have a low false
+positive rate. This means that suspicious activity in one
+environment which is common in another setting, might not trigger a
+detection. By stacking on all noisy rules we get to decide for
+ourselves if a particular rule is acceptable for this environment.&lt;/p&gt;
+&lt;p&gt;For example an administrator RDP login may be perfectly normal in
+some environments but a red flag in others! SIEM detections are
+rarely tuned to the environment.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;A SIEM may not be present or well tuned, in a particular
+environment. Running the &lt;code&gt;Sigma&lt;/code&gt; log triaging workflow can
+compensate for the lack of a SIEM.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Data retention is different from a SIEM. Typically SIEMs only
+maintain logs for limited time (sometimes as low as a month). On
+the other hand log files are typically rotated based on size. This
+means that sometimes logs will be present on the endpoint for
+longer than in the SIEM, while other times the SIEM will contain
+logs that were already rotate on the endpoint.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Because this technique relies on locally stored logs, it is
+susceptible to logs being cleared by attackers.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id="real-time-monitoring"&gt;Real time monitoring&lt;/h2&gt;
+&lt;p&gt;As an additional step you can enable the &lt;code&gt;Windows.Hayabusa.Monitoring&lt;/code&gt;
+artifact for real time detection of the same &lt;code&gt;Sigma&lt;/code&gt; rules. This can
+provide coverage for any future compromises&lt;/p&gt;</description></item></channel></rss>

