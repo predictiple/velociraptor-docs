@@ -9,7 +9,7 @@ categories: []
 keywords: []
 ---
 
-![[Woman vector created by vectorpouch ](https://www.freepik.com/free-photos-vectors/woman)— [www.freepik.com](http://www.freepik.com)](https://cdn-images-1.medium.com/max/2560/1*M5dVyBt08NsIIsxq32V3uQ.jpeg)*[Woman vector created by vectorpouch ](https://www.freepik.com/free-photos-vectors/woman)— [www.freepik.com](http://www.freepik.com)*
+![[Woman vector created by vectorpouch ](https://www.freepik.com/free-photos-vectors/woman)— [www.freepik.com](https://www.freepik.com)](https://cdn-images-1.medium.com/max/2560/1*M5dVyBt08NsIIsxq32V3uQ.jpeg)*[Woman vector created by vectorpouch ](https://www.freepik.com/free-photos-vectors/woman)— [www.freepik.com](https://www.freepik.com)*
 
 Velociraptor is a great tool for collecting Artifacts such as files and other state information from endpoints. Artifacts are simply VQL queries wrapped inside a YAML file providing the query with sufficient context to operate. Typically the triage phase of the DFIR process involves collecting and preserving evidence as quickly as possible, performing quick analysis in order to identify machines of interest for further analysis.
 

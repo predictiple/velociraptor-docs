@@ -35,7 +35,7 @@ For example, let’s inspect the Velociraptor binary itself which is signed.
 
 Obviously we can not use this method to verify thousands of binaries found on remote systems, so we need to understand how Authenticode is implemented under the covers.
 
-Authenticode uses a number of file format standards to actually embed the signature information into the binary file itself, as illustrated in the [diagram below](http://download.microsoft.com/download/9/c/5/9c5b2167-8017-4bae-9fde-d599bac8184a/Authenticode_PE.docx):
+Authenticode uses a number of file format standards to actually embed the signature information into the binary file itself, as illustrated in the [diagram below](https://download.microsoft.com/download/9/c/5/9c5b2167-8017-4bae-9fde-d599bac8184a/Authenticode_PE.docx):
 
 ![](../../img/0aJlEkIX3M0d8aKnI.png)
 

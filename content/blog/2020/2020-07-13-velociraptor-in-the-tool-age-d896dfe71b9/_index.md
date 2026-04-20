@@ -27,9 +27,8 @@ on the endpoint, or a larger powershell module? How can Velociraptor
 facilitate the distribution, coordination and collection of tool
 output from thousands of endpoints efficiently and quickly?
 
-Since [release 0.4.6](https://github.com/Velocidex/velociraptor/releases),
 Velociraptor supports including external tools directly in the
-artifact definition. This makes it easier than ever before to use
+artifact definition. This makes it easy to use
 external tools in your artifacts transparently — Velociraptor will
 ensure the tool is downloaded to the endpoint if needed and is
 available for use in your VQL.
