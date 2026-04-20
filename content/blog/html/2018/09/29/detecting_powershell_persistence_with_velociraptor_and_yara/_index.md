@@ -26,7 +26,7 @@ backdoors, in a few lines of obfuscated scripts.
 
 Mari went through a number of examples and also expanded on some in her
 blog post [Malicious PowerShell in the Registry:
-Persistence](http://az4n6.blogspot.com/2018/06/malicious-powershell-in-registry.html),
+Persistence](https://az4n6.blogspot.com/2018/06/malicious-powershell-in-registry.html),
 where she documents persistence through an autorun key launching
 powershell to execute a payload within another registry key.
 

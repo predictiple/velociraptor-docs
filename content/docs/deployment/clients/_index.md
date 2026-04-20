@@ -390,7 +390,7 @@ To summarize the process, you will need to perform the following steps:
 
 ![Modifying the WiX configuration](image36.png)
 
-3. Install the [WiX Toolset](http://wixtoolset.org/releases/) on your
+3. Install the [WiX Toolset](https://github.com/wixtoolset/wix3/releases) on your
    Windows host.
 
 4. Add your custom `client.config.xml` file and the appropriate Velociraptor

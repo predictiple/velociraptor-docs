@@ -20,7 +20,7 @@ of execution artifacts.
 
 ## Prefetch files
 
-Prefetch files are used to [keep track of executions](http://web.archive.org/web/20130315214654/http://windows.microsoft.com:80/en-US/windows7/What-is-the-prefetch-folder)
+Prefetch files are used to [keep track of executions](https://web.archive.org/web/20130315214654/http://windows.microsoft.com:80/en-US/windows7/What-is-the-prefetch-folder)
 
 > What is the prefetch folder?
 >
@@ -102,7 +102,12 @@ compatibility database stored in the registry key
 
 `HKLM\SYSTEM\CurrentControlSet\Control\SessionManager\AppCompatibility\AppCompatCache`
 
-You can read more about the Shim cache [here](https://www.fireeye.com/content/dam/fireeye-www/services/freeware/shimcache-whitepaper.pdf) or [here](http://www.alex-ionescu.com/?p=39) or [here](https://www.andreafortuna.org/2017/10/16/amcache-and-shimcache-in-forensic-analysis/).
+You can read more about the Shim cache
+[here](https://www.fireeye.com/content/dam/fireeye-www/services/freeware/shimcache-whitepaper.pdf)
+or
+[here](https://www.alex-ionescu.com/secrets-of-the-application-compatilibity-database-sdb-part-1/)
+or
+[here](https://www.andreafortuna.org/2017/10/16/amcache-and-shimcache-in-forensic-analysis/).
 
 The Shim cache database tracks the executables’ file name, file size and last modified time of the binary.
 
