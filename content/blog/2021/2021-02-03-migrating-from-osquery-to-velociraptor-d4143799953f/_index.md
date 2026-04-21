@@ -317,4 +317,4 @@ Velociraptor, check out our hands on training courses on
 [https://www.velocidex.com/training/](https://www.velocidex.com/training/)
 or check out the code on
 [GitHub](https://github.com/Velocidex/velociraptor). To chat, please
-join us on [Discord](https://discord.gg/YAU3vRE).
+join us on [Discord](/discord/).

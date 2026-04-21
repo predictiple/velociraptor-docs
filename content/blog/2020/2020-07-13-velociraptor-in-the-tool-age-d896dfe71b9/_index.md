@@ -276,4 +276,4 @@ It is a available on
 source license. As always please file issues on the bug tracker or ask
 questions on our mailing list
 [velociraptor-discuss@googlegroups.com](mailto:velociraptor-discuss@googlegroups.com)
-. You can also chat with us directly on [Discord](https://discord.gg/YAU3vRE).
+. You can also chat with us directly on [Discord](/discord/).
