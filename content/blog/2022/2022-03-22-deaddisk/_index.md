@@ -281,7 +281,7 @@ This rule mounts the `registry` accessor's
 partition.  Note how pathspec descriptors nest and can utilize
 multiple different accessors to achieve the final mount point (in this
 case, the `file` accessor, followed by `offset` followed by `raw_ntfs`
-followed by `raw_registry`)..
+followed by `raw_registry`).
 
 ![Browsing the VFS with registry accessors](reg_accssor_vfs.png)
 
