@@ -126,7 +126,7 @@ WHERE EventId = 11
 ```
 
 I have included a completed artifact in the artifact exchange:
-[Windows.ETW.WMIEventing](https://docs.velociraptor.app/exchange/artifacts/pages/wmieventing/).
+[Windows.ETW.WMIEventing](/exchange/artifacts/pages/wmieventing/).
 That artifact includes process enrichment, targeting both creation and deletion of EventConsumers.
 
 ![Custom namespace provider registration and process enrichment](06ETW.png)

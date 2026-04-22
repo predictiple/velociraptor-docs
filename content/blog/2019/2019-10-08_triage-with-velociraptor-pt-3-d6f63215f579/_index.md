@@ -13,13 +13,13 @@ keywords: []
 This is the final part of this three part series of articles
 describing how to use Velociraptor to collect files from an
 endpoint. Our [first
-part](https://docs.velociraptor.app/blog/2019/2019-10-02_triage-with-velociraptor-pt-1-253f57ce96c0/)
+part](/blog/2019/2019-10-02_triage-with-velociraptor-pt-1-253f57ce96c0/)
 shows how we can use the Velociraptor agent in a typical client/server
 setting to collect artifacts from one or many endpoints at the push of
 a button, within seconds.
 
 [Part
-two](https://docs.velociraptor.app/blog/2019/2019-10-04_triage-with-velociraptor-pt-2-d0f79066ca0e/)
+two](/blog/2019/2019-10-04_triage-with-velociraptor-pt-2-d0f79066ca0e/)
 examined what to do if Velociraptor is not already installed as an
 agent (or can not be remotely installed). In this case we used an
 accomplice user with administrator privileges (or group policy) on the

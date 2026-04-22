@@ -514,7 +514,7 @@ for a broad set of indicators of suspicious activity.
 | [Rapid7Labs](https://github.com/rapid7/Rapid7-Labs/tree/main/Vql) | Artifacts developed and shared by [Rapid7 Labs](https://www.rapid7.com/blog/tag/research/). |
 | [Velociraptor Registry Hunter Project](https://registry-hunter.velocidex.com/) | Our project to develop sophisticated registry analysis modules. |
 | [Velociraptor SQLite Hunter Project](https://sqlitehunter.velocidex.com/) | This project aims to be a one-stop shop for `SQLite`, `ESE` and many other database-oriented forensic artifacts. |
-| [The Velociraptor Artifact Exchange](https://docs.velociraptor.app/exchange/) | Our repository of community-contributed artifacts. |
+| [The Velociraptor Artifact Exchange](/exchange/) | Our repository of community-contributed artifacts. |
 
 To get these external artifacts into your Velociraptor server's artifact
 repository, we have a built-in server artifact which will download them from any

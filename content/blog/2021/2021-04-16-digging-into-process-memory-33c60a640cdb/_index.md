@@ -44,7 +44,7 @@ When a process is launched it receives environment variables that often affect t
 
 On windows, each process is started with a [Process Environment Block](https://docs.microsoft.com/en-us/windows/win32/api/winternl/ns-winternl-peb). This data structure is populated by the OS before the process is created and contains important information about the process. Processes can extract this information at runtime. The process environment variables are stored in the PEB too and therefore we can parse these out from each process’s memory.
 
-Velociraptor has a powerful binary parser built in, as was described previously in the post “[Parsing binary files](https://docs.velociraptor.app/blog/2021/2021-01-19-parsing-binary-files-d31114a41f14/)”. Having the process memory exposed via an accessor allows us to apply this parser to process memory via a VQL query.
+Velociraptor has a powerful binary parser built in, as was described previously in the post “[Parsing binary files](/blog/2021/2021-01-19-parsing-binary-files-d31114a41f14/)”. Having the process memory exposed via an accessor allows us to apply this parser to process memory via a VQL query.
 
 If you are interested in the details, check out the VQL for the `Windows.Memory.ProcessInfo` artifact [here](https://docs.velociraptor.app/artifact_references/pages/windows.memory.processinfo), but here is the result of collecting the process information (including each process’s environment variables) from my system
 

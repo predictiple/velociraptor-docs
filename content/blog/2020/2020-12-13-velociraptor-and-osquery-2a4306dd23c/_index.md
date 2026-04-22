@@ -75,7 +75,7 @@ sources:
       })
 ```
 
-As described in a [previous post](https://docs.velociraptor.app/blog/2020/2020-07-13-velociraptor-in-the-tool-age-d896dfe71b9/), Velociraptor will deliver the OSQuery binary to the endpoint securely (line 29–30), then shell out to the binary executing the provided query (line 32–34). Finally the result is parsed from JSON and returned as a standard VQL result set (line 36–39).
+As described in a [previous post](/blog/2020/2020-07-13-velociraptor-in-the-tool-age-d896dfe71b9/), Velociraptor will deliver the OSQuery binary to the endpoint securely (line 29–30), then shell out to the binary executing the provided query (line 32–34). Finally the result is parsed from JSON and returned as a standard VQL result set (line 36–39).
 
 The entire OSQuery integration is implemented as above in VQL — one does not need to do anything else in order to launch an OSQuery query on a remote host… In particular, one does not need to have OSQuery installed on the endpoint in advance! Velociraptor will push the binary to the endpoint on demand, managing binary versioning if required and maintaining a local copy of OSQuery on the endpoint.
 

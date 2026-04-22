@@ -271,7 +271,7 @@ collect offline collections for preservation of hosts.
 Although best practice is to **also** collect parsing artifacts at the
 same time, sometimes this is left out (See [Preserving Forensic
 Evidence
-](https://docs.velociraptor.app/training/playbooks/preservation/) for
+](/training/playbooks/preservation/) for
 a full discussion. It is particularly problematic when using the
 offline collector to collect the `Windows.KapeFiles.Targets` artifact,
 because once the collection is imported back into Velociraptor there

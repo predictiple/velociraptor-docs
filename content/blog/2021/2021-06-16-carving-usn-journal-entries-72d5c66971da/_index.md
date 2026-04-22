@@ -15,7 +15,7 @@ date: 2021-06-16
 
 One of the most important tasks in DFIR is reconstructing past filesystem activity. This is useful for example, in determining when files were introduced into the system (e.g. in a phishing campaign or drive by downloads) or when binaries were executed by way of modifications of prefetch files.
 
-I have previously written about the [Windows Update Sequence Number journal (USN)](https://docs.velociraptor.app/blog/2020/2020-11-13-the-windows-usn-journal-f0c55c9010e/). The USN journal is a file internal to the NTFS filesystem that maintains a log of interactions with the filesystem.
+I have previously written about the [Windows Update Sequence Number journal (USN)](/blog/2020/2020-11-13-the-windows-usn-journal-f0c55c9010e/). The USN journal is a file internal to the NTFS filesystem that maintains a log of interactions with the filesystem.
 
 The USN journal is a unique source of evidence because it can provide a timeline for when files were deleted, even if the file itself is no longer found on the system. In the screenshot below I parse the USN journal using Velociraptor’s built in USN parser. I filter for all interactions with the **test.txt** file and find that it has been removed (The **FILE_DELETE** reason).
 

@@ -173,7 +173,7 @@ issue tracker](https://github.com/Velocidex/velociraptor/issues).
 
 As an open source project, the community is our greatest resource!
 Many of us hang on the [discord
-channel](https://docs.velociraptor.app/discord/), and are all too
+channel](/discord/), and are all too
 happy to help.
 
 We also have a mailing list velociraptor-discuss@googlegroups.com that

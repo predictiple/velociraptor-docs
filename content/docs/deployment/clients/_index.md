@@ -650,7 +650,7 @@ sudo ./$filename --config client.config.yaml service install;
 
 In **Settings > Privacy & Security > Full Disk Access** `velociraptor` can still appear as disabled, even when it is correctly configured in the MDM Profile. To ensure the FDA has been enabled, follow the verification steps:
 
-- Run [MacOS.System.TCC](https://docs.velociraptor.app/artifact_references/pages/macos.system.tcc/) artifact in Velociraptor
+- Run [MacOS.System.TCC](/artifact_references/pages/macos.system.tcc/) artifact in Velociraptor
 - If return output is empty **> no Full Disk Access (FDA)**
 - If you see actual data **> Full Disk Access (FDA) is enabled for `velociraptor`!**
 

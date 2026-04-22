@@ -397,8 +397,8 @@ on the bug tracker or ask questions on our mailing list
 
 There is still time to submit it to this year's [2021 Velociraptor
 Contributor
-Competition](https://docs.velociraptor.app/announcements/2021-artifact-contest/),
+Competition](/announcements/2021-artifact-contest/),
 where you can win prizes, honor and support the entire DFIR
 community. Alternatively, you can share your artifacts with the
 community on [Velociraptor's Artifact
-Exchange](https://docs.velociraptor.app/exchange/).
+Exchange](/exchange/).

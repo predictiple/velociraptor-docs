@@ -153,6 +153,6 @@ PASS=$(7z e -so Collection.zip metadata.json | jq -r '.[].EncryptedPass' | base6
 This assumes that the private key is in your gpg vault.
 
 ### Working with the data
-Working with the Offline Collection data is [described here](https://docs.velociraptor.app/docs/deployment/offline_collections/collection_data/)
+Working with the Offline Collection data is [described here](/docs/deployment/offline_collections/collection_data/)
 
 Tags: #triage  #uploads #collector

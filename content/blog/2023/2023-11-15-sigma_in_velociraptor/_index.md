@@ -202,7 +202,7 @@ systems all the time.
 Velociraptor is not a traditional SIEM and does not rely on a scalable
 large backend data mining engine for querying collected data. Instead,
 Velociraptor's power lies in its [Velociraptor Query
-Language](https://docs.velociraptor.app/docs/vql/) which allows the
+Language](/docs/vql/) which allows the
 endpoint agent itself to query data directly on the endpoint.
 
 This means that Velociraptor has access to all information available
@@ -457,7 +457,7 @@ Velociraptor's VQL queries are streaming queries. This means they
 deliver rows as soon as they become available, while the query itself
 does not have to terminate. This facility is called [`Client
 Monitoring` or `Event`
-queries](https://docs.velociraptor.app/docs/clients/monitoring/).
+queries](/docs/clients/monitoring/).
 
 Since the built-in Sigma matching engine is also streaming and
 asynchronous, it is also possible to use event queries for log
