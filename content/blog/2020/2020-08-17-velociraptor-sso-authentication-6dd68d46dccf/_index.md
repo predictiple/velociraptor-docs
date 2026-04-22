@@ -47,7 +47,10 @@ The advantage of this scheme is that Velociraptor never handles user passwords, 
 
 ### Google OAuth2
 
-Velociraptor previously [only supported Google ]Velociraptorblog/html/2018/12/23/deploying_velociraptor_with_oauth_sso.html)as an OAuth2 provider. However this recently changed when new providers were added.
+Velociraptor previously [only supported Google
+](/blog/html/2018/12/23/deploying_velociraptor_with_oauth_sso.html) as
+an OAuth2 provider. However this recently changed when new providers
+were added.
 
 This post outlines the process of setting up OAuth2 authentication for both GitHub and Microsoft O365 environments.
 

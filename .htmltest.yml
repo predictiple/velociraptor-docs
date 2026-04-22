@@ -1,7 +1,7 @@
 # Config file for running https://github.com/wjdp/htmltest
 # See https://github.com/wjdp/htmltest/wiki/Using-With-Hugo
 
-DirectoryPath: /home/me/projects/velociraptor-docs/public/
+DirectoryPath: /home/mic/projects/velociraptor-docs/public/
 TestFilesConcurrently: true
 OutputDir: /tmp/.htmltest/
 CheckExternal: false
