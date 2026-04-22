@@ -275,13 +275,13 @@ about real time alerting? It would be nice to receive immediate
 notification when a detection rule is triggered.
 
 Velociraptor supports real time
-[client monitoring]({{< ref "/docs/clients/monitoring/" >}})
+[client monitoring](/docs/clients/monitoring/)
 via event queries. Event queries run constantly on the endpoint
 receiving rows from events.
 
 We have previously explored how Event Queries can be used for real
 time monitoring and in particular how VQL can leverage
-[Event Tracing for Windows]({{< ref "/blog/2021/2021-08-18-velociraptor-and-etw/" >}})
+[Event Tracing for Windows](/blog/2021/2021-08-18-velociraptor-and-etw/)
 (ETW).
 
 ### Using EQL detections with real time monitoring
@@ -332,10 +332,9 @@ single row and send it to the server.
 
 
 We can escalate such detections, through a number of mechanisms,
-such as [Slack alerts]({{< ref
-"/blog/2020/2020-12-26-slack-and-velociraptor-b63803ba4b16/_index.md"
->}}), or escalate to an external case management tool like [The Hive
-](https://wlambertts.medium.com/zero-dollar-detection-and-response-orchestration-with-n8n-security-onion-thehive-and-10b5e685e2a1). See [Server Monitoring]({{< ref "/docs/server_automation/server_monitoring/" >}}) for more information.
+such as
+[Slack alerts](/blog/2020/2020-12-26-slack-and-velociraptor-b63803ba4b16/), or escalate to an external case management tool like [The Hive
+](https://wlambertts.medium.com/zero-dollar-detection-and-response-orchestration-with-n8n-security-onion-thehive-and-10b5e685e2a1). See [Server Monitoring](/docs/server_automation/server_monitoring/) for more information.
 
 We can even use the resulting VQL artifact as a base for other queries
 to provide further enrichment and response capabilities.

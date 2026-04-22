@@ -199,7 +199,7 @@ notebook will be shared with all users within the org.
 ### More improvements to the process tracker
 
 The experimental process tracker is described in more details
-[here]({{% ref "/blog/2022/2022-08-17-process-tracker/" %}}), but you
+[here](/blog/2022/2022-08-17-process-tracker/), but you
 can already begin using it by enabling the
 `Windows.Events.TrackProcessesBasic` client event artifact and using
 artifacts just as `Generic.System.Pstree`, `Windows.System.Pslist` and

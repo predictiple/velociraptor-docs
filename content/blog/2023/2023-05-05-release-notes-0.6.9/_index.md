@@ -130,7 +130,7 @@ parameter within the tool configuration screen.
 ![Serving a third party tool from an SMB server](tool_serving_by_smb.png)
 
 You can configure the remote share with read only permissions (read
-[these instructions]({{% ref "/knowledge_base/tips/setup_smb_share" %}})
+[these instructions](/knowledge_base/tips/setup_smb_share/)
 for more details on configuring SMB).
 
 ## The offline collector
@@ -161,8 +161,8 @@ write on the share and not read from it. It is now safe to embed these
 credentials in the offline collector - which can only upload data but
 not read or delete other data.
 
-See the full instructions of how to [configure the offline collector for SMB upload]({{% ref
-"/knowledge_base/tips/setup_smb_share/" %}}).
+See the full instructions of how to
+[configure the offline collector for SMB upload](/knowledge_base/tips/setup_smb_share/).
 
 ### Azure Blob storage service.
 
@@ -171,10 +171,9 @@ Cloud Storage bucket. However until now, Velociraptor did not support
 the Azure offering. Many users requested direct support for Azure blob
 storage, which is now in 0.6.9.
 
-See this for all [The details about how to configure Azure for safe
-uploads]({{% ref
-"/knowledge_base/tips/setup_smb_share/" %}}), but
-similar to the other methods, credentials embedded in the offline
+See this for all
+[the details about how to configure Azure for safe uploads](/knowledge_base/tips/setup_smb_share/),
+but similar to the other methods, credentials embedded in the offline
 collector can only be used to upload data and not read or delete data
 in the storage account.
 
@@ -294,8 +293,8 @@ compromised.
 
 In 0.6.9 there are two ways to forward auditable events off the server
 
-1. Using [remote syslog services]({{% ref "/docs/deployment/references/#Logging.remote_syslog_server" %}})
-2. Uploading to external log management systems e.g. Opensearch/Elastic using the [Elastic.Events.Upload]({{% ref "/artifact_references/pages/elastic.events.upload.html" %}}) artifact.
+1. Using [remote syslog services](/docs/deployment/references/#Logging.remote_syslog_server)
+2. Uploading to external log management systems e.g. Opensearch/Elastic using the [Elastic.Events.Upload](/artifact_references/pages/elastic.events.upload/) artifact.
 
 Additionally,  auditable events are now emitted as part of the
 `Server.Audit.Logs` artifact so they can be viewed or searched in the

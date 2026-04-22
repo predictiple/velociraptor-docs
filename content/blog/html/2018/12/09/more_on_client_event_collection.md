@@ -67,7 +67,7 @@ the pslist() plugin, extracting the total CPU time (system + user) used
 by our own pid (i.e. the Velociraptor client).
 
 We can now encapsulate this query in an
-[artifact]({{< ref "/artifact_references/pages/generic.client.stats" >}})
+[artifact](/artifact_references/pages/generic.client.stats/)
 and collect it:
 
 ``` {.sourceCode .bash}

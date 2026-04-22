@@ -32,21 +32,20 @@ technical information.
 To help mitigate this problem we have added a local documentation
 search feature that allows you to search our docs directly from the
 Velociraptor GUI. You can read more about how to use it
-[here]({{< ref "/docs/gui/local_docs/" >}}).
+[here](/docs/gui/local_docs/).
 
 ![Local documentation search and preview](local_docs_search.png)
 
 This search feature is powered by the
 [Bleve](https://blevesearch.com/) search engine, which is also now
-available to be used for indexing and searching VQL query results [as
-described below]({{< relref "#full-text-indexing-and-searching" >}}).
+available to be used for indexing and searching VQL query results [as described below](#full-text-indexing-and-searching).
 
 ## CLI Improvements
 
 The command line interface has been streamlined to use artifacts as
 extensible mini-VQL programs. This makes it easy to use specific
 artifacts as replacements for one shot scripts. See our blog post on
-[The Velociraptor CLI]({{% ref "/blog/2026/2026-03-21-cli/" %}}) for a
+[The Velociraptor CLI](/blog/2026/2026-03-21-cli/) for a
 complete discussion.
 
 ## New VQL plugins

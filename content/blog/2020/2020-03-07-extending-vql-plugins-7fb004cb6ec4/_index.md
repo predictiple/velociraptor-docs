@@ -16,7 +16,7 @@ For example, raw MFT parsing is provided by the parse_mft() plugin
 which emits a row for each parsed mft entry. A VQL query can then
 filter out relevant MFT entries and potentially get a copy of the
 file, or attempt to recover deleted files (as described in our
-[previous article]({{< ref "/blog/2019/2019-11-15_recovering-deleted-ntfs-files-with-velociraptor-1fcf09855311/" >}}).
+[previous article](/blog/2019/2019-11-15_recovering-deleted-ntfs-files-with-velociraptor-1fcf09855311/).
 
 ### VQL Basics
 

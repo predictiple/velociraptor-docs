@@ -175,10 +175,10 @@ Sigma](https://sigma.velocidex.com) project simply curates the same
 rules that `Hayabusa` curates but does not require the `Hayabusa`
 binary itself.
 
-You can read the full [Sigma In Velociraptor]({{% ref
-"/blog/2023/2023-11-15-sigma_in_velociraptor/" %}}) blog post that
-describes this feature in great detail, but here I will quickly show
-how it can be used to great effect.
+You can read the full
+[Sigma In Velociraptor](/blog/2023/2023-11-15-sigma_in_velociraptor/)
+blog post that describes this feature in great detail, but here I will
+quickly show how it can be used to great effect.
 
 First I will import the set of curated Sigma rules from the
 `Velociraptor Sigma` project by collecting the
