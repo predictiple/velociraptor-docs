@@ -140,7 +140,7 @@ works on.
 
 All the details of how the original Sysmon event fields are
 transformed to ECS fields can be found coded in
-[winlogbeat-sysmon.js](https://github.com/elastic/beats/blob/master/x-pack/winlogbeat/module/sysmon/config/winlogbeat-sysmon.js)
+[winlogbeat's sysmon.yml](https://github.com/elastic/beats/blob/main/x-pack/winlogbeat/module/sysmon/ingest/sysmon.yml)
 
 ## How can we use EQL detection queries?
 

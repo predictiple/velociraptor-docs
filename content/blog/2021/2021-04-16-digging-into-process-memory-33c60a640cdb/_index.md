@@ -24,7 +24,7 @@ Consider the identification of malicious processes running in memory. Many moder
 
 For example, [Malpedia](https://malpedia.caad.fkie.fraunhofer.de/) contains Yara signatures for common malware families derived from automated identification of common code blocks. We can apply these signatures to detect memory injected [Cobalt Strike beacon](https://malpedia.caad.fkie.fraunhofer.de/details/win.cobalt_strike) by simply scanning each process address space and reporting any hits.
 
-Velociraptor included bindings to libyara’s process scanning capabilities for a while now, exposed through the VQL plugin proc_yara() and usable through artifacts such as [Windows.Detection.ProcessMemory.CobaltStrike](https://github.com/Velocidex/velociraptor/blob/master/artifacts/definitions/Windows/Detection/ProcessMemory/CobaltStrike.yaml).
+Velociraptor included bindings to libyara’s process scanning capabilities for a while now, exposed through the VQL plugin proc_yara() and usable through artifacts such as [Windows.Carving.CobaltStrike](https://docs.velociraptor.app/artifact_references/pages/windows.carving.cobaltstrike).
 
 ### Direct access to process memory
 
@@ -46,7 +46,7 @@ On windows, each process is started with a [Process Environment Block](https://d
 
 Velociraptor has a powerful binary parser built in, as was described previously in the post “[Parsing binary files](https://docs.velociraptor.app/blog/2021/2021-01-19-parsing-binary-files-d31114a41f14/)”. Having the process memory exposed via an accessor allows us to apply this parser to process memory via a VQL query.
 
-If you are interested in the details, check out the VQL for the `Windows.Forensics.ProcessInfo` artifact [here](https://github.com/Velocidex/velociraptor/blob/master/artifacts/definitions/Windows/Forensics/ProcessInfo.yaml), but here is the result of collecting the process information (including each process’s environment variables) from my system
+If you are interested in the details, check out the VQL for the `Windows.Memory.ProcessInfo` artifact [here](https://docs.velociraptor.app/artifact_references/pages/windows.memory.processinfo), but here is the result of collecting the process information (including each process’s environment variables) from my system
 
 ![](../../img/1uuWWzOGWgSnIg_4Or8JLrQ.png)
 
