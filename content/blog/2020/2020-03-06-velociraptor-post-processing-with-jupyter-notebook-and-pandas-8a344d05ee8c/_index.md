@@ -120,7 +120,7 @@ In a real investigation, the hunt will collect all the scheduled tasks from thou
 
 ![We can see the hunt id assigned to this hunt. We will need this ID when querying through the API](../../img/1Nu4ZOANqPJYg962prCJtFA.png)*We can see the hunt id assigned to this hunt. We will need this ID when querying through the API*
 
-We start off by exploring the results of the hunt — simply select all columns from the hunt results but limit the result of only a small set for inspection. We will call the [hunt_results](/vql_reference/server/#hunt-results) VQL plugin and provide it with the hunt id, the artifact we collected and the source in the artifact.
+We start off by exploring the results of the hunt — simply select all columns from the hunt results but limit the result of only a small set for inspection. We will call the [hunt_results](/vql_reference/server/hunt_results/) VQL plugin and provide it with the hunt id, the artifact we collected and the source in the artifact.
 
 ```python
 

@@ -35,7 +35,7 @@ Velociraptor's capabilities - it just might seem like an overkill to
 install a Velociraptor client and server and learn new concepts like
 VQL, Artifacts, analysis notebooks etc. It is sometimes just easier to
 run a single use tool (for example `AmCacheParser.exe` from the [EZ
-Tools suite](hhttps://ericzimmerman.github.io/#!index.md) and produce
+Tools suite](https://ericzimmerman.github.io/#!index.md) and produce
 a CSV file that can be examined in a familiar tool like `Excel`
 quickly).
 
@@ -77,7 +77,7 @@ use `Volume Shadow Copies` to access this locked file, but this is
 problematic as it can trigger endpoint security software alerts or
 even also be blocked.
 
-Other options include [RawCopy](hhttps://github.com/jschicht/RawCopy)
+Other options include [RawCopy](https://github.com/jschicht/RawCopy)
 but this is a binary only, closed source program.
 
 Velociraptor can fall back to raw NTFS parsing when it can not access

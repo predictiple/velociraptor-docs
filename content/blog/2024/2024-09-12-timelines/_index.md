@@ -436,7 +436,7 @@ annotated set of events to explain the progression of the incident.
 
 Since the timeline workflow is so central to DFIR there are a number
 of popular timelining tools out there. Probably the most popular is
-[Timesketch](hhttps://timesketch.org/) - a collaborative timeline
+[Timesketch](https://timesketch.org/) - a collaborative timeline
 analysis tool developed by the DFIR team at Google.
 
 Many people use Timesketch in conjunction with

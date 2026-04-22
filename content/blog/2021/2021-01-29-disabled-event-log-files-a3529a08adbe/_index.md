@@ -9,8 +9,6 @@ date: 2021-01-29
 
 ### Detecting malicious activity with Velociraptor
 
-![Photo by [Jonny Caspari](https://unsplash.com/@jonnysplsh?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)](https://cdn-images-1.medium.com/max/11520/0*8Z6QxIV2lCx4PYPT)*Photo by [Jonny Caspari](https://unsplash.com/@jonnysplsh?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com?utm_source=medium&utm_medium=referral)*
-
 Windows information security techniques are heavily reliant on the availability and integrity of event logs. Many state of the art systems use event log forwarding to aggregate information from endpoints and detect malicious behavior across the enterprise.
 
 But how reliable really are event logs? I was playing around with the Windows Event Viewer to understand how event logs can be interfered with in practice. We previously covered the general structure of the Windows Event Log system, so you might want to have a quick read of [that post](/blog/2019/2019-11-12_windows-event-logs-d8d8e615c9ca/) before you dive into this one.

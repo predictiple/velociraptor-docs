@@ -16,7 +16,7 @@ file content, size or other properties.
 
 ### Glob basics
 
-Velociraptor has the [glob]({{< ref "/vql_reference/popular/glob/" >}})
+Velociraptor has the [glob](/vql_reference/popular/glob/)
 plugin to search for files using a glob expression. Glob expressions use
 wildcards to search the filesystem for matches, and these are the most common
 tool for searching by filename. As you will see below, the `glob()` plugin is
