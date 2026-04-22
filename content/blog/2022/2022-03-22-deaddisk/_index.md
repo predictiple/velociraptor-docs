@@ -478,5 +478,5 @@ like to try out these features in Velociraptor, It is available on
 GitHub under an open source license. As always, please file issues on
 the bug tracker or ask questions on our mailing list
 velociraptor-discuss@googlegroups.com. You can also chat with us
-directly on discord at https://www.velocidex.com/discord.
+directly on [Discord](/discord/)..
 

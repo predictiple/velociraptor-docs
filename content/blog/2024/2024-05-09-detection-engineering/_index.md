@@ -569,7 +569,7 @@ system. For example, we can directly examine registry keys, search for
 and parse files on the endpoint and much more.
 
 Consider the [following Velociraptor Sigma
-rule](https://github.com/Velocidex/velociraptor-sigma-rules/blob/master/rules/vql/rclone.yml):
+rule](https://github.com/Velocidex/velociraptor-sigma-rules/blob/master/rules/vql/windows/rclone.yml):
 
 ```yaml
 title: Rclone

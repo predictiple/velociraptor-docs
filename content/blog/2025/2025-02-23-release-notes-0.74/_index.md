@@ -128,7 +128,7 @@ blog post [Developing Sigma Rules in Velociraptor]({{% ref
 Live detection using Sigma rules works well on Windows as we have a
 good source of events with Sysmon or Windows event logs. For example
 the
-[Windows.Hayabusa.Monitoring](https://sigma.velocidex.com/docs/artifacts/velociraptor_hayabusa_event_ruleset/)
+[Windows.Hayabusa.Monitoring](https://sigma.velocidex.com/docs/artifacts/windows.hayabusa.monitoring/)
 artifact uses the `watch_evtx()` plugin to follow event logs and match
 them against the Hayabusa rule set in real time.
 

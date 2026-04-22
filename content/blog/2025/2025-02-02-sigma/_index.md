@@ -206,7 +206,7 @@ directly consume a large set of rules from another project (For example
 the
 [Windows.Sigma.Base](https://sigma.velocidex.com/docs/models/windows_base/)
 model was written to consume Hayabusa rules for the
-[Windows.Hayabusa.Ruleset](https://sigma.velocidex.com/docs/artifacts/velociraptor_hayabusa_ruleset/)
+[Windows.Hayabusa.Ruleset](https://sigma.velocidex.com/docs/artifacts/windows.hayabusa.rules/)
 artifact), while others are defined to make powerful telemetry events
 available to rule writers (For example the
 [Windows.ETW.Base](https://sigma.velocidex.com/docs/models/windows_etw_base/)

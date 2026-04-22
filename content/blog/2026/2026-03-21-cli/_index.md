@@ -279,11 +279,9 @@ large number of files for preservation purposes.
 {{% /notice %}}
 
 Since this artifact is not built in, I will need to download the
-[Artifact
-Pack](https://triage.velocidex.com/docs/windows.triage.targets/Windows.Triage.Targets.zip)
-(You can find the link to the pack from
-https://triage.velocidex.com/). The artifact pack is simply a ZIP file
-with yaml artifacts in it.
+[Artifact Pack](https://triage.velocidex.com/docs/windows.triage.targets/Windows.Triage.Targets.zip)
+(You can find the link to the pack from https://triage.velocidex.com/
+). The artifact pack is simply a ZIP file with yaml artifacts in it.
 
 To collect a high level target and store the resulting collection in a
 zip file I can use the following command line:

@@ -36,14 +36,14 @@ In this release, the Winpmem driver is incorporated into the
 Velociraptor binary itself so there is no need to introduce additional
 binaries to the endpoint. The driver is inserted on demand when an
 image is required using the new VQL function
-[winpmem()](https://docs.velociraptor.app/vql_reference/windows/winpmem/). This
+[winpmem()](/vql_reference/windows/winpmem/). This
 VQL function can compress the memory image, to make it faster to
 acquire (less IO) and deliver over the network (less network bandwidth
 required).
 
 The ability to access physical memory simply is also leveraged with
 the
-[winpmem](https://docs.velociraptor.app/vql_reference/accessors/winpmem/)
+[winpmem](/vql_reference/accessors/winpmem/)
 accessor which allows for direct Yara scans with
 `Windows.Detection.Yara.PhysicalMemory `
 

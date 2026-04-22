@@ -62,7 +62,7 @@ implement \_\_EventConsumer classes in arbitrary namespaces.
 
 It is detection of WMI Event Consumers in arbitrary namespaces that I'm going
 to focus. For anyone interested in testing I have written
-[a script to generate WMI event consumers](https://github.com/mgreen27/mgreen27.github.io/blob/master/static/other/WMIEventingNoisemaker/WmiEventingNoisemaker.ps1).
+[a script to generate WMI event consumers](https://github.com/mgreen27/mgreen27.github.io/blob/master/static/WMIEventingNoisemaker/WmiEventingNoisemaker.ps1).
 This script wraps several powershell functions released during the Black
 Hat talk to test creating working event consumers.
 
@@ -157,7 +157,7 @@ The Velociraptor platform aims to provide visibility and access
 to endpoint data. If you would like to try Velociraptor it is available on GitHub under an open source license.
 As always, please file issues on the bug tracker or ask questions on our
 mailing list velociraptor-discuss@googlegroups.com. You can also chat with
-us directly on discord at https://www.velocidex.com/discord
+us directly on [Discord](/discord/).
 
 
 ## References

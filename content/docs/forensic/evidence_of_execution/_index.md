@@ -78,7 +78,7 @@ timestamps.
 
 BAM is a Windows service that Controls activity of background
 applications.  This service exists in Windows 10 only after Fall
-Creators update – [version 1709](https://www.andreafortuna.org/dfir/forensic-artifacts-evidences-of-program-execution-on-windows-systems/).
+Creators update – [version 1709](https://andreafortuna.org/2018/05/23/forensic-artifacts-evidences-of-program-execution-on-windows-systems/).
 
 The service maintains binary data in the registry which keeps track on
 the execution of different programs by the user. Velociraptor can
@@ -103,11 +103,11 @@ compatibility database stored in the registry key
 `HKLM\SYSTEM\CurrentControlSet\Control\SessionManager\AppCompatibility\AppCompatCache`
 
 You can read more about the Shim cache
-[here](https://www.fireeye.com/content/dam/fireeye-www/services/freeware/shimcache-whitepaper.pdf)
+[here](https://web.archive.org/web/20210727184134/https://www.fireeye.com/content/dam/fireeye-www/services/freeware/shimcache-whitepaper.pdf)
 or
 [here](https://www.alex-ionescu.com/secrets-of-the-application-compatilibity-database-sdb-part-1/)
 or
-[here](https://www.andreafortuna.org/2017/10/16/amcache-and-shimcache-in-forensic-analysis/).
+[here](https://andreafortuna.org/2017/10/16/amcache-and-shimcache-in-forensic-analysis/).
 
 The Shim cache database tracks the executables’ file name, file size and last modified time of the binary.
 
@@ -150,7 +150,7 @@ order to power the "App history" tab in the task manager.
 
 ![SRUM](image12.png)
 
-Metrics are stored in an ESE database at the location `%windir%\System32\sru\SRUDB.dat`. You can read more about the SRUM [here](https://www.velocidex.com/blog/medium/2019-12-31_digging-into-the-system-resource-usage-monitor-srum-afbadb1a375/).
+Metrics are stored in an ESE database at the location `%windir%\System32\sru\SRUDB.dat`. You can read more about the SRUM [here](/blog/2019/2019-12-31_digging-into-the-system-resource-usage-monitor-srum-afbadb1a375/).
 
 You can examine the ESE database manually using Nirsoft [ESEDatabaseViewer](https://www.nirsoft.net/utils/ese_database_view.html).
 

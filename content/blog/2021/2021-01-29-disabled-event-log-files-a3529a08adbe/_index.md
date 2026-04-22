@@ -115,7 +115,7 @@ This was a fun little exercise in trying to understand event logging in Windows.
 
 Velociraptor’s power is in being able to quickly and easily recover forensic evidence on activity on the endpoint. In most environments disabling log file or providers is not a legitimately common, so hunting for such activity produces high value signals and leads to a better understanding of how attackers are able to hide their tracks.
 
-The above example is just one of the exercises we do in our hands on Velociraptor courses. If you are interested in learning more about Velociraptor, check out our hands on training courses on [https://www.velocidex.com/training/](https://www.velocidex.com/training/) or join us on discord [https://www.velocidex.com/discord](https://www.velocidex.com/discord).
+The above example is just one of the exercises we do in our hands on Velociraptor courses. If you are interested in learning more about Velociraptor, check out our hands on training courses [here](/training/) or join us on [Discord](/discord/).
 
 ### P.S.
 

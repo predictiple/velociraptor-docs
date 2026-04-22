@@ -719,7 +719,7 @@ and
 The easiest way to populate these is to answer Yes to `Do you want to
 restrict VQL functionality on the server?` in the configuration
 wizard. This will implement the [default allow
-list](https://github.com/Velocidex/velociraptor/blob/master/bin/allowlist.go)
+list](https://github.com/Velocidex/velociraptor/blob/master/tools/survey/allowlist.go)
 (which you can tweak later as required).
 
 If these lists are populated, only the plugins mentioned are allowed
