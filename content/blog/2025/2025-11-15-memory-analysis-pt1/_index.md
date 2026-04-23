@@ -648,5 +648,5 @@ If you like to try the new `Windows.Memory.Mem2Disk` artifact, take
 Velociraptor for a spin !  It is available on GitHub under an open
 source license. As always please file issues on the bug tracker or ask
 questions on our mailing list `velociraptor-discuss@googlegroups.com`
-. You can also chat with us directly on discord
-https://www.velocidex.com/discord .
+. You can also chat with us directly
+on [Discord](/discord/).

@@ -648,7 +648,7 @@ case this may or may not matter, but you should always be aware of this fact.
 
 If your analysis _does_ need to take filesystem timestamps into account, then
 you can use the
-[Windows.KapeFiles.Extract](https://docs.velociraptor.app/artifact_references/pages/windows.kapefiles.extract/)
+[Windows.KapeFiles.Extract](/artifact_references/pages/windows.kapefiles.extract/)
 artifact to do the extraction. This artifact reads the stored timestamps and
 replicates them on the extracted files, however there are still some limitations
 as stated in the artifact's description.

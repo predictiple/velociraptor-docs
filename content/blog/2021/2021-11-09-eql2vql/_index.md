@@ -140,7 +140,7 @@ works on.
 
 All the details of how the original Sysmon event fields are
 transformed to ECS fields can be found coded in
-[winlogbeat-sysmon.js](https://github.com/elastic/beats/blob/master/x-pack/winlogbeat/module/sysmon/config/winlogbeat-sysmon.js)
+[winlogbeat's sysmon.yml](https://github.com/elastic/beats/blob/main/x-pack/winlogbeat/module/sysmon/ingest/sysmon.yml)
 
 ## How can we use EQL detection queries?
 
@@ -389,4 +389,4 @@ detection technology, take Velociraptor for a spin! It is available on
 source license. As always, please file issues on the bug tracker or
 ask questions on our mailing list
 velociraptor-discuss@googlegroups.com. You can also chat with us
-directly on discord at https://www.velocidex.com/discord
+directly on [Discord](/discord/).

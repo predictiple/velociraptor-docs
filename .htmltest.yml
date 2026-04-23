@@ -6,11 +6,28 @@ TestFilesConcurrently: true
 OutputDir: /tmp/.htmltest/
 CheckExternal: false
 CheckInternal: true
-CheckScripts: false
-CheckMeta: false
-EnforceHTTPS: false
-IgnoreHTTPS: ["localhost:1313"]
-IgnoreURLs: ["/app/index.html","exchange/artifacts/pages","../../img/"]
+CheckScripts: true
+CheckMeta: true
+EnforceHTTPS: true
+IgnoreHTTPS:
+- "localhost:1313"
+IgnoreURLs:
+- "/app/index.html"
+- "\\.\\./img/"
+- "\\.local"
+- "#/host/server"
+- "example.com"
+- "https://velociraptor"
+- "livereload.js"
+- "localhost:1313"
+- "test\\."
+- "velociraptor-docs/edit/"
+- "www.googletagmanager.com"
+IgnoreDirs:
+- "artifact_references"
+- "exchange"
 IgnoreAltMissing: true
 IgnoreDirectoryMissingTrailingSlash: true
 IgnoreInternalEmptyHash: true
+HTTPConcurrencyLimit: 3
+DocumentConcurrencyLimit: 1

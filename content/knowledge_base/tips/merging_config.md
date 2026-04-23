@@ -23,7 +23,7 @@ $ velociraptor-v0.6.4-linux-amd64 config generate > /tmp/config.yaml
 To customize the generated configuration we can apply a JSON
 merge/patch step. [JSON
 merge](https://datatracker.ietf.org/doc/html/rfc7396) and [JSON
-patch](http://jsonpatch.com/) are standard ways of specifying a
+patch](https://jsonpatch.com/) are standard ways of specifying a
 transformation on a JSON object.
 
 {{% notice tip Viewing the Configuration in JSON %}}

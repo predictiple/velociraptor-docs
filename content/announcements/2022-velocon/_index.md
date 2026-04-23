@@ -248,7 +248,7 @@ methods for reverse engineering software systems. Now, he's heading
 APTA Technologies, a start-up building machine learning tools to
 understand software behavior .
 
-Affiliation: APTA Technologies, https://apta.tech
+Affiliation: APTA Technologies
 
 ### When Dinosaurs Ruled the Blue Team: Retrieving triage images with EDR
 By **Dan Banker**

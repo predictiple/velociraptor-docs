@@ -8,7 +8,7 @@ keywords: []
 
 ![](../../img/0iyK-hcG9nhlPHVOE.jpg?width=600px)
 
-Velociraptor is a unique endpoint visibility tool because it provides the ability for users to write custom, tailored queries using the [Velociraptor Query Language](https://www.velocidex.com/docs/vql_reference/) (VQL). Having a powerful query language right at the endpoint gives our responders unprecedented flexibility, and the ability to leverage the experience of other analysts within the vibrant Velociraptor community.
+Velociraptor is a unique endpoint visibility tool because it provides the ability for users to write custom, tailored queries using the [Velociraptor Query Language](/vql_reference/) (VQL). Having a powerful query language right at the endpoint gives our responders unprecedented flexibility, and the ability to leverage the experience of other analysts within the vibrant Velociraptor community.
 
 VQL is a powerful language but was never designed to be a full featured programming language — it is deliberately kept simple and easy to use. VQL is essentially a glue language that allows more complete capabilities provided by VQL plugins to be strung together into a more functional query.
 
@@ -32,7 +32,7 @@ The simplicity of this language allows analysts to pick up Velociraptor in a sho
 
 ### Extending VQL via Artifacts
 
-One way to extend VQL is through defining [Artifacts](https://www.velocidex.com/docs/user-interface/artifacts/). Artifacts are a way to encapsulate other VQL queries in YAML files which can then be shared and added to Velociraptor at any time. Artifacts have a name by which they can be accessed in other queries. For example
+One way to extend VQL is through defining Artifacts. Artifacts are a way to encapsulate other VQL queries in YAML files which can then be shared and added to Velociraptor at any time. Artifacts have a name by which they can be accessed in other queries. For example
 
 ```
  SELECT Name, SID FROM Artifact.Windows.Sys.Users()

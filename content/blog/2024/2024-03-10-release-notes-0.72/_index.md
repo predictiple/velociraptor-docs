@@ -282,7 +282,7 @@ like `Virus Total`.
 
 Previously plugins that required credentials needed those credentials
 to be passed as arguments to the plugin. For example, the
-[upload_s3()](https://docs.velociraptor.app/vql_reference/other/upload_s3/)
+[upload_s3()](/vql_reference/other/upload_s3/)
 plugin requires AWS S3 credentials to be passed in as parameters.
 
 This poses a problem for the Velociraptor artifact writer - how to
@@ -638,6 +638,5 @@ spin](https://github.com/Velocidex/velociraptor)!  It is available
 on GitHub under an open source license. As always please file issues
 on the bug tracker or ask questions on our mailing list
 [velociraptor-discuss@googlegroups.com](mailto:velociraptor-discuss@googlegroups.com)
-. You can also chat with us directly on discord
-[https://www.velocidex.com/discord](https://www.velocidex.com/discord)
+. You can also chat with us directly on [Discord](/discord/).
 .

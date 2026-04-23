@@ -80,14 +80,14 @@ many ways of achieving this, e.g.:
   a method used to intercept calls to functions. The first few bytes
   of the target function in memory are overwritten with a jump
   instruction, redirecting the execution flow to a custom function.
-  
+
 - With [DLL injection](https://attack.mitre.org/techniques/T1055/001/)
   an adversary modifies an existing Dynamic-Link Library (DLL) or adds
   a new DLL to an existing process. An example for a DLL modification
   is DLL hollowing analogous to process hollowing while new libraries
   can e.g. be added by manipulating the Import Address Table (IAT)
   of the executable.
-  
+
 A full list of process injection techniques can be found at [Mitre:
 Process injection](https://attack.mitre.org/techniques/T1055/).
 
@@ -430,7 +430,7 @@ Hollows Hunter and PE-sieve are the most comparable tools to
 `Mem2Disk`. They employ a variety of techniques to detect malware on
 one system and are more capable and in-depth than `Mem2Disk`. Hollows
 Hunter can also be executed via Velociraptor with the
-[Windows.Memory.HollowsHunter](https://docs.velociraptor.app/exchange/artifacts/pages/hollowshunter/)
+[Windows.Memory.HollowsHunter](/exchange/artifacts/pages/hollowshunter/)
 plugin and scales to multiple machines.
 
 In contrast to `Windows.Memory.HollowsHunter`, `Mem2Disk` is a

@@ -276,7 +276,7 @@
     {
         "title": "CyberTriage.Collector",
         "author": "bcarrier",
-        "description": "Runs the Cyber Triage (http://cybertriage.com) Collector to copy forensic artifacts for automated analysis. The Dynamic collection will include EXEs, DLLs, and other files referenced by artifacts.\nThe output of the collection can be saved to a Velociraptor server, a Cyber Triage server, or cloud storage (S3 or Azure).\nConfiguration information is available at - https://docs.cybertriage.com/en/latest/chapters/integrations/velociraptor_collect.html\nIt requires the Velociraptor server to have copies of the Cyber Triage Deployer script and optional configuration files.\nHistory. 1.0 - Initial artifact creation\nContact support@cybertriage.com with any questions.\nCopyright (c) 2025 Sleuth Kit Labs LLC. All rights reserved.",
+        "description": "Runs the Cyber Triage (https://cybertriage.com) Collector to copy forensic artifacts for automated analysis. The Dynamic collection will include EXEs, DLLs, and other files referenced by artifacts.\nThe output of the collection can be saved to a Velociraptor server, a Cyber Triage server, or cloud storage (S3 or Azure).\nConfiguration information is available at - https://docs.cybertriage.com/en/latest/chapters/integrations/velociraptor_collect.html\nIt requires the Velociraptor server to have copies of the Cyber Triage Deployer script and optional configuration files.\nHistory. 1.0 - Initial artifact creation\nContact support@cybertriage.com with any questions.\nCopyright (c) 2025 Sleuth Kit Labs LLC. All rights reserved.",
         "link": "/exchange/artifacts/pages/cybertriagecollector",
         "tags": [],
         "author_link": "https://github.com/bcarrier",
@@ -2812,16 +2812,6 @@
         "author_link": "https://github.com/eduardomcm",
         "author_avatar": "https://avatars.githubusercontent.com/u/49650494?v=4",
         "date": "2021-11-09"
-    },
-    {
-        "title": "Windows.AttackSimulation.AtomicRedTeam",
-        "author": "weslambert",
-        "description": "This artifact allows you to run Atomic Red Team tests on Windows\nendpoints using Invoke-AtomicRedTeam. Linux and MacOS endpoints\nwill soon be supported.",
-        "link": "/exchange/artifacts/pages/windows.attacksimulation.atomicredteam",
-        "tags": [],
-        "author_link": "https://github.com/weslambert",
-        "author_avatar": "https://avatars.githubusercontent.com/u/16829864?v=4",
-        "date": "2021-11-06"
     },
     {
         "title": "Linux.Sysinternals.Sysmon",

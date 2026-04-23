@@ -134,7 +134,7 @@ Let's look at applying a label based on data that *isn't* included in the
 default interrogation artifact, and that is dynamic (i.e. where the outcome will
 change over time).
 Here we will use a Sigma rule from the
-[Hayabusa Rules](https://sigma.velocidex.com/docs/artifacts/velociraptor_hayabusa_ruleset/)
+[Hayabusa Rules](https://sigma.velocidex.com/docs/artifacts/windows.hayabusa.rules/)
 ruleset.
 
 In order for this to work you'll need to have already imported the "Velociraptor

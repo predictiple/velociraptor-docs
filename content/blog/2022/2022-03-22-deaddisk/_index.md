@@ -281,7 +281,7 @@ This rule mounts the `registry` accessor's
 partition.  Note how pathspec descriptors nest and can utilize
 multiple different accessors to achieve the final mount point (in this
 case, the `file` accessor, followed by `offset` followed by `raw_ntfs`
-followed by `raw_registry`)..
+followed by `raw_registry`).
 
 ![Browsing the VFS with registry accessors](reg_accssor_vfs.png)
 
@@ -478,5 +478,5 @@ like to try out these features in Velociraptor, It is available on
 GitHub under an open source license. As always, please file issues on
 the bug tracker or ask questions on our mailing list
 velociraptor-discuss@googlegroups.com. You can also chat with us
-directly on discord at https://www.velocidex.com/discord.
+directly on [Discord](/discord/)..
 
