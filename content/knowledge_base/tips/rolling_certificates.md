@@ -105,10 +105,10 @@ To rotate server certificates, use the following command to generate a new
 configuration file containing rotated certificates:
 
 ```
-$ velociraptor config reissue_certs --config /etc/velociraptor/server.config.yaml > /tmp/new_key.config.yaml
+$ velociraptor config reissue_certs --config /etc/velociraptor/server.config.yaml > /tmp/new_certs.config.yaml
 ```
 
-The `config reissue_key` command updates the following configuration items:
+The `config reissue_certs` command updates the following configuration items:
 - `GUI.gw_certificate`
 - `Frontend.certificate`
 
