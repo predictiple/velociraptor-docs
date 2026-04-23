@@ -45,7 +45,7 @@ Hard wrap paragraph text at 70 characters. This makes it easier to
 review GitHub pull requests, which display changes side-by-side.
 
 Your code editor may provide an auto-wrap option or an extension that
-makes this easy. For example, in VScode you can use
+makes this easy. For example, in VSCode you can use
 [Rewrap](https://marketplace.visualstudio.com/items?itemName=stkb.rewrap).
 
 Exceptions to hard-wrapping are:
