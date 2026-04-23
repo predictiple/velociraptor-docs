@@ -50,7 +50,7 @@ by a large community, solving the issue of some single use Ad-Hoc
 tools becoming unmaintained over time.
 
 This blog post specifically focuses on using Velociraptor's extensive
-[Command Line Interface mode]({{% ref "/docs/cli/" %}}) as a single
+[Command Line Interface mode](/docs/cli/) as a single
 use tool. This allows users to replace a large number of scripts, and
 adhoc tools with varying levels of maintainance and different
 installation dependencies, with a single well maintained and
@@ -120,7 +120,7 @@ understand VQL to use Artifacts**.
 
 Velociraptor allows artifacts to be run on the command line, just like
 mini programs. You can search for the artifacts you need on the
-[Artifacts Search Page]({{% ref "/artifact_references/" %}}) to find
+[Artifacts Search Page](/artifact_references/) to find
 the `Windows.Forensics.SRUM` artifact is the one used to parse SRUM
 files. This artifact uses Velociraptor's native ESE parser which does
 not need any external libraries, or to "repair" the files. In
@@ -255,11 +255,10 @@ allows contributions of cutting edge analysis techniques or
 streamlining artifacts to particular work flows.
 
 Velociraptor comes with a pre-selection of external artifact sources,
-such as the [Artifact Exchange]({{% ref "/exchange/" %}}). You can
+such as the [Artifact Exchange](/exchange/). You can
 import these artifacts to a Velociraptor server using the
-[Server.Import.Extras]({{% ref
-"/artifact_references/pages/server.import.extras/" %}}) server
-artifact.
+[Server.Import.Extras](/artifact_references/pages/server.import.extras/)
+server artifact.
 
 You can also just use these artifacts manually on the command
 line. For example, suppose I wanted to use the
@@ -313,21 +312,21 @@ the command line, but sometimes other tools may provide some
 capabilities which are still missing from Velociraptor.
 
 Usually this is not a problem since Velociraptor allows us to
-incorporate third party tools via its [External Tools]({{% ref
-"/docs/artifacts/tools/" %}}) support.
+incorporate third party tools via its
+[external tools](/docs/artifacts/tools/) support.
 
 External tools are declared in the artifact definition and the VQL is
 written to launch the tool, and parse its output into the same machine
 readable format as native artifacts.
 
 In the following example I will use the
-[Windows.EventLogs.Hayabusa]({{% ref
-"/exchange/artifacts/pages/windows.eventlogs.hayabusa/" %}}) artifact
-to run an initial triage over the system. This artifact runs an
-external tool [Hayabusa](https://github.com/Yamato-Security/hayabusa)
-to do the analysis. You can find this artifact in the [Artifact
-Exchange]({{% ref "/exchange/" %}}) so I will use that artifact pack
-to load it.
+[Windows.EventLogs.Hayabusa](/exchange/artifacts/pages/windows.eventlogs.hayabusa/)
+artifact to run an initial triage over the system. This artifact runs
+an external tool
+[Hayabusa](https://github.com/Yamato-Security/hayabusa) to do the
+analysis. You can find this artifact in the
+[Artifact Exchange](/exchange/) so I will use that artifact pack to
+load it.
 
 ```text
 C:\Windows\System32>f:\velociraptor.exe -v --definitions c:\Users\test\Downloads\artifact_exchange_v2.zip -r Windows.EventLogs.Hayabusa -o c:\output\test.zip
@@ -421,13 +420,13 @@ the results are stored to a local file on their system!
 
 Velociraptor's super power is the ability to collect forensic
 artifacts at scale and remotely. This is very easy to do using the
-powerful [Velociraptor GUI]({{% ref "/docs/clients/artifacts/" %}})
+powerful [Velociraptor GUI](/docs/clients/artifacts/)
 but sometimes using the CLI is better (e.g. for automation).
 
 Velociraptor's server can be fully controlled over [Velociraptor's
-API]({{% ref "/docs/server_automation/server_api/" %}}). The API allows
-any VQL plugin to be run on the server, thereby facilitating full
-automation.
+API](/docs/server_automation/server_api/).
+The API allows any VQL plugin to be run on the server, thereby
+facilitating full automation.
 
 In release 0.76, Velociraptor's CLI was streamlined to have the same
 user interface for collecting artifacts from an endpoint or
@@ -438,9 +437,9 @@ artifact remotely from a client using the CLI. This artifact scans the
 endpoint for `LNK` files, parses them and reports any suspicious
 files.
 
-Before I start I will create an [API key]({{% ref
-"/docs/server_automation/server_api/#creating-an-api-client-configuration"
-%}}) so I can connect to the server:
+Before I start I will create an
+[API key](/docs/server_automation/server_api/#creating-an-api-client-configuration)
+so that I can connect to the server:
 
 ```shell
 velociraptor --config server.config.yaml config api_client --name APIClient --role administrator api.config.yaml
@@ -559,8 +558,8 @@ for various server management tasks.
 
 For this example, I will generate new Windows client MSI packages that
 can be installed on the fleet. This is usually done via the
-[Server.Utils.CreateMSI]({{% ref
-"/artifact_references/pages/server.utils.createmsi/" %}}) artifact:
+[Server.Utils.CreateMSI](/artifact_references/pages/server.utils.createmsi/)
+artifact:
 
 ```shell
 > velociraptor.exe -v --api_config api.config.yaml -r Server.Utils.CreateMSI --client_id server -o c:\datastore\test.zip

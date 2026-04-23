@@ -17,7 +17,7 @@ date: 2024-09-12
 {{% notice note "New feature" %}}
 
 This feature is available in the 0.73 release. You can
-[Download it]({{% ref "/downloads/" %}}) and provide valuable feedback.
+[Download it](/downloads/) and provide valuable feedback.
 
 {{% /notice %}}
 

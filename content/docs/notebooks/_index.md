@@ -137,7 +137,7 @@ or via direct link.
 
 However, the data within notebooks is still available
 to all users. For example, any notebook editor can build or view a
-[timeline]({{< ref "/blog/2021/2021-09-07-release-notes-0.6.1/#timelines" >}})
+[timeline](/blog/2021/2021-09-07-release-notes-0.6.1/#timelines)
 from private notebook cells if they know the notebook and cell IDs. This can
 be useful for providing your team with data views that are sourced from more
 complex queries maintained in a private notebook.

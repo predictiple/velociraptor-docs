@@ -2,21 +2,22 @@
 
 Google Cloud Storage buckets can be a useful upload destination for receiving
 files from Velociraptor clients or collection containers from
-[offline collectors]({{< ref "/docs/deployment/offline_collections" >}})
+[offline collectors](/docs/deployment/offline_collections/)
 in scenarios where the source system is internet connected and you do not want
 to stand up storage services on the local network.
 
 This is made possible by the
-[upload_s3]({{< ref "/vql_reference/other/upload_s3/" >}}) VQL function.
+[upload_s3](/vql_reference/other/upload_s3/) VQL function.
 
 {{% notice "note" "Deprecation of the upload_gcs() plugin" %}}
 
-Prior to release 0.76, Velociraptor had a dedicated [upload_gcs]({{<
-ref "/vql_reference/other/upload_gcs/" >}}) plugin, however after this
-release that plugin was removed since it increased the binary size
-significantly. Google provides an AWS compatibility mode which allows
-us to use the [upload_s3]({{< ref "/vql_reference/other/upload_s3/"
->}}) function instead.
+Prior to release 0.76, Velociraptor had a dedicated
+[upload_gcs](/vql_reference/other/upload_gcs/) plugin,
+however after this release that plugin was removed since it increased
+the binary size significantly. Google provides an AWS compatibility
+mode which allows us to use the
+[upload_s3](/vql_reference/other/upload_s3/)
+function instead.
 
 {{% /notice %}}
 

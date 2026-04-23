@@ -17,7 +17,7 @@ noTitle: true
 Thank you for joining us for the day-long virtual summit as we DIG
 DEEPER TOGETHER!
 
-[The full conference is now available!]({{< ref "/presentations/2022_velocon/" >}})
+[The full conference is now available!](/presentations/2022_velocon/)
 
 ## Agenda at a glance
 

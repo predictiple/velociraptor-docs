@@ -82,13 +82,13 @@ arches:
 
 ---
 
-This is an old release - check out the [current release]({{< ref "/downloads" >}})
+This is an old release - check out the [current release](/downloads/)
 
 {{< release_download >}}
 
 ## Release notes
 
-Full release notes are published in our [release blog post]({{< ref "/blog/2025/2025-08-30-release-notes-0.75/" >}})
+Full release notes are published in our [release blog post](/blog/2025/2025-08-30-release-notes-0.75/)
 
 {{% notice note "Support for Windows 7" %}}
 
@@ -112,7 +112,7 @@ However, note the following caveats:
   updated. These builds may miss some specific functionality.
 
 * If you need to use these builds for an offline collector we
-  recommend using [the generic collector]({{< ref "/docs/deployment/offline_collections/#the-generic-collector" >}}).
+  recommend using [the generic collector](/docs/deployment/offline_collections/#the-generic-collector).
 
 
 **Do not use this build in a general deployment!** Only use it for

@@ -196,7 +196,7 @@ WHERE NOT FullPath =~ "^/(proc|shared)"
 This query uses a WHERE clause to filter out any paths starting with
 `/proc` or `/shared`. While this seems reasonable it does not work!
 Thinking back to how VQL works (See
-[Life of a Query]({{< ref "/docs/vql/fundamentals/#life-of-a-query" >}})
+[Life of a Query](/docs/vql/fundamentals/#life-of-a-query)
 ), the `glob()` plugin will expand the full glob into the query, and
 the WHERE clause simply filters out non-matching rows. Therefore
 `glob()` will still get stuck in proc or shared as before!

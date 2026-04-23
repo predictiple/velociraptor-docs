@@ -356,7 +356,7 @@ now. In this release we have really expanded their functionality into
 a complete end to end timelining analysis tool.
 
 The details of the new workflow are described in the [Timelines in
-Velociraptor]({{% ref "/blog/2024/2024-09-12-timelines/" %}}) blog
+Velociraptor](/blog/2024/2024-09-12-timelines/) blog
 post, but below is a screenshot to illustrate the final product - an
 annotated timeline derived from analysis of multiple artifacts.
 

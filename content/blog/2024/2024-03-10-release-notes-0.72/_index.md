@@ -521,10 +521,10 @@ Note that the PAC file must obviously be accessible without a proxy.
 Velociraptor maintains some critical metadata in various files. In
 this release we implemented an automated backup and restore
 framework. This framework is able to backup some critical parts of the
-server using the VQL plugins [backup()]({{% ref
-"/vql_reference/server/backup/" %}}) and [backup_restore()]({{% ref
-"/vql_reference/server/backup_restore/" %}}), as well as periodically
-(by default daily).
+server using the VQL plugins
+[backup()](/vql_reference/server/backup/) and
+[backup_restore()](/vql_reference/server/backup_restore/),
+as well as periodically (by default daily).
 
 * Backup all users and ACLs
 * Backup all hunt metadata
@@ -627,7 +627,7 @@ This release also introduces the Registry Hunter project - a unified
 streamlined way to hunt for forensically relevant information through
 the windows registry.
 
-You can read more about [The registry hunter]({{% ref "/blog/2024/2024-04-12-registry-hunter/" %}}) in our blog post.
+You can read more about [The registry hunter](/blog/2024/2024-04-12-registry-hunter/) in our blog post.
 
 ## Conclusions
 

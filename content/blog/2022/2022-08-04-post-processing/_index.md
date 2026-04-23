@@ -357,9 +357,9 @@ However collecting the artifact on the endpoint works much better.
 * Parsing certain artifacts on the server is impossible to do. For
   example, the above EVTX hunter enriches the SID in the event by
   calling the `lookupSID()` VQL function (that calls the Windows
-  API). Clearly this can not work on the server. Similarly [resolving
-  the event messages]({{% ref  "/blog/2019/2019-11-12_windows-event-logs-d8d8e615c9ca/" %}}) is also
-  problematic when parsing the event logs offline.
+  API). Clearly this can not work on the server. Similarly
+  [resolving the event messages](/blog/2019/2019-11-12_windows-event-logs-d8d8e615c9ca/)
+  is also problematic when parsing the event logs offline.
 
 Rather than collecting bulk data using `Windows.KapeFiles.Targets`,
 Velociraptor users should collect other, more capable artifacts, that

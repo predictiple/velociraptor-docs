@@ -120,8 +120,8 @@ The GUI also introduces a new `Sigma Editor` which is used in the
 or curate custom Sigma Rules.
 
 To understand how all these components work together, read our new
-blog post [Developing Sigma Rules in Velociraptor]({{% ref
-"/blog/2025/2025-02-02-sigma/" %}})
+blog post
+[Developing Sigma Rules in Velociraptor](/blog/2025/2025-02-02-sigma/).
 
 ### Linux eBPF support
 

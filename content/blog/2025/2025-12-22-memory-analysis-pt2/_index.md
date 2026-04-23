@@ -14,10 +14,9 @@ date: 2025-12-22
 noindex: false
 ---
 
-In [Memory Analysis with Velociraptor - Part 1]({{< ref
-"/blog/2025/2025-11-15-memory-analysis-pt1/" >}}) we looked at how to access
-the RAM with Velociraptor. In this post, we look at how to find fileless
-malware.
+In [Memory Analysis with Velociraptor - Part 1](/blog/2025/2025-11-15-memory-analysis-pt1/)
+we looked at how to access the RAM with Velociraptor. In this post, we
+look at how to find fileless malware.
 
 
 # 0. Abstract
@@ -31,11 +30,11 @@ Our approach finds the C2 frameworks without knowing where the attacker is,
 without dumping the RAM and scaling to >10.000 systems.
 
 Our custom Velociraptor Query Language (VQL) artifact
-[Windows.Memory.Mem2Disk]({{< ref
-"/exchange/artifacts/pages/windows.memory.mem2disk/" >}}) compares the code in
-the .text segment of every process to the code of the executable on
-disk. Leveraging Velociraptor, we can execute this artifact on >10.000 systems
-simultaneously and we can analyze the RAM live without actually dumping it.
+[Windows.Memory.Mem2Disk](/exchange/artifacts/pages/windows.memory.mem2disk/)
+compares the code in the .text segment of every process to the code of
+the executable on disk. Leveraging Velociraptor, we can execute this
+artifact on >10.000 systems simultaneously and we can analyze the RAM
+live without actually dumping it.
 
 
 # 1. Introduction
@@ -174,12 +173,12 @@ would start a beacon or backdoor.
 
 ## 4.1. Velociraptor
 
-[Memory Analysis with Velociraptor - Part 1]({{< ref
-"/blog/2025/2025-11-15-memory-analysis-pt1/" >}}) already described in depth
-how to access the RAM with Velociraptor. This works live with the accessors of
-Velociraptor, so we do not need to dump the entire RAM. It scales up to
-thousands of computers, therefore, we can detect C2 frameworks in entire
-networks without previously knowing which machines are infected.
+[Memory Analysis with Velociraptor - Part 1](/blog/2025/2025-11-15-memory-analysis-pt1/)
+already described in depth how to access the RAM with Velociraptor.
+This works live with the accessors of Velociraptor, so we do not need
+to dump the entire RAM. It scales up to thousands of computers,
+therefore, we can detect C2 frameworks in entire networks without
+previously knowing which machines are infected.
 
 Our detection technique, `Windows.Memory.Mem2Disk`, compares the .text segment
 of running processes to the executable on disk. Any deviation indicates
