@@ -12,17 +12,25 @@ The guidance in this document is intended to:
   that have been used in the existing content on the documentation website.
 - centralize style-related decisions for written content.
 
-This document is WIP.
+This document is a work-in-progress.
 
-### HTML content
+* [Markdown content](#markdown-content)
+* [Text wrapping](#text-wrapping)
+* [HTML content](#html-content)
+  * [Inline code](#inline-code)
+  * [Block code](#block-code)
+  * [Admonitions (notices)](#admonitions-notices)
+  * [Unordered lists](#unordered-lists)
+  * [Shell commands](#shell-commands)
+  * [Internal links](#internal-links)
+* [Page content structure](#page-content-structure)
+* [Page metadata](#page-metadata)
+  * [KB articles](#kb-articles)
+  * [VQL reference documents](#vql-reference-documents)
+  * [Examples](#examples)
+  * [Markdown Links](#markdown-links)
+  * [UI Elements](#ui-elements)
 
-Only use inline HTML when markdown cannot provide the same result, and even so
-try to avoid inline HTML except where absolutely unavoidable. Having as much
-content as possible in markdown form simplifies website style changes, as well
-as automated style checking and content updates.
-
-When writing content in HTML the same style rules apply as described in the
-Markdown Content section.
 
 ## Markdown content
 
@@ -30,6 +38,31 @@ Our docs website is compiled by Hugo which interprets markdown based on the
 Commonmark standard. Therefore it's best to avoid using features from any other
 flavors of markdown such as GFM, as they may not be rendered correctly or at
 all by Hugo.
+
+## Text wrapping
+
+Hard wrap paragraph text at 70 characters. This makes it easier to
+review GitHub pull requests, which display changes side-by-side.
+
+Your code editor may provide an auto-wrap option or an extension that
+makes this easy. For example, in VScode you can use
+[Rewrap](https://marketplace.visualstudio.com/items?itemName=stkb.rewrap).
+
+Exceptions to hard-wrapping are:
+- [long links](#internal-links) (internal or external) where it is
+  preferable to have the link on it's own line and NOT wrap it.
+- markdown tables.
+
+## HTML content
+
+Only use inline HTML when markdown cannot provide the same result, and
+even so try to avoid inline HTML except when it's absolutely
+necessary. Having as much content as possible in markdown form
+simplifies website style changes, as well as automated style checking
+and content updates.
+
+When writing content in HTML the same style rules apply as described
+in the Markdown Content section.
 
 ### Inline code
 
@@ -84,11 +117,21 @@ use platform alternatives where applicable
 When providing command examples we should use a consistent order for the
 command components: `[binary]` `[command]` `[subcommand]` `[flags]` `[args]`
 
-### Page links
+### Internal links
 
-Use markdown for page links so that Hugo will do link checking
-automatically. For internal links that are broken, Hugo will fail to
-compile and let you know immediately.
+Use markdown links rather than Hugo `ref` or `relref` shortcodes.
+
+Avoid splitting links across lines. Even though this is valid it makes
+future link maintenance more complicated. If a link is long:
+- start it on a new line, and
+- don't hard wrap it.
+
+Hugo will do internal link checking automatically. So always check
+your Hugo output for issues before submitting a PR.
+
+When internal links are invalid, Hugo will fail to compile and refuse
+to start, but this only happens on dev server start, so do also
+remember to check the console output.
 
 ## Page content structure
 

@@ -22,8 +22,8 @@ the API keys can enable an attacker to act on the Velociraptor server
 with the permissions given to the key.
 
 Please, be aware of the implications of allowing automated collection on
-endpoints and review the information in [Artifact Security]({{< ref
-"/docs/artifacts/security/" >}}) carefully.
+endpoints and review the information in
+[Artifact Security](/docs/artifacts/security/) carefully.
 
 {{% /notice %}}
 
@@ -37,7 +37,7 @@ important to ensure that Velociraptor integrates well with other tools.
 Generally there are two main requirements for Velociraptor integration:
 
 1. Velociraptor can itself control other systems. This can be achieved
-   using VQL and the execve() or http_client() plugins (See [Extending VQL]({{< ref "/docs/vql/extending_vql/" >}}) for an example)
+   using VQL and the execve() or http_client() plugins (See [Extending VQL](/docs/vql/extending_vql/) for an example)
 
 2. Velociraptor can be controlled by external tools. This allows
    external tools to enrich and automate Velociraptor using an
@@ -257,7 +257,7 @@ PowerShell) to orchestrate more complex API interactions. In such
 scripts, the queries can be constructed and the results processed by
 other tools and automation logic.
 
-The Velociraptor CLI offers [the `query` command]({{< ref "/docs/cli/query/" >}})
+The Velociraptor CLI offers [the `query` command](/docs/cli/query/)
 which allows you to run any VQL query. When used with the
 `--api_config` (or `-a`) flag, it uses the API configuration file to
 connect and authenticate to the API server first and then submit the
@@ -266,7 +266,7 @@ query. This means that the query:
 - runs locally (not using the API) if the flag is _not_ used.
 
 Running VQL queries through the API is equivalent to running them in a
-[notebook]({{< ref "/docs/notebooks/" >}}) or via a server artifact on
+[notebook](/docs/notebooks/) or via a server artifact on
 the server.
 
 ###### Example
@@ -449,7 +449,7 @@ and store the result in a dummy variable. This statement causes VQL to
 pause and wait for the query to complete before evaluating the next
 query.
 
-See [Materialized LET expressions]({{< ref "/docs/vql/fundamentals/#materialized-let-expressions" >}})
+See [Materialized LET expressions](/docs/vql/fundamentals/#materialized-let-expressions)
 for more about this.
 
 {{% /notice %}}

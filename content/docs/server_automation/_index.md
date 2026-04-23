@@ -55,7 +55,7 @@ following methods:
 
 1. Notebooks
 2. Server Artifacts
-3. Using the [Velociraptor API]({{< ref "/docs/server_automation/server_api/" >}})
+3. Using the [Velociraptor API](/docs/server_automation/server_api/)
 
 {{% /notice %}}
 

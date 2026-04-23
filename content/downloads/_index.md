@@ -75,13 +75,13 @@ arches:
 Velociraptor is open source software and is free for anyone to use under the
 [AGPL License](https://github.com/Velocidex/velociraptor?tab=License-1-ov-file#readme).
 
-This page is for the current release. [The previous Release is 0.75.6]({{< ref "/downloads/previous_downloads" >}})
+This page is for the current release. [The previous Release is 0.75.6](/downloads/previous_downloads/)
 
 {{< release_download >}}
 
 ## Release notes
 
-Full release notes are published in our [release blog post]({{< ref "/blog/2026/2026-03-10-release-notes-0.76/" >}})
+Full release notes are published in our [release blog post](/blog/2026/2026-03-10-release-notes-0.76/)
 
 {{% notice note "Support for Windows 7" %}}
 
@@ -105,7 +105,7 @@ However, note the following caveats:
   updated. These builds may miss some specific functionality.
 
 * If you need to use these builds for an offline collector we
-  recommend using [the generic collector]({{< ref "/docs/deployment/offline_collections/#the-generic-collector" >}}).
+  recommend using [the generic collector](/docs/deployment/offline_collections/#the-generic-collector).
 
 
 **Do not use this build in a general deployment!** Only use it for

@@ -1,16 +1,16 @@
 # How to create and use an offline collector as a tool
 
 This article demonstrates how to create a generic offline collector
-and then use it as a Velociraptor [tool]({{< ref "/docs/artifacts/tools/" >}})
+and then use it as a Velociraptor [tool](/docs/artifacts/tools/)
 with conventional "online" clients.
 
 Velociraptor
-[offline collectors]({{< ref "/docs/deployment/offline_collections/" >}})
+[offline collectors](/docs/deployment/offline_collections/)
 are a popular deployment mode in which one or more
-[artifacts]({{< ref "/docs/artifacts/" >}})
+[artifacts](/docs/artifacts/)
 are collected from endpoints, the results are packaged inside a zip
 container, and then optionally uploaded to a
-[remote storage destination]({{< ref "/docs/file_collection/#remote-upload-destinations" >}}).
+[remote storage destination](/docs/file_collection/#remote-upload-destinations).
 Typically the remote destination is a cloud storage provider such as
 AWS S3, Azure, or Google Cloud Storage, but it can also be a storage
 service set up on the local network.
@@ -24,7 +24,7 @@ However, you might have Velociraptor clients deployed, and you are
 using these network-connected "online" clients to run smaller more
 focused queries, but you also occasionally want to do an
 offline-collector-style
-[bulk file acquisitions]({{< ref "/docs/file_collection/bulk/" >}}).
+[bulk file acquisitions](/docs/file_collection/bulk/).
 
 With network-connected clients the results are uploaded to the
 Velociraptor server. File uploads are also done separately rather than
@@ -47,7 +47,7 @@ the selected client artifacts, tools, and remote upload configuration
 included. Since it's all just VQL you could, in theory, create a
 client artifact that replicates the actions of any offline collector.
 However, in practice the
-[`Server.Utils.CreateCollector`]({{< ref "/artifact_references/pages/server.utils.createcollector/" >}})
+[`Server.Utils.CreateCollector`](/artifact_references/pages/server.utils.createcollector/)
 artifact is significantly complex. Creating a custom version of it
 that can be run by clients would be a daunting task. It's much easier
 to create the offline collector in the normal way, and then run it via
@@ -68,7 +68,7 @@ following points.
   install clients. If you can't (or don't want to) install clients,
   you still have the option of using clients without installing them,
   as explained in the KB article
-  [How to create an “online collector” binary]({{< ref "/knowledge_base/tips/online_collector/" >}}).
+  [How to create an “online collector” binary](/knowledge_base/tips/online_collector/).
 
 
 {{% /notice %}}
@@ -84,9 +84,9 @@ remote S3 server.
 
 In this case I'll use [Garage](https://garagehq.deuxfleurs.fr/) which
 is an open source S3-compatible server written in Rust, but you could
-use AWS S3, or [MinIO]({{< ref "/knowledge_base/tips/dropbox_server/" >}}),
+use AWS S3, or [MinIO](/knowledge_base/tips/dropbox_server/),
 or any other S3-compatible server, or even
-[one the other remote destination options]({{< ref "/docs/file_collection/#remote-upload-destinations" >}})
+[one the other remote destination options](/docs/file_collection/#remote-upload-destinations)
 that are supported by Velociraptor offline collectors.
 
 The high-level steps to achieve this goal are:
@@ -103,7 +103,7 @@ The high-level steps to achieve this goal are:
 The Velociraptor server and clients are assumed to be set up and
 working correctly. As mentioned previously, the clients don't
 necessarily need to be installed - they could be
-[running without installation]({{< ref "/docs/deployment/clients/#agentless-deployment" >}}).
+[running without installation](/docs/deployment/clients/#agentless-deployment).
 
 ## 1. Set up the Garage S3 server
 
@@ -230,7 +230,7 @@ network.
 ## 2. Create a generic collector and store it in the Velociraptor tools repository.
 
 In this step I am going to create a
-[generic collector]({{< ref "/docs/deployment/offline_collections/#the-generic-collector" >}})
+[generic collector](/docs/deployment/offline_collections/#the-generic-collector)
 and add it to the server's tools inventory.
 
 There are several ways that this could be done, but I want to:
@@ -464,7 +464,7 @@ Some things to notice about this artifact:
 
 - When passing the `collector_spec` dict to
   `Server.Utils.CreateCollector` I've used
-  [argument unpacking]({{< ref "https://docs.velociraptor.app/docs/vql/fundamentals/#argument-unpacking" >}})
+  [argument unpacking](https://docs.velociraptor.app/docs/vql/fundamentals/#argument-unpacking)
   (`**=` syntax) to make the SELECT clause more succinct.
 
 ### 2.3 Run the server artifact
@@ -627,22 +627,22 @@ with the collection container zips.
 
 For example I could:
 
-- [extract the collection zips]({{< ref "/docs/deployment/offline_collections/collection_data/#extracting-or-listing-with-the-velociraptor-unzip-command" >}})
+- [extract the collection zips](/docs/deployment/offline_collections/collection_data/#extracting-or-listing-with-the-velociraptor-unzip-command)
   and work with their contents using other tools, perhaps also using
   Velociraptor's
-  [command line analysis]({{< ref "/docs/deployment/#command-line-investigation-tool" >}})
+  [command line analysis](/docs/deployment/#command-line-investigation-tool)
   capabilities alongside the other tools.
 
   or
 
 - run an
-  [Instant Velociraptor]({{< ref "/docs/deployment/#instant-velociraptor" >}})
+  [Instant Velociraptor](/docs/deployment/#instant-velociraptor)
   instance on my local workstation, or a set up separate Velociraptor
   server dedicated to analysis, and then either:
-  - [import the collection container zips]({{< ref "/docs/deployment/offline_collections/collection_data/#importing-collections-into-the-velociraptor-server">}})
+  - [import the collection container zips](/docs/deployment/offline_collections/collection_data/#importing-collections-into-the-velociraptor-server)
     before working with their contents, or
   - work with the collection container contents
-    [without importing them]({{< ref "/docs/deployment/offline_collections/collection_data/#accessing-collection-containers-without-importing" >}}).
+    [without importing them](/docs/deployment/offline_collections/collection_data/#accessing-collection-containers-without-importing).
 
 As always, Velociraptor give you many options and you'll need to
 decide which options work best for your situation. Hopefully the steps

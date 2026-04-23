@@ -17,7 +17,7 @@ contact us at support@velocidex.com or on
 [Discord](/discord/) and provide feedback or issues.
 
 Being experimental, this feature also falls outside our [support
-policy]({{< ref "/docs/overview/support/" >}}) and features may change
+policy](/docs/overview/support/) and features may change
 at any time.
 
 {{% /notice %}}
