@@ -1,8 +1,9 @@
 name: Vale Linter Action
 on:
-  push:
-    branches:
-      - master
+  # push:
+  #   branches:
+  #     - master
+  pull_request:
 
 jobs:
   vale:
