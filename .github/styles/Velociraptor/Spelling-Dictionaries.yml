@@ -17,7 +17,7 @@ description: |
   capitalisation or that the word might need to be in +++`literal
   format`+++ (enclosed in backticks). In general, use `literal format`
   for `commands`, `variables`, and `settings`.
-level: warning
+level: error
 scope:
   # - heading
   # - list
