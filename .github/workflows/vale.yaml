@@ -14,4 +14,4 @@ jobs:
       - uses: vale-cli/vale-action@v2.1.1
         with:
           fail_on_error: true
-          # vale_flags: "--output=gitlab.tmpl"
+          vale_flags: "--output=gitlab.tmpl"
