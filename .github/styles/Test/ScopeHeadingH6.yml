@@ -1,0 +1,10 @@
+extends: existence
+message: "%s"
+description: "This is the description"
+link: https://docs.microsoft.com/en-us/style-guide
+ignorecase: true
+scope:
+  - heading.h6
+level: error
+raw:
+  - (?s).+$

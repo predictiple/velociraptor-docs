@@ -1,0 +1,14 @@
+extends: existence
+message: "%s"
+description: "This is the description"
+link: https://a.link
+ignorecase: true
+nonword: true
+scope:
+  - sentence
+level: error
+raw:
+  - (?s).+$
+
+# vale adds in the (?i)(?m)\b(?: automatically
+# revealed by error parsing regexp: invalid nested repetition operator in `(?i)(?m)\b(?:(?:^.+{20}))\b`

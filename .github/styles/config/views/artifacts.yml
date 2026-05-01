@@ -1,0 +1,9 @@
+engine: dasel
+scopes:
+  - name: descriptions
+    expr: search(has("description")).map(description)
+    type: md
+
+  - name: md-template
+    expr: search(has("template")).map(template)
+    type: md
