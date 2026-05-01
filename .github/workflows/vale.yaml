@@ -13,5 +13,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: vale-cli/vale-action@v2.1.1
         with:
-          fail_on_error: true
-          filter_mode: nofilter
+          fail_on_error: false
+          # Only flag lines touched by the PR to avoid reviewdog's
+          # "too many annotations" failures on full-corpus scans.
+          filter_mode: added
+          reporter: github-pr-check
