@@ -48,8 +48,6 @@ scope:
 # Adds the array of dictionaries after the default Vale dictionary, instead of replacing it.
 append: false
 
-# If you omit this key or set it to false, custom filters (see below) are added on top of the built-in ones.
-custom: true
 filters:
   # likely filenames and extensions
   - '\w{3,}\.[a-z]{2,4}(\.[a-z]{2,4})?'
