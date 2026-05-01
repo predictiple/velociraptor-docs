@@ -1,0 +1,35 @@
+extends: existence
+message: "%s"
+description: "Test extraction of selected scopes"
+link: none
+ignorecase: true
+level: suggestion
+scope:
+  # - heading
+  # - list
+  # - paragraph
+  # - sentence
+  # - blockquote
+  # - table
+  # - table.header
+  # - table.cell
+  # - table.caption
+  # - alt
+  # - title
+  # - summary
+  # - raw
+  # - text
+  # - text.frontmatter.weight
+  # - text.frontmatter.title
+  # - text.frontmatter.summary
+  # - text.frontmatter.menutitle
+  # - text.frontmatter.last_reviewed
+  # - text.frontmatter.draft
+  # - text.frontmatter.description
+  # - text.frontmatter.date
+  # - comment.line
+  # - comment.block
+  # - comment
+
+raw:
+  - (?s).*
