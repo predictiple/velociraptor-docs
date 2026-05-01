@@ -3,6 +3,7 @@ title: "VQL Fundamentals"
 date: 2025-01-24
 draft: false
 weight: 10
+last_reviewed: 2026-04-30
 ---
 
 {{% notice tip "Running VQL queries in Notebooks" %}}
@@ -688,13 +689,13 @@ operands, one on the left and one on the right (so in the expression
 `1 + 2` we say that `1` is the Left Hand Side (`LHS`), `2` is the Right
 Hand Side (`RHS`) and `+` is the operator.
 
-|Operator|Meaning|
-|--------|-------|
-|`+ - * /`| These are the usual arithmetic operators |
-|`=~` | This is the regex operator, reads like "matches". For example `X =~ "Windows"` will return `TRUE` if X matches the regex "Windows"|
-|`!= = < <= > >=` | The usual comparison operators. |
-|`in` | The membership operator. Returns TRUE if the LHS is present in the RHS. Note that `in` is an exact case sensitive match|
-|`.`| The `.` operator is called the Associative operator. It dereferences a field from the LHS named by the RHS. For example `X.Y` extracts the field `Y` from the dict `X`|
+| Operator         | Meaning                                                                                                                                                                |
+|------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `+ - * /`        | These are the usual arithmetic operators.                                                                                                                              |
+| `=~`             | This is the [regex operator](#regex-in-vql), reads like "matches". For example `X =~ "Windows"` will return `TRUE` if X matches the regex "Windows"                    |
+| `!= = < <= > >=` | The usual comparison operators.                                                                                                                                        |
+| `in`             | The membership operator. Returns TRUE if the LHS is present in the RHS. Note that `in` is an exact case sensitive match.                                               |
+| `.`              | The `.` operator is called the Associative Operator. It dereferences a field from the LHS named by the RHS. For example `X.Y` extracts the field `Y` from the dict `X` |
 
 ### Protocols
 
@@ -706,7 +707,7 @@ types of operands is called a `protocol`.
 Generally VQL does the expected thing but it is valuable to understand
 which protocol will be chosen in specific cases.
 
-### Example - Regex operator
+###### Example: Regex operator
 
 For example consider the following query
 
@@ -730,7 +731,7 @@ Finally in the last case, the regex is applied to an integer. It makes
 no sense to apply a regular expression to an integer and so VQL
 returns FALSE.
 
-### Example - Associative operator applied on a stored query
+###### Example: Associative operator applied on a stored query
 
 The Associative operator is denoted by `.` and accesses a field from
 an object or dict. One of the interesting protocols of the `.`
@@ -779,6 +780,129 @@ SELECT MFT.FullPath FROM scope()
 
 The `Windows.NTFS.MFT` artifact typically generates millions of rows,
 and `MFT.FullPath` will expand them all into memory!
+
+{{% /notice %}}
+
+### Regex comparisons
+
+Velociraptor has several
+[functions and plugins](/vql_reference/?query=regex)
+that provide regex-based parsing and matching.
+
+In VQL syntax itself, regex matching is provided by the `=~` operator.
+In contrast to the functions/plugins mentioned above, this is used
+purely for logical comparisons with the result always being a boolean
+(`TRUE/FALSE`) value.
+
+Internally we use Go’s [regexp](https://pkg.go.dev/regexp/syntax)
+package, so the expression syntax (RE2) and capabilities are generally
+the same as in Go, with a few VQL-specific exceptions that are
+described below. This regex engine allows faster and safer matching
+than more complex impementations such as PCRE. However, this means
+that some PCRE regex constructs that you may be familiar with are not
+supported, in particular:
+- Lookarounds: positive lookahead (`(?=re)`), negative lookahead
+  (`(?!re)`), positive lookbehind (`(?<=re)`), and negative lookbehind
+  (`(?<!re)`) are not supported.
+- Backreferences (e.g. `([a-z])\1`) are not supported.
+
+Regex comparisons are most commonly used in VQL `WHERE` clauses, but
+can be used anywhere that value comparisons are supported.
+
+For example, in a `WHERE` clause:
+```vql
+SELECT _value AS count FROM range(end=40) WHERE count =~ "3$"
+```
+which will return rows containing `3`, `13`, `23`, and `33`.
+
+Or a regex comparison can be used in a field value, such as:
+```vql
+SELECT (timestamp(epoch=now()).Weekday.String =~ "Friday") AS IsItFriday
+FROM scope()
+```
+which will return `true` if today is Friday and `false` if it's not.
+
+
+
+
+
+#### Inverse matching
+
+
+
+To achieve inverse matching you can either:
+- implement it directly in your regex.
+
+
+
+#### Automatic type conversions
+
+#### Regex modifiers
+
+Expressions are treated as **case-insensitive** by default. If you
+require case-sensitive matching, you can prefix the `(?-i)` modifier
+to your expression. You can apply the `(?i)` and `(?-i)` modifiers to
+enable/disable case sensitivity in different parts of your regex. This
+case-insensitive default also applies to standard character classes
+such as `[A-Z]`.
+
+By default we don't match across lines. If you need to match across
+multi-line input, you can prefix the single-line "s" modifier `(?s)`
+to your regex, for example:
+
+```vql
+LET message <= '''one
+two
+three
+'''
+
+SELECT (message =~ '''(?s)wo.th''') FROM scope()
+```
+
+Similarly, for multi-line values you can apply the "m" (`(?m)`)
+modifier to match the `^` and `$` anchors within the text.
+
+```vql
+LET message <= '''one
+two three
+four
+'''
+
+SELECT (message =~ '''(?m)^tw.+ee$''') FROM scope()
+```
+
+Modifiers can be combined, for example `(?sm-i)`, and you can apply
+any set of modifiers to any subexpression of the regex using "scoped
+modifiers" where the  subexpression is enclosed in the parenthesis
+along with the modifier. For example, `(?-i:F)riday` will match
+`Friday` or `FRIDAY` but not `friday`, although you could
+alternatively use character classes which are inherently
+case-sensitive, for example `[F]riday`.
+
+The `(?g)` modifier, also known as the "global" flag, is not supported
+and is further meaningless in comparisons since they either match or
+don't match.
+
+#### Special cases
+
+```vql
+LET x <= "testing"
+SELECT (x =~ ".test") FROM scope()
+```
+
+{{% notice tip "Raw strings vs. character escaping" %}}
+
+VQL allows you to specify [raw (literal) strings](#string-constants) using the
+`'''` (triple single quotes) syntax. For regex expressions this is the
+preferred way of specifying them since the expression is passed
+uninterpreted to the regex parser.
+
+It's OK to use standard string sytax (single or double quotes) for
+simple expressions, but if your expression itself requires regex
+escaping (`\`) then you'd also have to escape that escape character,
+which leads to inelegant expressions, for example `C:\\\\Windows`, and
+is prone to mistakes. It's best to develop the habit of always using
+raw strings for regex unless it's a very simple expression.
 
 {{% /notice %}}
 
@@ -965,7 +1089,7 @@ LET AddTwo(x) = x + 2
 SELECT eval(func="x=>AddTwo(x=1)") AS Three FROM scope()
 ```
 
-### VQL Error handling
+## VQL Error handling
 
 VQL queries may encounter errors during their execution. For example,
 we might try to open a file, but fail due to insufficient permissions.

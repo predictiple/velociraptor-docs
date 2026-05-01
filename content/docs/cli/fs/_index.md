@@ -55,7 +55,7 @@ Args:
   [<path>]  The path or glob to list
 ```
 
-##### Examples
+###### Examples
 
 ```text
 velociraptor fs ls "C:\\Windows\\System32\\*.exe"
@@ -99,7 +99,7 @@ Args:
   <dumpdir>  The directory to store files at.
 ```
 
-##### Example
+###### Example
 
 ```text
 velociraptor --config ./server.config.yaml fs cp -l --accessor=fs "/**/*.msi" ../MSI

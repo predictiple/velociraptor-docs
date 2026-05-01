@@ -1,6 +1,7 @@
 ---
 title: Guidelines for prose (written content)
-weight: 10
+weight: 20
+last_reviewed: 2026-04-29
 ---
 
 This document provides guidance for writing style in the Velociraptor
@@ -14,23 +15,28 @@ The guidance in this document is intended to:
 
 This document is a work-in-progress.
 
+---
+
 * [Markdown content](#markdown-content)
 * [Text wrapping](#text-wrapping)
 * [HTML content](#html-content)
   * [Inline code](#inline-code)
   * [Block code](#block-code)
+            * [Example](#example)
   * [Admonitions (notices)](#admonitions-notices)
   * [Unordered lists](#unordered-lists)
   * [Shell commands](#shell-commands)
   * [Internal links](#internal-links)
-* [Page content structure](#page-content-structure)
-* [Page metadata](#page-metadata)
+* [Common page structures](#common-page-structures)
+  * [Ordinary documentation pages](#ordinary-documentation-pages)
+      * [Page metadata](#page-metadata)
   * [KB articles](#kb-articles)
   * [VQL reference documents](#vql-reference-documents)
   * [Examples](#examples)
   * [Markdown Links](#markdown-links)
   * [UI Elements](#ui-elements)
 
+---
 
 ## Markdown content
 
@@ -42,7 +48,8 @@ all by Hugo.
 ## Text wrapping
 
 Hard wrap paragraph text at 70 characters. This makes it easier to
-review GitHub pull requests, which display changes side-by-side.
+review GitHub pull requests, which display changes side-by-side in two
+columns.
 
 Your code editor may provide an auto-wrap option or an extension that
 makes this easy. For example, in VSCode you can use
@@ -90,17 +97,42 @@ around the term.
 
 ### Block code
 
-Preferably format VQL code blocks with the VQL formatter, for consistency.
+We currently support `browser`, `python`, `yaml`, `sql`, `json`,
+`bash`, `powershell`, `vql`, `text`, `shell` syntax highlighting via
+the `highlight.js` highlighter.
+
+Preferably format VQL code blocks with the VQL formatter, rather than
+SQL, although they are similar.
+
+###### Example
+
+```vql
+SELECT read_file(path="C:/Windows/notepad.exe", accessor="file")
+FROM scope()
+```
+
+``````text
+```vql
+SELECT read_file(path="C:/Windows/notepad.exe", accessor="file")
+FROM scope()
+```
+``````
 
 
 ### Admonitions (notices)
 
-Try not to overuse them. Especially try not to have two or more of them
-together. Try to only use them when the reader's attention need to be drawn to
-something specific.
+Try not to overuse admonition blocks. Especially try not to have two
+or more of them together. Try to only use them when the reader's
+attention needs to be drawn to something specific.
 
-Often the content in an admonition can be rewritten as part of the normal text
-body.
+Often the content in an admonition can be rewritten as part of the
+normal text body, and therefore doesn't need to be wrapped in it's own
+block.
+
+Currently we support 4 admonition types: `note`, `tip`, `info`,
+`warning`.
+
+Admonition titles are optional but recommended.
 
 ### Unordered lists
 
@@ -133,20 +165,30 @@ When internal links are invalid, Hugo will fail to compile and refuse
 to start, but this only happens on dev server start, so do also
 remember to check the console output.
 
-## Page content structure
+## Common page structures
 
-## Page metadata
+### Ordinary documentation pages
 
-Always try to add a `summary`. When using the `children` shortcode it defaults
-to creating a summary if one is not defined, which means it grabs the first few
-paragraphs from the page. Usually this "auto-summary" is unsightly so it's
-better to carefully craft one rather than relying on "auto".
+#### Page metadata
+
+Always try to add a meaningful `summary` field to the page metadata.
+When using the `children` shortcode, it defaults to creating a summary
+if one is not defined - it grabs the first few paragraphs/sentences
+from the page which is often not ideal. Usually this "auto-summary" is
+unsightly so it's better to carefully craft one rather than relying on
+"auto".
 
 
 ### KB articles
 
-Tags are recommended. These help users find related content. Do not use
-meaningless tags such as "velociraptor" or "DFIR".
+Tags are recommended. These help users find related content.
+
+Do not use meaningless tags such as "velociraptor" or "DFIR".
+
+Avoid using tags that are terms which already appear in the page
+content, because those can just be found with regular index-based
+searches. A tag should ideally be an association with some broader
+concept that is not explicity mentioned in the content itself.
 
 ### VQL reference documents
 

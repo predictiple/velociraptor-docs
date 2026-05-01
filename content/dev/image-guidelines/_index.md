@@ -1,6 +1,7 @@
 ---
 title: Guidelines for creating image content
-weight: 10
+weight: 30
+last_reviewed: 2026-04-29
 ---
 
 This document provides guidance for creating image content for the Velociraptor
@@ -328,6 +329,10 @@ to find it be doing a search of the repo for the base filename.
 > base64-encoded copy of the screenshot. The saved `.excalidraw` file does too.
 > So it is not necessary > to keep a copy of the original screenshot PNG.
 >
+
+If your Excalidraw diagram contains a screenshot, then that it stored
+inside the `.excalidraw` file and also the `.svg` file. So there is no
+need to keep the screenshot file once you have added it in Excalidraw.
 
 ### Fonts in SVG images
 

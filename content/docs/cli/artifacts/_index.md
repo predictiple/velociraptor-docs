@@ -55,7 +55,7 @@ the `artifact_definitions` plugin.
 The regex expression argument is case-sensitive. To make it case-insensitive
 prefix your expression with the `(?i)` modifier.
 
-##### Examples
+###### Examples
 
 ```sh
 $ velociraptor artifacts list "(?i).+services"
@@ -104,7 +104,7 @@ line.
 Wildcards and regex are _not_ supported. The command expects an exact artifact
 name.
 
-##### Example
+###### Example
 
 ```sh
 $ velociraptor artifacts show Windows.System.Services
@@ -267,7 +267,7 @@ you're dissatisfied with the resultant formatting.
 {{% /notice %}}
 
 
-##### Example
+###### Example
 
 ```sh
 velociraptor --config server.config.yaml artifacts reformat *.yaml -v
@@ -307,7 +307,7 @@ automation scripts.
 The same static analysis can be done via VQL using the
 [verify](/vql_reference/other/verify/) function.
 
-##### Example
+###### Example
 
 ```sh
 velociraptor artifacts verify ./**/*.yaml -v

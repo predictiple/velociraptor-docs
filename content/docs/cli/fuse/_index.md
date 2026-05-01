@@ -117,7 +117,7 @@ default behavior:
   `"GetPrivateKeyFromScope: No frontend configuration given"` logged in the
   terminal.
 
-##### Example
+###### Example
 
 1. Create an empty mount directory.
 

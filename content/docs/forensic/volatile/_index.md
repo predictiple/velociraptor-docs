@@ -174,7 +174,7 @@ shortfalls:
 
 {{% /notice %}}
 
-### Example - Find elevated command shell
+###### Example: Find elevated command shell
 
 Write an artifact to find all currently running elevated command shells
 
