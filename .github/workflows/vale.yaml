@@ -1,4 +1,4 @@
-name: Vale Linter Action
+name: Vale linter
 on:
   # push:
   #   branches:
