@@ -2,7 +2,7 @@ name: Custom.MacOS.Detection.DylibHijacking
 author: Blake McDermott & Ford Larman
 description: |
    This artifact is intended to alert on executables susceptible to dylib injection and highjacking. This includes checking the executable for library validation issues such as `com.apple.security.cs.disable-library-validation` and `com.apple.security.cs.allow-dyld-environment-variables`, multiple (relative) `@executable_path`'s and `LC_LOAD_WEAK_DYLIB` entries. The artifact `TargetPath` looks at the default installation path for MacOS binaries (MachO). To run the artifact against a binary in a non-standard location, add it to the csv `TargetPath` parameter. Results will be displayed in two parts, `dylibloads` and `libraryvalidation`. Only duplicate entries will be displayed for `dylibloads`.
-
+   
    NOTE: This artifact runs best against targeted endpoints rather than an entire network. It is also recommended to increase the default `Timeout` period to 6000 seconds or more as performance is quite slow.
 
 # Can be CLIENT, CLIENT_EVENT, SERVER, SERVER_EVENT or NOTEBOOK
@@ -10,19 +10,19 @@ type: CLIENT
 
 required_permissions:
   - EXECVE
-
+  
 parameters:
    - name: TargetPath
      type: csv
      default: |
         Glob
         /Applications/*/Contents/MacOS/*
-
+        
    - name: ExcludePath
      type: regex
      description: Binaries to exclude incase of excessive permission issue errors.
      default: ''
-
+        
    - name: YaraRule
      type: yara
      description: https://github.com/airbnb/binaryalert/blob/master/rules/public/MachO.yara
@@ -33,7 +33,7 @@ parameters:
             condition:
                 uint32(0) == 0xfeedface or uint32(0) == 0xcefaedfe or uint32(0) == 0xfeedfacf or uint32(0) == 0xcffaedfe or uint32(0) == 0xcafebabe or uint32(0) == 0xbebafeca
         }
-
+  
 export: |
     LET x64_Profile = '''[
         ["Header", 32,[
@@ -137,7 +137,7 @@ export: |
             }]
         ]]
         ]'''
-
+        
         LET FAT_Profile = '''[
         ["Header", 0, [
             ["Magic", 0, "Enumeration", {
@@ -180,27 +180,27 @@ export: |
             ["Align", 16, "uint32b"]
         ]]
         ]'''
-
+        
         LET yara_rule = YaraRule
-
+        
         // Parse FAT_Profile for Architecture details
         LET FatHeader = SELECT OSPath, parse_binary(filename=OSPath, profile=FAT_Profile, struct='Header').FAT_Archs AS Header FROM foreach(
             row={SELECT * FROM glob(globs=TargetPath.Glob) WHERE NOT OSPath =~ ExcludePath},
             query={SELECT OSPath, log(message="OS Path: %v, Exclude Path: %v", args=[OSPath, ExcludePath]) FROM yara(rules=yara_rule, files=OSPath)}
-            )
-
+            ) 
+        
         LET Archs = SELECT * FROM foreach(
             row=FatHeader,
             query={SELECT OSPath, * FROM foreach(row=Header)}
         ) WHERE CPU_Type =~ "X86_64" OR CPU_Type =~ "POWERPC_64"
-
+        
         // Parse x64_Profile for dylib details
         LET Headers = SELECT * FROM foreach(
             row=Archs,
             query={SELECT OSPath, CPU_Type, parse_binary(filename=OSPath, offset=Offset, profile=x64_Profile, struct='Header').LoadCommands AS LoadCommands FROM scope()}
-        )
-
-
+        ) 
+        
+        
         LET LC = SELECT cmd AS LoadCommand, Name AS FilePath, CPU_Type AS Architecture, OSPath FROM foreach(
             row=Headers,
             query={SELECT *, CPU_Type, OSPath FROM foreach(row=LoadCommands)}
@@ -211,30 +211,30 @@ sources:
       SELECT OS From info() where OS = 'darwin'
   - name: dylib loads
     query:
-
+        
         LET PathDepth = SELECT len(list=split(string=FilePath, sep="\\.\\.")[:-1]) AS Hops, split(string=FilePath, sep="\\.\\.")[-1] AS Dirs, OSPath FROM LC WHERE LoadCommand = "LC_RPATH"
-
-
+        
+        
         LET ExecPaths = SELECT FilePath[6:] AS Executable_Path, * FROM LC WHERE (LoadCommand = "LC_LOAD_DYLIB" OR LoadCommand = "LC_LOAD_WEAK_DYLIB") AND FilePath =~ "@rpath"
-
-
+        
+        
         LET AllPaths = SELECT * FROM foreach(
             row={SELECT *, path_join(components=path_split(path=OSPath)[:(0-(Hops + 1))]) AS BinPath, OSPath AS TempPath FROM PathDepth WHERE Hops >= 1},
             query={SELECT BinPath+Dirs+Executable_Path AS RPathGlobs, BinPath, Executable_Path, Dirs, Hops, TempPath FROM ExecPaths
             }
-        )
+        ) 
         GROUP BY RPathGlobs
-
+        
         LET DylibGlobs = SELECT * FROM foreach(
             row=AllPaths,
             query={SELECT *, TempPath FROM glob(globs=RPathGlobs)}
-        )
-
+        ) 
+        
         // Display results for duplicate .dylib loads per application - Duplicate folders will also be reported if detected.
         SELECT * FROM foreach(
             row={
                 SELECT Name AS NameCount, count() AS Count
-                FROM DylibGlobs
+                FROM DylibGlobs 
                 GROUP BY Name, TempPath
             },
             query={
@@ -244,16 +244,16 @@ sources:
                 WHERE Name = NameCount AND Count >= 2
             }
         )
-
+        
 
 # Execute codesign on target executable and check for values.
   - name: library validation
     query:
-
+        
       LET LibraryInfo = SELECT OSPath AS AppName, Entitlements["plist"]["dict"]["key"] AS keys FROM foreach(
                         row = {SELECT OSPath FROM Archs GROUP BY OSPath},
                         query = {SELECT parse_xml(file=Stdout, accessor="data") AS Entitlements, OSPath, Stdout FROM execve(argv=["codesign", "-d", "--entitlements", ":-", OSPath])}
                     )
-
+                    
         // Check for potential library validation issues from LibraryInfo
         SELECT *, if(condition="com.apple.security.cs.allow-dyld-environment-variables" IN keys OR "com.apple.security.cs.disable-library-validation" IN keys, then="Potential dylib injection - 'com.apple.security.cs.allow-dyld-environment-variables' or 'com.apple.security.cs.disable-library-validation' present!", else="No library validation issues found.") AS Result FROM LibraryInfo
