@@ -4,8 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Server Artifact]
-description: |
-  Exports parts of the VFS in a server side collection.
 ---
 
 Exports parts of the VFS in a server side collection.

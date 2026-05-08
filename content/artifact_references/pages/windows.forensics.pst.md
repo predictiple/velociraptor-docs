@@ -4,8 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Artifact]
-description: |
-  Parses PST files.
 ---
 
 Parses PST files.

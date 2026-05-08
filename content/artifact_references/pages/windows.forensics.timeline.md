@@ -4,10 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Artifact]
-description: |
-  Win10 records recently used applications and files in a “timeline”
-  accessible via the “WIN+TAB” key. The data is recorded in a SQLite
-  database.
 ---
 
 Win10 records recently used applications and files in a “timeline”

@@ -4,8 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Artifact]
-description: |
-  Searches the filesystem for immutable files.
 ---
 
 Searches the filesystem for immutable files.

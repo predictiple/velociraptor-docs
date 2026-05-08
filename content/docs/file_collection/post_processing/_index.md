@@ -90,7 +90,7 @@ you can iterate over the output of the `hunt_flows()` plugin and then use
 
 ### Accessing files with the filestore accessor
 
-Once we have the the filestore path, we can then access the file itself using
+Once we have the filestore path, we can then access the file itself using
 any VQL function or plugin by providing it with the filestore path and telling
 it to use the `fs` (filestore) accessor.
 

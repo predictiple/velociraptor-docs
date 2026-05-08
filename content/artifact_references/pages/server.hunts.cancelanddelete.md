@@ -4,10 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Server Artifact]
-description: |
-  Velociraptor Hunts are a way of running the same flow on
-  many endpoints at once. Hunts issue very quickly and wait
-  until each endpoint returns results.
 ---
 
 Velociraptor Hunts are a way of running the same flow on

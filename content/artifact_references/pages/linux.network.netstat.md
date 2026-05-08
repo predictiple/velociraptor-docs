@@ -4,9 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Artifact]
-description: |
-  This artifact will parse /proc and reveal information
-  about current network connections.
 ---
 
 This artifact will parse /proc and reveal information

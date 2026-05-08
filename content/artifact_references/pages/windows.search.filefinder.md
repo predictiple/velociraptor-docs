@@ -4,8 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Artifact]
-description: |
-  Find files on the filesystem using the filename or content.
 ---
 
 Find files on the filesystem using the filename or content.

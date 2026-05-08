@@ -4,11 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Server Event Artifact]
-description: |
-  This artifact is a server event artifact that collects hashes from
-  various sources into a central location. It is possible to follow
-  this artifact (e.g. with an external program using the API) to
-  lookup the hashes with an external service.
 ---
 
 This artifact is a server event artifact that collects hashes from

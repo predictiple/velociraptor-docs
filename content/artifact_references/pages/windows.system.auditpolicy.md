@@ -4,9 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Artifact]
-description: |
-  Uses auditpol to retrieve the logging settings defined in the Windows Audit
-  Policy.
 ---
 
 Uses auditpol to retrieve the logging settings defined in the Windows Audit

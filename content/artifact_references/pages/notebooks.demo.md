@@ -4,8 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [notebook]
-description: |
-  A notebook demonstrating features of notebooks
 ---
 
 A notebook demonstrating features of notebooks

@@ -4,8 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Artifact]
-description: |
-  ARP table via /proc/net/arp.
 ---
 
 ARP table via /proc/net/arp.

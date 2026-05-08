@@ -4,9 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Artifact]
-description: |
-  This artifact will parse the `$I` files found in the `$Recycle.Bin` folder to
-  obtain the time of deletion and the original path and file name.
 ---
 
 This artifact will parse the `$I` files found in the `$Recycle.Bin` folder to

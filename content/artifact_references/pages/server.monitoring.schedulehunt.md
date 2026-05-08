@@ -4,10 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Server Event Artifact]
-description: |
-  Run client interrogation periodically. This is a sample event
-  artifact to schedule a hunt periodically. You can change it to
-  launch other artifacts.
 ---
 
 Run client interrogation periodically. This is a sample event

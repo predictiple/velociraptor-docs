@@ -4,8 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Event Artifact]
-description: |
-  This artifact uses eBPF to track DNS requests from various processes.
 ---
 
 This artifact uses eBPF to track DNS requests from various processes.

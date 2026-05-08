@@ -4,8 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Artifact]
-description: |
-  This artifact extracts RecentDocs MRU from the target.
 ---
 
 This artifact extracts RecentDocs MRU from the target.

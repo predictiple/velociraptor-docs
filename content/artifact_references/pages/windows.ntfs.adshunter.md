@@ -4,14 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Artifact]
-description: |
-  This artifact hunts
-  for Alternate Data Streams on NTFS file systems.
-  Adversaries may use NTFS file attributes for covert storage to evade
-  detection.
-  Alternate Data Streams (ADS) are additional $DATA attributes for an MFT entry in
-  NTFS file systems. In NTFS, the primary $DATA attribute is
-  never named but subsequent $DATA attributes must be named.
 ---
 
 This artifact hunts
@@ -79,7 +71,7 @@ parameters:
    description: Optional - only include alternate data streams below this size in bytes.
    type: int
  - name: UploadDataStream
-   description: If selected wil upload non-resident data streams.
+   description: If selected will upload non-resident data streams.
    type: bool
 
 sources:

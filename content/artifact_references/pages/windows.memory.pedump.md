@@ -4,9 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Artifact]
-description: |
-  This artifact dumps a PE file from memory and uploads the file to
-  the server.
 ---
 
 This artifact dumps a PE file from memory and uploads the file to

@@ -4,9 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Artifact]
-description: |
-  The automaticdestinations jumplist is an OLE2 container containing LNK files
-  as individual streams
 ---
 
 The automaticdestinations jumplist is an OLE2 container containing LNK files

@@ -4,9 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Server Artifact]
-description: |
-  When upgrading the Velociraptor server, the built-in artifacts may change and
-  use newer VQL features that are not present in older clients.
 ---
 
 When upgrading the Velociraptor server, the built-in artifacts may change and

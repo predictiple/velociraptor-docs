@@ -4,9 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Artifact]
-description: |
-  This artifact enables grep-like searching of Bash and alternate shell history
-  files.
 ---
 
 This artifact enables grep-like searching of Bash and alternate shell history

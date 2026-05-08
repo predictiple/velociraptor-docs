@@ -4,8 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Artifact]
-description: |
-  Runs an Intezer agent scan on the endpoint.
 ---
 
 Runs an Intezer agent scan on the endpoint.

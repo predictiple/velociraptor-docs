@@ -4,9 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Artifact]
-description: |
-  This artifact wraps the Nirsoft BrowsingHistoryView tool - a tool
-  for parsing browser history from a variety of browsers.
 ---
 
 This artifact wraps the Nirsoft BrowsingHistoryView tool - a tool

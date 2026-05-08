@@ -52,7 +52,7 @@ Prefetch files contain the following data (In recent Windows 10)
 
 You can try to establish the original path of the executable by [brute forcing the hash](https://hiddenillusion.github.io/2016/05/10/go-prefetch-yourself/). Typically the full path of the binary is also encoded as one of the linked PE files.
 
-Look for particularly suspicious binaries, eg sc.exe, xcopy.exe,
+Look for particularly suspicious binaries, e.g. sc.exe, xcopy.exe,
 psexec.exe, bitsadmin.exe and particularly random looking binary
 names.  Typically lower execution counts are more interesting
 

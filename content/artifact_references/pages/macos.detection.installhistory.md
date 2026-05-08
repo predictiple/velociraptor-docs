@@ -4,8 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Artifact]
-description: |
-  This artifact collects entries from the InstallHistory .plist file
 ---
 
 This artifact collects entries from the InstallHistory .plist file

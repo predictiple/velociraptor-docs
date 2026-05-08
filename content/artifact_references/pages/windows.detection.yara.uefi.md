@@ -4,8 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Artifact]
-description: |
-  This artifact enables running YARA over files in an EFI System Partition (ESP).
 ---
 
 This artifact enables running YARA over files in an EFI System Partition (ESP).

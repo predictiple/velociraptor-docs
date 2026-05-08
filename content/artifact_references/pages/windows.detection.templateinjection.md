@@ -4,8 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Artifact]
-description: |
-  Detects injected templates in Office and RTF documents.
 ---
 
 Detects injected templates in Office and RTF documents.

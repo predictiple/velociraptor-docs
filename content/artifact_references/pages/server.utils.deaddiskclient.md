@@ -4,8 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Server Artifact]
-description: |
-  Automates the analysis of dead disk images in Velociraptor
 ---
 
 Automates the analysis of dead disk images in Velociraptor

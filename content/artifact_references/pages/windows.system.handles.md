@@ -4,8 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Artifact]
-description: |
-  Enumerate the handles from selected processes.
 ---
 
 Enumerate the handles from selected processes.

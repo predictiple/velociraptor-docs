@@ -4,8 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Artifact]
-description: |
-  Parse Windows event logs and matches then against Sigma Rules.
 ---
 
 Parse Windows event logs and matches then against Sigma Rules.

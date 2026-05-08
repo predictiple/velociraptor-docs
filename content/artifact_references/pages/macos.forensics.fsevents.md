@@ -4,8 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Artifact]
-description: |
-  This artifact parses the FSEvents log files.
 ---
 
 This artifact parses the FSEvents log files.

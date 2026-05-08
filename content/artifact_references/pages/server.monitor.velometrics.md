@@ -4,8 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Server Artifact]
-description: |
-  Get Velociraptor server metrics.
 ---
 
 Get Velociraptor server metrics.

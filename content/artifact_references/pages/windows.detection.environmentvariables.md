@@ -4,8 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Artifact]
-description: |
-  Find processes with the specified environment variables.
 ---
 
 Find processes with the specified environment variables.

@@ -4,8 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Server Event Artifact]
-description: |
-  An internal queue that receives events when a client is deleted.
 ---
 
 An internal queue that receives events when a client is deleted.

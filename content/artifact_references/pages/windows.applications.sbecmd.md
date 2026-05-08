@@ -4,8 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Artifact]
-description: |
-  Execute Eric Zimmerman's SBECmd and return output for analysis.
 ---
 
 Execute Eric Zimmerman's SBECmd and return output for analysis.

@@ -4,8 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Server Event Artifact]
-description: |
-  This artifact will automatically upload any Velociraptor timelines to Timesketch.
 ---
 
 This artifact will automatically upload any Velociraptor timelines to Timesketch.

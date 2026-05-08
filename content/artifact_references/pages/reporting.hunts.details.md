@@ -4,9 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Server Artifact]
-description: |
-  Report details about which client ran each hunt, how long it took
-  and if it has completed.
 ---
 
 Report details about which client ran each hunt, how long it took

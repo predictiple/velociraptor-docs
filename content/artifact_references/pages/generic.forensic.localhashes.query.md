@@ -4,10 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Artifact]
-description: |
-  This artifact maintains a local (client side) database of file
-  hashes. It is then possible to query this database by using the
-  Generic.Forensic.LocalHashes.Query artifact.
 ---
 
 This artifact maintains a local (client side) database of file

@@ -4,9 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Artifact]
-description: |
-  Detects the string "COMSPEC" (nocase) in Windows Service
-  Creation (SCM) events. That is: EventID 7045 from the System event log.
 ---
 
 Detects the string "COMSPEC" (nocase) in Windows Service

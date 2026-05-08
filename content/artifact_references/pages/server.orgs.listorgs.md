@@ -4,8 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Server Artifact]
-description: |
-  This server artifact will list all currently configured orgs on the server.
 ---
 
 This server artifact will list all currently configured orgs on the server.

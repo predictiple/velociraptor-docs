@@ -4,8 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Artifact]
-description: |
-  This artifact forces the client to regenerate its client id.
 ---
 
 This artifact forces the client to regenerate its client id.

@@ -4,8 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Artifact]
-description: |
-  Gets a list of local admin accounts.
 ---
 
 Gets a list of local admin accounts.

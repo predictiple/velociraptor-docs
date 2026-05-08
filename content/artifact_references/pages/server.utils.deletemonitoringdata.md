@@ -4,8 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Server Artifact]
-description: |
-  Velociraptor collects monitoring data from endpoints all the time.
 ---
 
 Velociraptor collects monitoring data from endpoints all the time.

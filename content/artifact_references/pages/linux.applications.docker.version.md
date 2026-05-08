@@ -4,8 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Artifact]
-description: |
-  Get Dockers version by connecting to its socket.
 ---
 
 Get Dockers version by connecting to its socket.

@@ -4,8 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Artifact]
-description: |
-  A utility artifact to provide helpful utility functions.
 ---
 
 A utility artifact to provide helpful utility functions.
@@ -61,7 +59,7 @@ export: |
 sources:
 - query: |
     // Sample usage
-    SELECT HexEncode(X=HMac(Key="Secret", Message="My Message")),
+    SELECT HexEncode(X=HMac(Key="Secret", Message="My Message"))
     FROM scope()
 
 </code></pre>

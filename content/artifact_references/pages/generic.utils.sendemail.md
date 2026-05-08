@@ -4,8 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Server Artifact]
-description: |
-  A Utility artifact for sending emails.
 ---
 
 A Utility artifact for sending emails.

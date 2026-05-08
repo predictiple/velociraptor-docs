@@ -4,8 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Server Artifact]
-description: |
-  Calculate a remapping configuration from a dead disk image.
 ---
 
 Calculate a remapping configuration from a dead disk image.

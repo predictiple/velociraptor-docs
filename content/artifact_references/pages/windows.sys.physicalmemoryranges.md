@@ -4,8 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Artifact]
-description: |
-  List Windows physical memory ranges.
 ---
 
 List Windows physical memory ranges.

@@ -4,9 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Artifact]
-description: |
-  Network interfaces and relevant metadata. This artifact works on all
-  supported OSs.
 ---
 
 Network interfaces and relevant metadata. This artifact works on all

@@ -4,9 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Event Artifact]
-description: |
-  An Event artifact which records client's CPU and memory
-  statistics.
 ---
 
 An Event artifact which records client's CPU and memory

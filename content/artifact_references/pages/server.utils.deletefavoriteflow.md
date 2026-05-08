@@ -4,9 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Artifact]
-description: |
-  This artifact allows the user to delete a previously saved
-  favorite. It will only affect the current user.
 ---
 
 This artifact allows the user to delete a previously saved

@@ -4,8 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Event Artifact]
-description: |
-  This artifact follows the Microsoft-Windows-Kernel-Network provider.
 ---
 
 This artifact follows the Microsoft-Windows-Kernel-Network provider.

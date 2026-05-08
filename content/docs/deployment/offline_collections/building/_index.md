@@ -282,7 +282,7 @@ create a new offline collector it will be created using the release version for
 the selected platform corresponding to your server's version.
 
 You can override a specific binary by clicking on the tool button to access the
-the tool management screen, and then manually upload a different binary.
+tool management screen, and then manually upload a different binary.
 
 ![](collector_binary.png)
 
@@ -333,7 +333,7 @@ is possible to pre-populate the server's tools inventory with all the tools
 currently defined in the tools inventory (at least all the ones that have
 download URLs defined). This includes all the Velociraptor binaries that the
 offline collector builder might use. Once the binaries are in the server's tools
-inventory, Velociraptor won't try to download them when you run the the
+inventory, Velociraptor won't try to download them when you run the
 collector builder.
 
 To facilitate this process we provide a built-in server artifact that partially

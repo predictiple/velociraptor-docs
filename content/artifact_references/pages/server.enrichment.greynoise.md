@@ -4,8 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Server Artifact]
-description: |
-  Submit an IP to the GreyNoise API.
 ---
 
 Submit an IP to the GreyNoise API.

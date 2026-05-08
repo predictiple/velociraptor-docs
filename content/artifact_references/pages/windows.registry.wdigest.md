@@ -4,9 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Artifact]
-description: |
-  Find WDigest registry values on the filesystem. The artifact will also use
-  GROUP BY to limit all ControlSet output to a single row.
 ---
 
 Find WDigest registry values on the filesystem. The artifact will also use

@@ -4,9 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Artifact]
-description: |
-  Find files within the VHDX containers of the Windows Subsystem for
-  Linux (WSL) images.
 ---
 
 Find files within the VHDX containers of the Windows Subsystem for

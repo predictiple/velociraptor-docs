@@ -4,8 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Server Event Artifact]
-description: |
-  Forces conflicting clients to rekey themselves.
 ---
 
 Forces conflicting clients to rekey themselves.

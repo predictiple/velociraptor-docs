@@ -4,8 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Server Artifact]
-description: |
-  This artifact adds an existing flow to a running hunt.
 ---
 
 This artifact adds an existing flow to a running hunt.

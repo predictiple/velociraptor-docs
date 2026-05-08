@@ -4,9 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Artifact]
-description: |
-  Carve URLs from files located in a glob. Note that we do not parse
-  any files - we simply carve anything that looks like a URL.
 ---
 
 Carve URLs from files located in a glob. Note that we do not parse

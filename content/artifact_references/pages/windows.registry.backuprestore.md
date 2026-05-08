@@ -4,8 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Artifact]
-description: |
-  This artifact will return BackupRestore configuration.
 ---
 
 This artifact will return BackupRestore configuration.

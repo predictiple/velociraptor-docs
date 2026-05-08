@@ -4,8 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Artifact]
-description: |
-  This artifact collects information about MacOS Time Machine backups.
 ---
 
 This artifact collects information about MacOS Time Machine backups.

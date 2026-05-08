@@ -4,8 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [notebook]
-description: |
-  The notebook creates a default Super-Timeline.
 ---
 
 The notebook creates a default Super-Timeline.

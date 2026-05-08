@@ -4,10 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Internal Artifact]
-description: |
-  This event artifact is an internal event stream over which client
-  interrogations are sent. When the interrogation service finishes
-  updating a client record, it will send an event on this artifact.
 ---
 
 This event artifact is an internal event stream over which client
@@ -31,7 +27,7 @@ artifact there are some subtle differences:
 2. The `System.Flow.Completion` will fire whenever the
   `Generic.Client.Info` is finished, even if that was collected
   manually or with a hunt. If you only want automation to run the
-  first time a client is seen (on enrollement) then use
+  first time a client is seen (on enrollment) then use
   `Server.Internal.Interrogation`
 
 
@@ -59,7 +55,7 @@ description: |
   2. The `System.Flow.Completion` will fire whenever the
     `Generic.Client.Info` is finished, even if that was collected
     manually or with a hunt. If you only want automation to run the
-    first time a client is seen (on enrollement) then use
+    first time a client is seen (on enrollment) then use
     `Server.Internal.Interrogation`
 
 type: INTERNAL

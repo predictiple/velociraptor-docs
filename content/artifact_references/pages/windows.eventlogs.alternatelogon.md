@@ -4,10 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Artifact]
-description: |
-  Logon specifying alternate credentials - if NLA enabled on
-  destination Current logged-on User Name Alternate User Name
-  Destination Host Name/IP Process Name
 ---
 
 Logon specifying alternate credentials - if NLA enabled on

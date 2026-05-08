@@ -4,9 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Server Artifact]
-description: |
-  This artifact imports additional artifacts maintained outside the
-  Velociraptor tree.
 ---
 
 This artifact imports additional artifacts maintained outside the

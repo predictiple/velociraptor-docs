@@ -4,8 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Artifact]
-description: |
-  This artifact will extract Domain Role per machine.
 ---
 
 This artifact will extract Domain Role per machine.

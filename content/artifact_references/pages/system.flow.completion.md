@@ -4,10 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Event Artifact]
-description: |
-  An internal artifact that produces events for every flow completion
-  in the system. This also includes when importing an offline
-  collection.
 ---
 
 An internal artifact that produces events for every flow completion

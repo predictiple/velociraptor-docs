@@ -4,8 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [notebook]
-description: |
-  A notebook to help develop Sigma rules.
 ---
 
 A notebook to help develop Sigma rules.

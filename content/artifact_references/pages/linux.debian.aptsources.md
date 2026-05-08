@@ -4,8 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Artifact]
-description: |
-  Parse Debian apt sources.
 ---
 
 Parse Debian apt sources.

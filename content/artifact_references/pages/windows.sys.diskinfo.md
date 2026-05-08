@@ -4,8 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Artifact]
-description: |
-  Retrieve basic information about the physical disks of a system.
 ---
 
 Retrieve basic information about the physical disks of a system.

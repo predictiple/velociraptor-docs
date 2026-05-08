@@ -4,8 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Server Artifact]
-description: |
-  Verify a set of artifacts and returns results in a structured way.
 ---
 
 Verify a set of artifacts and returns results in a structured way.

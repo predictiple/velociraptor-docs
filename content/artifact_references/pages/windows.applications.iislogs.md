@@ -4,8 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Artifact]
-description: |
-  This artifact enables grep of IISLogs.
 ---
 
 This artifact enables grep of IISLogs.

@@ -4,8 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Event Artifact]
-description: |
-  Monitors DNS queries using ETW.
 ---
 
 Monitors DNS queries using ETW.

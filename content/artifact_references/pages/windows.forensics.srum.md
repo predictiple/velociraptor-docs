@@ -4,8 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Artifact]
-description: |
-  Process the SRUM database.
 ---
 
 Process the SRUM database.

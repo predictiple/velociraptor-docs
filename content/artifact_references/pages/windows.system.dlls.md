@@ -4,9 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Artifact]
-description: |
-  Enumerate the DLLs loaded by a running process. It includes hash value
-  and certificate information.
 ---
 
 Enumerate the DLLs loaded by a running process. It includes hash value

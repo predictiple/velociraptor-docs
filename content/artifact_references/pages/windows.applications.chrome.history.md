@@ -4,8 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Artifact]
-description: |
-  Enumerates a targets chrome history.
 ---
 
 Enumerates a targets chrome history.

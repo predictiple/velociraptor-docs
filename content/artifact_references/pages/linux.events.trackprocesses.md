@@ -4,9 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Event Artifact]
-description: |
-  This artifact uses eBPF and pslist to keep track of running
-  processes by using the Velociraptor process tracker.
 ---
 
 This artifact uses eBPF and pslist to keep track of running

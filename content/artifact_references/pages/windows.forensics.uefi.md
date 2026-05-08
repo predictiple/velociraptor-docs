@@ -4,8 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Artifact]
-description: |
-  This artifact enables disk analysis over an EFI System Partition (ESP).
 ---
 
 This artifact enables disk analysis over an EFI System Partition (ESP).

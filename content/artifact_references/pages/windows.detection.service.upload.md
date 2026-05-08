@@ -4,8 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Event Artifact]
-description: |
-  When a new service is installed, upload the service binary to the server
 ---
 
 When a new service is installed, upload the service binary to the server

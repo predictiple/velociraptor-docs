@@ -4,8 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Artifact]
-description: |
-  Parses the auth logs to determine all SSH login attempts.
 ---
 
 Parses the auth logs to determine all SSH login attempts.

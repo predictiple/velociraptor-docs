@@ -4,8 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Artifact]
-description: |
-  This Artifact will search and parse PowerShell profile scripts.
 ---
 
 This Artifact will search and parse PowerShell profile scripts.

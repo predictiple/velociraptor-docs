@@ -4,8 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Server Artifact]
-description: |
-  Submit a file hash to Hybrid Analysis for a verdict. Default free API restriction is 200 requests/min or 2000 requests/hour.
 ---
 
 Submit a file hash to Hybrid Analysis for a verdict. Default free API restriction is 200 requests/min or 2000 requests/hour.

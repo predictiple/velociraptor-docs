@@ -4,9 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Internal Artifact]
-description: |
-  <pre><code class="language-yaml">
-  name: Server.Internal.ArtifactDescription
 ---
 
 

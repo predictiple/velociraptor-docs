@@ -4,8 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Server Artifact]
-description: |
-  Export a hunt to a Zip download.
 ---
 
 Export a hunt to a Zip download.

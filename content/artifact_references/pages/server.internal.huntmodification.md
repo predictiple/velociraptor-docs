@@ -4,10 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Internal Artifact]
-description: |
-  An internal queue to watch modifications of hunts. The hunt
-  dispatcher from all nodes sends this mutation to the hunt manager
-  which applies it.
 ---
 
 An internal queue to watch modifications of hunts. The hunt

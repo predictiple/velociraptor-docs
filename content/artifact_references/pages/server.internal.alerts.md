@@ -4,9 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Server Event Artifact]
-description: |
-  An internal event queue for alerts. All alerts sent from clients are
-  collected in this event queue.
 ---
 
 An internal event queue for alerts. All alerts sent from clients are

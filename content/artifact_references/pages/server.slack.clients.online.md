@@ -4,8 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Server Event Artifact]
-description: |
-  Send a message to slack when clients come online.
 ---
 
 Send a message to slack when clients come online.

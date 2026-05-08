@@ -4,8 +4,6 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Artifact]
-description: |
-  This artifact enables running YARA over processes in memory.
 ---
 
 This artifact enables running YARA over processes in memory.
