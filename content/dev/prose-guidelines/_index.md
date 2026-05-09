@@ -2,6 +2,11 @@
 title: Guidelines for prose (written content)
 weight: 20
 last_reviewed: 2026-04-29
+weight: 10
+description: |
+  This document provides guidance for writing style in the Velociraptor
+  documentation. It specifies some informal standards and advice with the goal of
+  ensuring as much consistency as possible in our prose content.
 ---
 
 This document provides guidance for writing style in the Velociraptor

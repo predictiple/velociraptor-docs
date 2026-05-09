@@ -1223,8 +1223,8 @@ div.search-box {
     }
 }
 
-div.search_results {
-    padding-top: 80px;
+div.search-pad {
+    padding-top: 100px;
 }
 
 #loading {

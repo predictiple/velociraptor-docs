@@ -2,6 +2,8 @@
 title: Test Content
 weight: 40
 last_reviewed: 2026-04-29
+title: Test
+description: A page for testing and previewing the presentation of common content components
 ---
 
 A page for testing and previewing the presentation of common content

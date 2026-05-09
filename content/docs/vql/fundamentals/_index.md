@@ -4,6 +4,7 @@ date: 2025-01-24
 draft: false
 weight: 10
 last_reviewed: 2026-04-30
+description: Running VQL queries in Notebooks
 ---
 
 {{% notice tip "Running VQL queries in Notebooks" %}}
