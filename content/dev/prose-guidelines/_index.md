@@ -1,24 +1,32 @@
 ---
 title: Guidelines for prose (written content)
-weight: 20
+weight: 30
 last_reviewed: 2026-04-29
-weight: 10
-description: |
-  This document provides guidance for writing style in the Velociraptor
-  documentation. It specifies some informal standards and advice with the goal of
-  ensuring as much consistency as possible in our prose content.
+description:
+  This document provides guidance for the writing style in the
+  Velociraptor documentation. It specifies some informal standards
+  and advice with the goal of ensuring as much consistency as possible
+  in our prose content.
 ---
 
-This document provides guidance for writing style in the Velociraptor
-documentation. It specifies some informal standards and advice with the goal of
-ensuring as much consistency as possible in our prose content.
+This document provides guidance for the writing style in the
+Velociraptor documentation. It specifies some informal standards and
+advice with the goal of ensuring as much consistency as possible in
+our prose content irrespective of author.
 
 The guidance in this document is intended to:
-- allow newcomers to quickly familiarize themselves with the writing style rules
-  that have been used in the existing content on the documentation website.
+- allow newcomers to quickly familiarize themselves with the writing
+  style rules that have been used in the existing content on the
+  documentation website.
 - centralize style-related decisions for written content.
 
-This document is a work-in-progress.
+The advice is intended to be helpful and should not be seen as
+a hurdle to contributions. If your contribution doesn't subscribe to
+all the guidelines that's perfectly OK - we can fix it up to be more
+compliant during future reviews.
+
+This document is a also work-in-progress, and not set-in-stone
+"rules".
 
 ---
 
@@ -45,14 +53,14 @@ This document is a work-in-progress.
 
 ## Markdown content
 
-Our docs website is compiled by Hugo which interprets markdown based on the
-Commonmark standard. Therefore it's best to avoid using features from any other
-flavors of markdown such as GFM, as they may not be rendered correctly or at
-all by Hugo.
+Our docs website is compiled by Hugo which interprets markdown based
+on the Commonmark standard. Therefore it's best to avoid using
+features from any other flavors of markdown such as GFM, as they may
+not be rendered correctly or at all by Hugo.
 
 ## Text wrapping
 
-Hard wrap paragraph text at 70 characters. This makes it easier to
+Hard wrap paragraph text at ~70 characters. This makes it easier to
 review GitHub pull requests, which display changes side-by-side in two
 columns.
 
@@ -78,27 +86,28 @@ in the Markdown Content section.
 
 ### Inline code
 
-We try not to overuse `inline code` or else the prose starts to look like
-patchwork.
+We try not to overuse `inline code` or else the prose starts to look
+like patchwork.
 
 Use `inline code` only for:
 
 - file paths, file names
 - CLI commands, keywords, flags.
 - VQL keywords, variable names and snippets
-- Artifact names, artifact parameter/key names and values, field names and
-  values.
+- Artifact names, artifact parameter/key names and values, field names
+  and values.
 
 Do not use it for:
 
 - brand names
 - terms that the user will type (use quotes instead)
 - defining new terms (use bold text instead)
-- names of GUI controls, controls and menu options (use bold text instead)
+- names of GUI controls, controls and menu options (use bold text
+  instead)
 
-For the last 2 cases above it is recommended to use bold text for emphasis the
-first time a term is used. When doing so it is not necessary to use quotes
-around the term.
+For the last 2 cases above it is recommended to use bold text for
+emphasis the first time a term is used. When doing so it is not
+necessary to use quotes around the term.
 
 ### Block code
 
@@ -145,14 +154,16 @@ Use `-` not `*`. Just for consistency.
 
 ### Shell commands
 
-privilege indicator - this will depend on future changes to styling. TBD
+privilege indicator - this will depend on potential future changes to
+styling. TBD
 
 use generic file names. omit version numbers and arch.
 
 use platform alternatives where applicable
 
-When providing command examples we should use a consistent order for the
-command components: `[binary]` `[command]` `[subcommand]` `[flags]` `[args]`
+When providing command examples we should use a consistent order for
+the command components: `[binary]` `[command]` `[subcommand]`
+`[flags]` `[args]`
 
 ### Internal links
 
@@ -195,9 +206,13 @@ content, because those can just be found with regular index-based
 searches. A tag should ideally be an association with some broader
 concept that is not explicity mentioned in the content itself.
 
-### VQL reference documents
+### VQL reference documents (i.e. `vql.yaml`)
 
-Top level section headings should be level-3.
+Top level section headings should be level-3/H3 (`###`). The reason
+for this is that when presented on the website, H1 is already used for
+the page title, and H2 is used for the name of each
+function/plugin/accessor. So headings within the section for each
+function/plugin/accessor need to be H3 or lower.
 
 - Description (heading is autogenerated)
   - Lead
@@ -207,14 +222,16 @@ Top level section headings should be level-3.
 - Notes
   - notes or cautions about common considerations or pitfalls
 - See also
-  - links to other functions that are likely to be related or of interest.
+  - links to other functions that are likely to be related or of
+    interest.
 
 ### Examples
 
-Examples should _always_ use Level-6 headings, regardless of their position in
-the heading hierarchy. This ensures a consistent style for all examples and
-allows Hugo to create a hyperlink for each example, which is important for
-community support on forums like Discord.
+Examples should _always_ use Level-6 headings, regardless of their
+position in the heading hierarchy. This ensures a consistent style for
+all examples and allows Hugo to create a hyperlink for each example,
+which is important for sharing on community support on forums like
+Discord.
 
 For example:
 
@@ -222,11 +239,11 @@ For example:
 ###### Example
 ```
 
-L6 headings also won't appear in TOCs, so this prevents that from accidentally
-happening.
+L6 headings also won't appear in TOCs, so this also prevents that from
+accidentally happening.
 
-Don't use a colon after the word Example, but use one if it's a lead-in phrase
-such as "For example...:"
+Don't use a colon after the word Example _unless_ there's a subsequent
+example title such as "Example: Recursive use case".
 
 
 ### Markdown Links
@@ -235,5 +252,5 @@ Avoid line breaks in links.
 
 ### UI Elements
 
-Bold all UI elements (buttons, tabs, menu names) to help users scan the page
-quickly.
+Bold all UI elements (buttons, tabs, menu names) to help users scan
+the page quickly.

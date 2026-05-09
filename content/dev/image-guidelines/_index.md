@@ -1,6 +1,6 @@
 ---
 title: Guidelines for creating image content
-weight: 30
+weight: 40
 last_reviewed: 2026-04-29
 weight: 10
 description: |
