@@ -26,8 +26,16 @@ workflows specific to their requirements.
 This is fine! You are welcome to maintain your own set of artifacts.
 However, to contribute back into the project we require the artifacts
 to be useful to the broader Velociraptor community. Artifacts that
-handle a very specific and unique task are probably not that useful
-broadly and won't be accepted for contribution.
+handle a very specific or unique task are probably not that useful
+broadly and are unlikely to be accepted as Exchange contributions. On
+the other hand, if your artifact demonstrates a solution to an
+interesting/novel use case that others can learn from then it may be
+accepted on that basis.
+
+If you're considering making a contribution and you're not sure about
+it, then please chat to us on [Discord](/discord/) first, and we'll do
+our best to point you in the right direction and avoid wasting your
+efforts.
 
 {{% /notice %}}
 
@@ -170,16 +178,6 @@ maintainability:
    general (for example the `Log4J` vulnerability which is now widely
    patched and therefore less likely to be detected).
 
-
-As mentioned above, all contributions are subject to review and
-submissions are only accepted if they are assessed to have value to
-the broader Velociraptor community or if they demonstrate solutions to
-interesting/novel use cases that others can learn from.
-
-If you're considering making a contribution and you're not sure about
-it, then please chat to us on [Discord](/discord/) first, and we'll do
-our best to point you in the right direction and avoid wasting your
-efforts.
 
 We do also plan on reviewing the artifacts in the Exchange
 periodically and removing outdated artifacts. Very useful Exchange
