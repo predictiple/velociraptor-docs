@@ -898,12 +898,13 @@ VQL allows you to specify [raw (literal) strings](#string-constants) using the
 preferred way of specifying them since the expression is passed
 uninterpreted to the regex parser.
 
-It's OK to use standard string sytax (single or double quotes) for
-simple expressions, but if your expression itself requires regex
+It's OK to use standard string syntax (with single or double quotes)
+for simple expressions, but if your expression itself requires regex
 escaping (`\`) then you'd also have to escape that escape character,
-which leads to inelegant expressions, for example `C:\\\\Windows`, and
-is prone to mistakes. It's best to develop the habit of always using
-raw strings for regex unless it's a very simple expression.
+which leads to inelegant expressions, for example `C:\\\\Windows`,
+which is also prone to typo mistakes. It's best to develop the habit
+of always using raw strings for regex unless it's a very simple
+expression.
 
 {{% /notice %}}
 
