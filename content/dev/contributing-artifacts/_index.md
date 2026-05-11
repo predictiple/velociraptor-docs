@@ -145,7 +145,7 @@ projects. These are maintained in our
 project.
 
 Often a specific detection is easiest to implement as a Sigma rule
-rather than writing a complete artifact for it. In such cases you
+rather than writing a dedciated artifact for it. In such cases you
 could consider making your contribution in the form of a Sigma rule to
 our Sigma Rules project.
 
@@ -168,15 +168,26 @@ maintainability:
    likely to fail in future and help maintain them in future releases.
 
 2. The [Artifact Exchange](/exchange/) contains many artifacts that
-   were useful at one time but may have not been updated in a while.
-   This may generally be of lower quality and may even do nothing or
-   break (and since they do not contain tests, we may not know they
-   are broken unless someone reports it).
+   were useful at one time but have not been updated in a while. These
+   artifacts have no quality assurance and may even do nothing or
+   break. Since they do not have associated CI tests we may not know
+   they are broken unless someone reports it. Furthermore, many of
+   these artifacts provide integration with 3rd-party systems which we
+   don't have access to, which means we can't verify reported issues
+   or create CI tests for such artifacts. If you encounter issues with
+   an exchange artifact your best bet is to try fix it yourself (and
+   hopefully then contribute the fixed version back to the exchange)
+   or else try to contact the original author for assistance.
 
    Good candidates for the Exchange are artifacts that hunt for
    specific topical threats which may not be more widely useful in
    general (for example the `Log4J` vulnerability which is now widely
    patched and therefore less likely to be detected).
+
+   The artifact exchange is also a good place for artifacts that
+   demonstrate a unique or reusable solution to a general class of
+   problem. For example, we have artifacts that demonstrate how to
+   interact with various types of external APIs, including LLMs.
 
 
 We do also plan on reviewing the artifacts in the Exchange

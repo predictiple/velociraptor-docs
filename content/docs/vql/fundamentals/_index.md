@@ -26,6 +26,39 @@ more complex SQL syntax, such as `JOIN` or `HAVING`. In VQL, similar
 functionality is provided through plugins, which keeps the syntax
 simple and concise.
 
+### Variables
+
+In VQL, variables are assigned using `LET` statements, for example:
+
+```vql
+LET my_variable <= SELECT * FROM info()
+```
+
+In the above example the assignment is using `<=` which is a
+[materialized LET expression](#materialized-let-expressions), meaning
+that the value is immediately assigned to the variable. However
+assignment can be "lazy" which means that the assignment only happens
+when the variable is subsequently referenced and therefore evaluated.
+See [LET expressions](#let-expressions) for more information about
+lazy evaluation.
+
+Variable names can only consist of alphanumeric characters,
+underscores (`_`), and dashes (`-`), and cannot begin with a numeric
+or a dash character. They are also case-sensitive.
+
+In artifacts you might sometimes see just a `_` used as a variable
+name. This is a naming convention for an anonymous or "throwaway"
+variable, where we don't care about the name because we don't intend
+to use the actual value in subsequent VQL, and therefore also don't
+care is the variable name is later reassigned another value.
+
+For example:
+```vql
+LET _ <= log(message="Start time %v", args=start_time)
+```
+would be used just to generate a log message and we don't intend to do
+anything with the result.
+
 ### Whitespace
 
 VQL does not place any restrictions on the use of whitespace in the
@@ -255,16 +288,36 @@ words, the parent's name.
 
 ### String constants
 
-Strings denoted by `"` or `'` can escape special characters using the
-`\`. For example, `"\n"` means a new line. This is useful but it
-also means that backslashes need to be escaped. This is sometimes
-inconvenient, especially when dealing with Windows paths (that
-contains a lot of backslashes).
+Strings in VQL are denoted by `"` or `'`, and can include
+backslash-escaped special characters, for example, `"\n"` means a new
+line.
 
-Therefore, Velociraptor also offers a multi-line raw string which is
+Allowing backslash escapes is useful but it also means that literal
+backslashes also need to be escaped. This is sometimes inconvenient,
+especially when dealing with Windows paths (that often contain a lot
+of backslashes) or [regexes](#regex-in-vql) where `\` is used for
+shorthand character classes and for escaping special characters.
+
+Therefore, Velociraptor also offers a raw string syntax which is
 denoted by `'''` (three single quotes). Within this type of string no
-escaping is possible, and the all characters are treated literally -
-including new lines. You can use `'''` to denote multi line strings.
+escaping is possible and _all_ characters are treated literally,
+including new lines.
+
+Because the raw string syntax preserves newline it can also be used
+for specifying multi-line strings. For example:
+
+```vql
+SELECT *
+FROM parse_csv(accessor="data", filename='''
+X,Y,Z
+1,2,3
+2,4,6
+''')
+```
+
+If you come from a Python or C# background, note that multi-line
+strings do not use triple double-quotes. Only triple single-quotes
+facilitate multi-line strings in VQL.
 
 ### Identifiers with spaces
 
@@ -538,7 +591,7 @@ SELECT * FROM foreach(row=myprocess, query=mystat)
 
 {{% notice note %}}
 
-A Stored Query is simply a query that is stored into a variable. It is
+A **Stored Query** is simply a query that is stored into a variable. It is
 not actually evaluated at the point of definition. At the point where
 the query is referred, that is where evaluation occurs. The scope at
 which the query is evaluated is derived from the point of reference.
@@ -722,15 +775,17 @@ FROM scope()
 ```
 
 In the first case the regex operator is applied to an array so the
-expression is true if **any** member of the array matches the regular
+expression is TRUE if _any_ member of the array matches the regular
 expression.
 
-The second case applied the regex to a string, so it is true if the
-string matches.
+The second case applies the regex to a string, so it is TRUE because
+the string matches.
 
-Finally in the last case, the regex is applied to an integer. It makes
-no sense to apply a regular expression to an integer and so VQL
-returns FALSE.
+Finally in the last case, the regex is applied to an integer. Normally
+it would make no sense to apply a regular expression to an integer,
+but VQL is smart enough to automatically coerce the int to a string
+for the purpse of the comparison. The result is therefore also TRUE.
+
 
 ###### Example: Associative operator applied on a stored query
 
@@ -827,8 +882,9 @@ which will return `true` if today is Friday and `false` if it's not.
 
 
 
-#### Inverse matching
+#### Negative matching
 
+VQL does not have a "not like" `!~` comparator
 
 
 To achieve inverse matching you can either:
