@@ -4,6 +4,8 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Artifact]
+description: |
+  Represents products as they are installed by Windows Installer.
 ---
 
 Represents products as they are installed by Windows Installer.

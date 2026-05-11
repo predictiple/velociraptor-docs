@@ -1,5 +1,15 @@
 [
     {
+        "title": "Windows.Install.Wazuh.Agent",
+        "author": "julianghill",
+        "description": "Installs the Wazuh Windows agent and configures it to use the supplied\nWazuh manager IP address or hostname.",
+        "link": "/exchange/artifacts/pages/windows.install.wazuh.agent",
+        "tags": [],
+        "author_link": "https://github.com/julianghill",
+        "author_avatar": "https://avatars.githubusercontent.com/u/54985583?v=4",
+        "date": "2026-05-07"
+    },
+    {
         "title": "Linux.Detection.CopyFail.Exploitation",
         "author": "yanivg-dfir",
         "description": "Hunts for signs of successful Copy Fail (CVE-2026-31431) exploitation.\nTargets kernel log messages regarding 'null argv' shells and suspicious 'PF_ALG' registration.\n",

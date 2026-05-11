@@ -4,6 +4,8 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Artifact]
+description: |
+  Retrieves the locally written logs.
 ---
 
 Retrieves the locally written logs.
