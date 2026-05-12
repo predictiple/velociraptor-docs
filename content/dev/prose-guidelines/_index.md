@@ -120,11 +120,6 @@ SQL, although they are similar.
 
 ###### Example
 
-```vql
-SELECT read_file(path="C:/Windows/notepad.exe", accessor="file")
-FROM scope()
-```
-
 ``````text
 ```vql
 SELECT read_file(path="C:/Windows/notepad.exe", accessor="file")
@@ -132,16 +127,24 @@ FROM scope()
 ```
 ``````
 
+produces this syntax-highlighted code block
+
+```vql
+SELECT read_file(path="C:/Windows/notepad.exe", accessor="file")
+FROM scope()
+```
+
 
 ### Admonitions (notices)
 
-Try not to overuse admonition blocks. Especially try not to have two
-or more of them together. Try to only use them when the reader's
-attention needs to be drawn to something specific.
+Try not to overuse admonition blocks. In particular, try not to avoid
+having two or more of them adjacent, especially if they are the same
+adminition type.
 
-Often the content in an admonition can be rewritten as part of the
-normal text body, and therefore doesn't need to be wrapped in it's own
-block.
+Try to use them sparingly when the reader's attention needs to be
+drawn to something specific. Often the content in an admonition block
+can be rewritten as part of the normal text content, and therefore
+doesn't need to be wrapped in it's own block.
 
 Currently we support 4 admonition types: `note`, `tip`, `info`,
 `warning`.
@@ -189,15 +192,16 @@ remember to check the console output.
 
 Always try to add a meaningful `summary` field to the page metadata.
 When using the `children` shortcode, it defaults to creating a summary
-if one is not defined - it grabs the first few paragraphs/sentences
-from the page which is often not ideal. Usually this "auto-summary" is
-unsightly so it's better to carefully craft one rather than relying on
-"auto".
+if one is not defined, and it does this by grabbing the first few
+paragraphs/sentences from the page which is often not ideal. Usually
+this "auto-summary" is not very helpful so it's better to carefully
+craft one rather than relying on "auto-summary" feature.
 
 
 ### KB articles
 
-Tags are recommended. These help users find related content.
+Tags are recommended on KB articles. These help users find related
+content.
 
 Do not use meaningless tags such as "velociraptor" or "DFIR".
 

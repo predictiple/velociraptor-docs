@@ -1,5 +1,8 @@
 ---
 title: Test Content
+weight: 50
+last_reviewed: 2026-04-29
+description: A page for testing and previewing the presentation of common content components
 ---
 
 A page for testing and previewing the presentation of common content
@@ -30,13 +33,19 @@ source.
   * [Ordered:](#ordered)
 * [Blockquotes](#blockquotes)
 * [Inline Code and Code Blocks](#inline-code-and-code-blocks)
+            * [VQL example](#vql-example)
+            * [Python example](#python-example)
 * [Horizontal Rules](#horizontal-rules)
 * [Escaping Characters](#escaping-characters)
-
 
 ---
 
 ## Admonitions
+
+Currently we support 4 admonition types: `note`, `tip`, `info`,
+`warning`.
+
+Admonition titles are optional but recommended.
 
 {{% notice note "This is a note" %}}
 Notebooks contain cells which help the user to evaluate VQL queries

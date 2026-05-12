@@ -743,23 +743,29 @@ operands, one on the left and one on the right (so in the expression
 `1 + 2` we say that `1` is the Left Hand Side (`LHS`), `2` is the Right
 Hand Side (`RHS`) and `+` is the operator.
 
-| Operator         | Meaning                                                                                                                                                                |
-|------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `+ - * /`        | These are the usual arithmetic operators.                                                                                                                              |
-| `=~`             | This is the [regex operator](#regex-in-vql), reads like "matches". For example `X =~ "Windows"` will return `TRUE` if X matches the regex "Windows"                    |
-| `!= = < <= > >=` | The usual comparison operators.                                                                                                                                        |
-| `in`             | The membership operator. Returns TRUE if the LHS is present in the RHS. Note that `in` is an exact case sensitive match.                                               |
-| `.`              | The `.` operator is called the Associative Operator. It dereferences a field from the LHS named by the RHS. For example `X.Y` extracts the field `Y` from the dict `X` |
+| Operator | Meaning |
+|---|---|
+| `+` `-` `*` `/` | These are the usual arithmetic operators. |
+| `=~` | This is the [regex operator](#regex-in-vql), reads like "matches".<br>For example `X =~ "Windows"` will return `TRUE` if X matches the regex "Windows" |
+| `!=` `=` `<` `<=` `>` `>=` | The usual comparison operators. |
+| `in` | The membership operator. Returns TRUE if the LHS is present in the RHS.<br>Note that `in` is an exact case sensitive match. |
+| `.` | The `.` operator is called the Associative Operator.<br>It dereferences a field from the LHS named by the RHS.<br>For example `X.Y` extracts the field `Y` from the dict `X` |
 
 ### Protocols
 
 When VQL encounters an operator it needs to decide how to actually
 evaluate the operator. This depends on what types the LHS and RHS
 operands actually are. The way in which operators interact with the
-types of operands is called a `protocol`.
+types of operands is called a "protocol".
 
-Generally VQL does the expected thing but it is valuable to understand
-which protocol will be chosen in specific cases.
+Certain comparison operators would normally make no sense for
+disparate data types. For example, comparing a string with an int is
+normally nonsensical. However VQL implements some special handling for
+comparisons that would otherise not make sense. In general, if one of
+the operands can be coerced so that it can be meaningfully compared
+with the other operand then VQL does so. VQL generally does the
+expected/intuitive thing but it is valuable to understand which
+protocol will be chosen in specific cases.
 
 ###### Example: Regex operator
 
@@ -770,7 +776,9 @@ LET MyArray = ("X", "XY", "Y")
 LET MyValue = "X"
 LET MyInteger = 5
 
-SELECT MyArray =~ "X", MyValue =~ "X", MyInteger =~ "5"
+SELECT MyArray =~ "X",
+       MyValue =~ "X",
+       MyInteger =~ "5"
 FROM scope()
 ```
 
@@ -779,12 +787,13 @@ expression is TRUE if _any_ member of the array matches the regular
 expression.
 
 The second case applies the regex to a string, so it is TRUE because
-the string matches.
+the string matches. In most languages this is normally the only valid
+regex comparison, i.e. string vs. string.
 
 Finally in the last case, the regex is applied to an integer. Normally
 it would make no sense to apply a regular expression to an integer,
 but VQL is smart enough to automatically coerce the int to a string
-for the purpse of the comparison. The result is therefore also TRUE.
+for the purpose of the comparison. The result is therefore also TRUE.
 
 
 ###### Example: Associative operator applied on a stored query
@@ -813,18 +822,17 @@ member is extracted for example `binary.FullPath` is
 `["C:\Windows\Temp\binary.exe"]`. To access the name of the binary we
 can then index the first element from the array.
 
-
 ```vql
 SELECT * FROM execve(argv=[binary.FullPath[0], "-flag"])
 ```
 
 {{% notice warning "Expanding queries using the associative operator" %}}
 
-While using the `.` operator is useful to apply to a stored query, care
-must be taken that the query is not too large. In VQL stored queries
-are lazy and do not actually execute until needed because they can
-generate thousands of rows! The `.` operator expands the query into an
-array and may exhaust memory doing so.
+While using the `.` operator is useful to apply to a stored query,
+care must be taken that the query is not too large. In VQL, stored
+queries are lazy and do not actually execute until needed because they
+can generate thousands of rows! The `.` operator expands the query
+into an array and may exhaust memory while doing so.
 
 The following query may be disastrous:
 
@@ -839,11 +847,26 @@ and `MFT.FullPath` will expand them all into memory!
 
 {{% /notice %}}
 
+#### Comparison and Evaluation Logic
+
+Before any comparison or operation, the system checks if a value or
+referenced object (e.g. Stored Query) is "lazy", for example:
+`LET Now = timestamp(epoch=now())`). If it is, then it's resolved to
+an actual value first.
+
+##### Equality
+
+##### Ordering
+
+##### Truthiness
+
+
+
 ### Regex comparisons
 
 Velociraptor has several
 [functions and plugins](/vql_reference/?query=regex)
-that provide regex-based parsing and matching.
+that provide regex-based matching.
 
 In VQL syntax itself, regex matching is provided by the `=~` operator.
 In contrast to the functions/plugins mentioned above, this is used
@@ -879,20 +902,19 @@ FROM scope()
 which will return `true` if today is Friday and `false` if it's not.
 
 
-
-
-
 #### Negative matching
 
-VQL does not have a "not like" `!~` comparator
+VQL does not have a "not like" (`!~`) comparator. Instead, to achieve
+negative matching you can either:
+- implement the inverse matching directly in your regex, although this
+  may be tricky given that we don't support lookaheads, as mentioned
+  previously, but it may be viable for trivial inverse matches.
+or
+- use the `NOT` operator. This is the preferred way and provides the
+  best intelligibility for the comparison. For example:
 
+  `SELECT _value AS count FROM range(end=5) WHERE NOT count =~ "3$"`
 
-To achieve inverse matching you can either:
-- implement it directly in your regex.
-
-
-
-#### Automatic type conversions
 
 #### Regex modifiers
 
@@ -942,17 +964,38 @@ don't match.
 
 #### Special cases
 
+In VQL the regex "match all" operator (`.`) matches _anything_ if it's
+used on its own. In other words it always returns true regardless of
+what it's being compared to, including non-string data types.
+
+However, when used as part of an expression along with other
+characters it retains it's normal regex meaning.
+
+So in this example, `y` will evaluate to FALSE because there is no
+character ahead of the string `test`.
 ```vql
 LET x <= "testing"
-SELECT (x =~ ".test") FROM scope()
+SELECT (x =~ ".test") AS y FROM scope()
 ```
+
+While in this case, `y` will evaluate as TRUE regardless of what
+string value, or even which data type, `x` is set to.
+```vql
+LET x <= "testing"
+SELECT (x =~ ".") AS y FROM scope()
+```
+
+The main use case for this special behavior is to allow artifact
+parameters to accept empty strings and have these interpreted as a
+"match all" in the VQL rather than requiring `.*` as the parameter
+input.
 
 {{% notice tip "Raw strings vs. character escaping" %}}
 
-VQL allows you to specify [raw (literal) strings](#string-constants) using the
-`'''` (triple single quotes) syntax. For regex expressions this is the
-preferred way of specifying them since the expression is passed
-uninterpreted to the regex parser.
+VQL allows you to specify [raw (literal) strings](#string-constants)
+using the `'''` (triple single quotes) syntax. For regex expressions
+this is the preferred way of specifying them since the expression is
+passed uninterpreted to the regex parser.
 
 It's OK to use standard string syntax (with single or double quotes)
 for simple expressions, but if your expression itself requires regex

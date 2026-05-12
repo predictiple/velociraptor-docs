@@ -106,7 +106,7 @@ The advantages of centralizing registry analysis include:
 Usually if your artifact falls into the above pattern, we will direct
 you to add a rule to the Registry Hunter project.
 
-## Artifacts targeting web browsers and related database files
+## Artifacts targeting web browsers and OS-related database files
 
 This is a common use case, which originally focused on SQLite files,
 but which can now handle many more file formats (e.g. `leveldb` and
@@ -139,8 +139,8 @@ you to add a rule to the
 ## Sigma rule-based detection
 
 In addition to the projects described above, we also maintain curated
-Sigma rules for Windows, Linux and macOS, derived from other excellent
-projects. These are maintained in our
+Sigma rules for Windows, Linux and macOS, sourced from other excellent
+open source projects. These are maintained in our
 [Sigma Rules](https://github.com/Velocidex/velociraptor-sigma-rules)
 project.
 
@@ -193,7 +193,7 @@ maintainability:
 We do also plan on reviewing the artifacts in the Exchange
 periodically and removing outdated artifacts. Very useful Exchange
 artifacts may be graduated to become built-ins if suitable tests can
-be devised to assure their operational quality.
+be devised that can assure their operational quality.
 
 ## Artifact Exchange Contributions
 
