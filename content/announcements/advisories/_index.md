@@ -1,7 +1,7 @@
 ---
 menutitle: "Security Advisories"
 title: "Security Advisories"
-description: |
+summary: |
     CVEs and other security advisories.
 weight: 10
 no_edit: true

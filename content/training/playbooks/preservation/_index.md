@@ -1,5 +1,10 @@
 ---
 title: "Preserving Forensic Evidence"
+summary: |
+    As a system administrator you have a high level of confidence a
+    certain endpoint is compromised. You wish to preserve critical
+    evidence while arranging for a more experienced DFIR professional to
+    examine the evidence.
 description: |
     A compromised endpoint is likely to be destroyed. You want to preserve raw files until you have an opportunity to analyse them later.
 

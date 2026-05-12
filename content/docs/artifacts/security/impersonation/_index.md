@@ -6,8 +6,8 @@ weight: 100
 draft: true
 summary: "Impersonation"
 last_reviewed: 2025-05-24
-description: |
-  ## Server Artifacts and Impersonation
+summary: |
+  How to enable controlled privilege through server artifact impersonation
 ---
 ## Server Artifacts and Impersonation
 
