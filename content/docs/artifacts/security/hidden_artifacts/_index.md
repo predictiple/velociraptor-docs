@@ -6,10 +6,6 @@ weight: 100
 draft: true
 summary: "Controlling artifact visibility"
 last_reviewed: 2025-05-24
-summary: |
-  Because the system can become cluttered with hundreds of custom or
-  imported artifacts, administrators can now hide selected artifacts
-  from the GUI to reduce complexity
 description: |
   The first goal is to clean up the vast number of artifacts that are
   presented through the GUI. Because Velociraptor allows artifacts to be
