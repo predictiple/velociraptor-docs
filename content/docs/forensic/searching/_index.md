@@ -115,7 +115,7 @@ You can get yara rules from many sources (threat intel, blog posts
 etc) or you can write your own. Rules may be very specific, in which
 case a hit may represent a valuable signal. If the YARA rule is too
 loose, the likelihood of a false positive increases, and further
-postprocessing will be required to verify the hits.
+post-processing will be required to verify the hits.
 
 Try to collect additional context around the hits to eliminate false
 positives. You can use other plugins to help verify other aspects of

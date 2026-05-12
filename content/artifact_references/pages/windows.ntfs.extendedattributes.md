@@ -85,7 +85,7 @@ parameters:
     default: 0
   - name: UploadHits
     type: bool
-    description: "Upload complete complete attribute data."
+    description: "Upload complete attribute data."
 
 sources:
   - query: |

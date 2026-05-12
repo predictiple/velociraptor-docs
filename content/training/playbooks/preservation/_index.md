@@ -187,7 +187,7 @@ preserve the raw files for some reason.
 
 ### Other considerations
 
-When collecting raw files from the endpoint we need to make a tradeoff:
+When collecting raw files from the endpoint we need to make a trade-off:
 
 1. Collecting fewer files may miss some files that are needed later
    during analysis.

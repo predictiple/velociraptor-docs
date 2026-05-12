@@ -6,7 +6,7 @@ sitemap:
    disable: true
 no_edit: true
 description: |
-  Encodes a string as as different type. Currently supported types include 'hex', 'base64'.
+  Encodes a string as a different type. Currently supported types include 'hex', 'base64'.
 ---
 
 

@@ -22,5 +22,5 @@ read the data in buffers and scan a buffer at the time
 blocksize comes in)
 
 the disadvantage here is that the rule can only really match one buffer at the time
-but limiting the iops can not work with libyara way because we dont control it
-it only works when using the accessor
+but limiting the iops can not work with libyara way because we don't
+control it. It only works when using the accessor

@@ -15,7 +15,7 @@ description: |
   - /usr/bin/
 
   Then when attempting to open the file "ls", this accessor first
-  searches for it in in /bin/ls, then /usr/bin/ls.
+  searches for it in /bin/ls, then /usr/bin/ls.
 
   The search paths are selected using a scope variable:
 
@@ -57,7 +57,7 @@ prefixes.  For example consider the following base paths:
 - /usr/bin/
 
 Then when attempting to open the file "ls", this accessor first
-searches for it in in /bin/ls, then /usr/bin/ls.
+searches for it in /bin/ls, then /usr/bin/ls.
 
 The search paths are selected using a scope variable:
 

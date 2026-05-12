@@ -15,8 +15,9 @@ description: |
   parameter, and a list of artifacts to collect in the `artifacts`
   parameter.
 
-  In this case all artifacts will receive the the same
-  parameters. For example:
+  In this case all artifacts will receive the same parameters.
+
+  For example:
 
   ```vql
   SELECT collect_client(
@@ -125,8 +126,9 @@ simplest way is to specify the environment string using the `env`
 parameter, and a list of artifacts to collect in the `artifacts`
 parameter.
 
-In this case all artifacts will receive the the same
-parameters. For example:
+In this case all artifacts will receive the same parameters.
+
+For example:
 
 ```vql
 SELECT collect_client(

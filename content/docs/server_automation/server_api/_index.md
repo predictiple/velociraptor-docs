@@ -232,7 +232,7 @@ command _replaces_ the existing roles - it does not add to them.
 $ velociraptor --config server.config.yaml acl grant Mike --role investigator,api
 ```
 
-Note that role role changes made from the CLI require a service restart. You
+Note that role changes made from the CLI require a service restart. You
 will see a message recommending this after running the `acl grant` command.
 Changes made in the GUI or VQL do not require a service restart.
 

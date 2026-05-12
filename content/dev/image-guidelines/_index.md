@@ -72,7 +72,7 @@ For **GIF animations** no standard exists yet.
 
 ## Fonts
 
-The use of standard fonts is most relevant to **annoted screenshots** and
+The use of standard fonts is most relevant to **annotated screenshots** and
 **line diagrams**.
 
 The official Excalidraw version (https://excalidraw.com) uses a default font

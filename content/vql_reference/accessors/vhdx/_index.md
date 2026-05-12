@@ -11,7 +11,7 @@ description: |
   This accessor allows access to the content of VHDX files. Note that usually
   VHDX files are disk images with a partition table and an NTFS volume. You
   will usually need to wrap this accessor with a suitable Offset (to account
-  for the partition) and parse it with the the "raw_ntfs" accessor.
+  for the partition) and parse it with the "raw_ntfs" accessor.
 
   ### Example
 
@@ -46,7 +46,7 @@ Allow reading a VHDX file.
 This accessor allows access to the content of VHDX files. Note that usually
 VHDX files are disk images with a partition table and an NTFS volume. You
 will usually need to wrap this accessor with a suitable Offset (to account
-for the partition) and parse it with the the "raw_ntfs" accessor.
+for the partition) and parse it with the "raw_ntfs" accessor.
 
 ### Example
 

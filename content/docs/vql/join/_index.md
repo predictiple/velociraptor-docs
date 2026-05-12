@@ -103,7 +103,7 @@ In the previous example we saw exactly what a `JOIN` operation looks
 like in `SQL` and how the database can utilize indexes to make the
 operation very fast. In VQL, however all data is dynamic because our
 data sources are plugins which calculate rows on the fly. Because we
-dont have a static table, it means that we can not have a permanent
+don't have a static table, it means that we can not have a permanent
 index on this data.
 
 Therefore, VQL does not have indexes! As such, there is no benefit in
