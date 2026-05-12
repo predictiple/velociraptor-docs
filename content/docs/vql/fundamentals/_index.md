@@ -761,7 +761,7 @@ types of operands is called a "protocol".
 Certain comparison operators would normally make no sense for
 disparate data types. For example, comparing a string with an int is
 normally nonsensical. However VQL implements some special handling for
-comparisons that would otherise not make sense. In general, if one of
+comparisons that would otherwise not make sense. In general, if one of
 the operands can be coerced so that it can be meaningfully compared
 with the other operand then VQL does so. VQL generally does the
 expected/intuitive thing but it is valuable to understand which
@@ -877,7 +877,7 @@ Internally we use Go’s [regexp](https://pkg.go.dev/regexp/syntax)
 package, so the expression syntax (RE2) and capabilities are generally
 the same as in Go, with a few VQL-specific exceptions that are
 described below. This regex engine allows faster and safer matching
-than more complex impementations such as PCRE. However, this means
+than more complex implementations such as PCRE. However, this means
 that some PCRE regex constructs that you may be familiar with are not
 supported, in particular:
 - Lookarounds: positive lookahead (`(?=re)`), negative lookahead

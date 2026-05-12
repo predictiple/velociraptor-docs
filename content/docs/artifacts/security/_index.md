@@ -451,7 +451,7 @@ collecting artifacts targeting specific IOCs:
   `Theat[^ ]+`, and post process by filtering down the false positives
   on the server.
 
-  This is obviously a tradeoff between being very specific and
+  This is obviously a trade-off between being very specific and
   getting few, very high value, results, vs being less specific and
   potentially increasing the false positive rate, but making it hard to
   know what you are searching for.

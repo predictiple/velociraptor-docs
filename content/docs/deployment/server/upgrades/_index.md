@@ -180,7 +180,7 @@ You can also restore some key information from
 [automated server backups](/knowledge_base/tips/backing_up/).
 
 Although in the worst-case scenario you may lose collection data,
-clients will contine reporting to the server. In all cases, if you
+clients will continue reporting to the server. In all cases, if you
 consider your collection data valuable then you should be backing up
 the server datastore too, and this should be done externally and
 independently of the Velociraptor application.

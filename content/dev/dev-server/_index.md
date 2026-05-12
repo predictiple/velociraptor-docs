@@ -81,7 +81,7 @@ serious issues, so this is a good final check.
 
 ## 6. Submit your contribution
 
-Whn you're done, you can then commit your local changes, push them to
+When you're done, you can then commit your local changes, push them to
 _your_ GitHub forked repo, and then open a pull request against the
 upstream repo.
 

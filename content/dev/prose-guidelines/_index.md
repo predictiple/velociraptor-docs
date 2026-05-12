@@ -139,7 +139,7 @@ FROM scope()
 
 Try not to overuse admonition blocks. In particular, try not to avoid
 having two or more of them adjacent, especially if they are the same
-adminition type.
+admonition type.
 
 Try to use them sparingly when the reader's attention needs to be
 drawn to something specific. Often the content in an admonition block
@@ -208,7 +208,7 @@ Do not use meaningless tags such as "velociraptor" or "DFIR".
 Avoid using tags that are terms which already appear in the page
 content, because those can just be found with regular index-based
 searches. A tag should ideally be an association with some broader
-concept that is not explicity mentioned in the content itself.
+concept that is not explicitly mentioned in the content itself.
 
 ### VQL reference documents (i.e. `vql.yaml`)
 

@@ -145,7 +145,7 @@ open source projects. These are maintained in our
 project.
 
 Often a specific detection is easiest to implement as a Sigma rule
-rather than writing a dedciated artifact for it. In such cases you
+rather than writing a dedicated artifact for it. In such cases you
 could consider making your contribution in the form of a Sigma rule to
 our Sigma Rules project.
 
