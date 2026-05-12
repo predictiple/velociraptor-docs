@@ -1,5 +1,9 @@
 ---
 title: "Triaging Logs"
+summary: |
+    An endpoint is suspected of being compromised but you don't know
+    exactly what happened. You want to get an initial idea by examining
+    the logs on the actual endpoint.
 description: |
     An endpoint is suspected of being compromised but you don't know
     exactly what happened. You want to get an initial idea by examining
