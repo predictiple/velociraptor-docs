@@ -127,7 +127,7 @@ controls described above.
 
 ### Disk space
 
-By far the most important aspects of specing the server is the amount
+By far the most important aspects of speccing the server is the amount
 of disk space available. Since Velociraptor uses a simple filesystem
 to store all its data, it is easy to manage disk space by deleting or
 archiving old data.

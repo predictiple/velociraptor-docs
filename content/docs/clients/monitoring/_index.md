@@ -90,7 +90,7 @@ Client monitoring queries can apply to all clients or be targeted based on
 client labels. We refer to the set of all clients having a specific label as a
 **label group**.
 
-- Event Artifacts assigned to the the label group "All" apply to all clients
+- Event Artifacts assigned to the label group "All" apply to all clients
   regardless of label or OS type (although artifact preconditions are
   still honored).
 

@@ -12,7 +12,7 @@ description: |
   that usually VMDK files are disk images with a partition table and
   an NTFS volume. You will usually need to wrap this accessor with a
   suitable Offset (to account for the partition) and parse it with
-  the the "raw_ntfs" accessor.
+  the "raw_ntfs" accessor.
 
   The VMDK file should be the metadata file (i.e. not the extent
   files).  The extent files are expected to be in the same directory
@@ -52,7 +52,7 @@ This accessor allows access to the content of VMDK files. Note
 that usually VMDK files are disk images with a partition table and
 an NTFS volume. You will usually need to wrap this accessor with a
 suitable Offset (to account for the partition) and parse it with
-the the "raw_ntfs" accessor.
+the "raw_ntfs" accessor.
 
 The VMDK file should be the metadata file (i.e. not the extent
 files).  The extent files are expected to be in the same directory

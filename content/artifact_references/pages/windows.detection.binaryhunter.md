@@ -18,7 +18,7 @@ This enables unique capability to hunt for specific things such as PE imports, e
 
 Note: this artifacts filters are cumulative so a hash based hit will return
 no results if the file is filtered out by other filters.
-For most performant searches use path, size and and date filters. By default
+For most performant searches use path, size and date filters. By default
 the artifact uses the 'auto' data accessor but can also be changed as desired.
 
 
@@ -36,7 +36,7 @@ description: |
 
     Note: this artifacts filters are cumulative so a hash based hit will return
     no results if the file is filtered out by other filters.
-    For most performant searches use path, size and and date filters. By default
+    For most performant searches use path, size and date filters. By default
     the artifact uses the 'auto' data accessor but can also be changed as desired.
 
 parameters:

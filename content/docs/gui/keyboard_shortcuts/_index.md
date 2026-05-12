@@ -26,8 +26,8 @@ These are available on any screen in the GUI.
 
 |                                |   |                                                         |
 |--------------------------------|---|---------------------------------------------------------|
-| `<Alt>` + `d`                  | : | Goto dashboard                                          |
-| `<Alt>` + `n`                  | : | Goto notebooks                                          |
+| `<Alt>` + `d`                  | : | Go to dashboard                                          |
+| `<Alt>` + `n`                  | : | Go to notebooks                                          |
 | `<Alt>` + `c`                  | : | Collected artifacts (for the currently selected client) |
 | `<Ctrl>` + `/`                 | : | Show/Hide keyboard hotkeys help                         |
 | `<Ctrl>` + ( `<Shift>` ) + `?` | : | Move focus to the client search box                     |

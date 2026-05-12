@@ -232,7 +232,7 @@ Some client artifacts allow running arbitrary commands on the
 endpoint. For example, as we have seen previously, the
 `Windows.System.CmdShell` artifact allows running arbitrary shell
 commands, because the commandline to run is a user supplied parameter
-directly passed to the shell, using the the `execve()` plugin. This
+directly passed to the shell, using the `execve()` plugin. This
 can be leveraged for a complete domain compromise by e.g. running a
 malicious command on all assets in the environment.
 

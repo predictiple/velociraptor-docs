@@ -74,7 +74,7 @@ description: |
 parameters:
   - name: MFTDrive
     description: |
-      The path to to the drive that holds the MFT file (can be a pathspec). This
+      The path to the drive that holds the MFT file (can be a pathspec). This
       drive is also used for results for offline processing.
     default: "C:"
   - name: MFTPath
@@ -132,7 +132,7 @@ sources:
                          filename=filename, accessor=accessor)
               })
 
-      -- The path to to the drive that holds the MFT file (can be a pathspec)
+      -- The path to the drive that holds the MFT file (can be a pathspec)
       LET Drive &lt;= pathspec(parse=MFTDrive, path_type="ntfs")
 
       -- time testing

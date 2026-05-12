@@ -103,7 +103,7 @@ server on a different platform, and you may decide to do so, but please keep in
 mind that for production deployments the server should run on Linux. Issues with
 other platforms will receive limited support.
 
-Binaries for the the most common platforms and architectures are available on
+Binaries for the most common platforms and architectures are available on
 our [Downloads](/downloads/) page.
 
 ## Deployment Milestones

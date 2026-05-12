@@ -82,7 +82,7 @@
     },
     {
         "title": "Elastic.EventLogs.Sysmon",
-        "description": "Ships the the Sysmon event log in ECS schema.",
+        "description": "Ships the Sysmon event log in ECS schema.",
         "link": "/artifact_references/pages/elastic.eventlogs.sysmon",
         "type": "client",
         "tags": [

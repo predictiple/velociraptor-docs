@@ -2252,7 +2252,7 @@
     },
     {
         "name": "encode",
-        "description": "Encodes a string as as different type. Currently supported types include 'hex', 'base64'.",
+        "description": "Encodes a string as a different type. Currently supported types include 'hex', 'base64'.",
         "type": "Function",
         "args": [
             {
