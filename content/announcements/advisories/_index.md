@@ -3,6 +3,8 @@ menutitle: "Security Advisories"
 title: "Security Advisories"
 summary: |
     CVEs and other security advisories.
+description: |
+    CVEs and other security advisories.
 weight: 10
 no_edit: true
 noTitle: true
@@ -10,8 +12,6 @@ pre: <i class="fas fa-exclamation-triangle"></i>
 outputs:
 - html
 - RSS
-description: |
-  The following CVEs have been noted.
 ---
 
 The following CVEs have been noted.
