@@ -10,6 +10,8 @@ pre: <i class="fas fa-exclamation-triangle"></i>
 outputs:
 - html
 - RSS
+description: |
+  The following CVEs have been noted.
 ---
 
 The following CVEs have been noted.

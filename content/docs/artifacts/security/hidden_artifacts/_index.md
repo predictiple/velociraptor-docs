@@ -10,6 +10,14 @@ summary: |
   Because the system can become cluttered with hundreds of custom or
   imported artifacts, administrators can now hide selected artifacts
   from the GUI to reduce complexity
+description: |
+  The first goal is to clean up the vast number of artifacts that are
+  presented through the GUI. Because Velociraptor allows artifacts to be
+  customized, new artifacts to be added to large number of artifacts
+  imported from external sources (i.e. `Artifact Packs`), there could be
+  hundreds or thousands of artifacts loaded in the system. Many have
+  similar but different functionality. This can overwhelm a user with
+  too much choice and be confusing.
 ---
 
 The first goal is to clean up the vast number of artifacts that are

@@ -8,6 +8,8 @@ summary: "Impersonation"
 last_reviewed: 2025-05-24
 summary: |
   How to enable controlled privilege through server artifact impersonation
+description: |
+  ## Server Artifacts and Impersonation
 ---
 ## Server Artifacts and Impersonation
 
