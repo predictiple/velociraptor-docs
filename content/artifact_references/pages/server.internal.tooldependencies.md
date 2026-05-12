@@ -4,6 +4,9 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Artifact]
+description: |
+  An internal artifact that defines some tool
+  dependencies. Velociraptor releases for offline collector
 ---
 
 An internal artifact that defines some tool

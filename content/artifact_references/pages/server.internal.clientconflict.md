@@ -4,6 +4,9 @@ hidden: true
 sitemap:
   disable: true
 tags: [Internal Artifact]
+description: |
+  This event artifact is an internal event stream receiving events
+  about client conflict.
 ---
 
 This event artifact is an internal event stream receiving events

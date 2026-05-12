@@ -4,6 +4,10 @@ hidden: true
 sitemap:
   disable: true
 tags: [Server Artifact]
+description: |
+  Sometimes a hunt is issued which is no longer useful. While stopping
+  the hunt from the GUI prevents new clients from receiving the hunt,
+  it does not actively cancel collections currently in flight.
 ---
 
 Sometimes a hunt is issued which is no longer useful. While stopping

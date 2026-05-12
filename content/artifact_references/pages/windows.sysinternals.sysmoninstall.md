@@ -4,6 +4,10 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Artifact]
+description: |
+  Sysmon is a kernel level system monitor written by Sysinternals. While we are
+  not able to distribute Sysmon ourselves, Velociraptor can help you manage its
+  deployment and installation.
 ---
 
 Sysmon is a kernel level system monitor written by Sysinternals. While we are

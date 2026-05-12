@@ -4,6 +4,10 @@ hidden: true
 sitemap:
   disable: true
 tags: [Internal Artifact]
+description: |
+  An internal queue to notify hunt dispatchers on all minions that a
+  certain hunt has changed and should be updated from the internal
+  cache.
 ---
 
 An internal queue to notify hunt dispatchers on all minions that a

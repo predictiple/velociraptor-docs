@@ -4,6 +4,8 @@ hidden: true
 sitemap:
   disable: true
 tags: [Server Artifact]
+description: |
+  Build an MSI ready for deployment in the current org.
 ---
 
 Build an MSI ready for deployment in the current org.

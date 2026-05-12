@@ -4,6 +4,8 @@ hidden: true
 sitemap:
   disable: true
 tags: [Client Artifact]
+description: |
+  A utility artifact to provide helpful utility functions.
 ---
 
 A utility artifact to provide helpful utility functions.

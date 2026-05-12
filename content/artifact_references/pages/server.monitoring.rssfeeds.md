@@ -4,6 +4,8 @@ hidden: true
 sitemap:
   disable: true
 tags: [Server Event Artifact]
+description: |
+  Monitor RSS feeds for changes.
 ---
 
 Monitor RSS feeds for changes.
