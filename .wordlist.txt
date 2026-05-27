@@ -2186,4 +2186,11 @@ lookbehind
 storedQuery
 subexpression
 truthy
-zulp
+
+Dockerfile
+HMAC
+KQL
+integrations
+linter
+misconfigurations
+scrollable
