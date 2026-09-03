@@ -37,7 +37,7 @@ nevertheless available to all users in that org via VQL.
 
 For example, any user with the `NOTEBOOK EDITOR` permission can build
 or view a
-[timeline]({{< ref "/blog/2021/2021-09-07-release-notes-0.6.1/#timelines" >}})
+[timeline](/blog/2021/2021-09-07-release-notes-0.6.1/#timelines)
 from private notebook cells if they know the notebook and cell IDs.
 This can be useful for providing your team with data views that are
 sourced from more complex queries maintained in a private notebook.

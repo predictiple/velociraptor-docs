@@ -3,22 +3,31 @@ name: github pages
 on:
   push:
     branches:
-      - master  # Set a branch to deploy
-  pull_request:
+      - gh-pages-preview  # Branch that drives the Pages preview at https://predictiple.github.io/velociraptor-docs/
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           submodules: true  # Fetch Hugo themes (true OR recursive)
           fetch-depth: 0    # Fetch all history for .GitInfo and .Lastmod
 
-      - uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe
+      - uses: actions/setup-go@v5
         with:
           go-version: '^1.25'
 
@@ -45,12 +54,18 @@ jobs:
         run: make index
 
       - name: Build
-        run: hugo
+        # Override baseURL so absolute links resolve to the preview site
+        # rather than the production docs.velociraptor.app domain.
+        run: hugo --baseURL https://predictiple.github.io/velociraptor-docs/
 
-      - name: Deploy
-        uses: peaceiris/actions-gh-pages@v4
-        if: github.ref == 'refs/heads/master'
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./public
-          force_orphan: true
+          path: ./public
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
