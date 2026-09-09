@@ -15,7 +15,9 @@ description: |
 The `pool_client` command simulates many Velociraptor clients on a
 single host. It is mainly used for load testing a Velociraptor
 deployment: you can spin up hundreds or thousands of virtual clients
-to see how the server copes with the extra load.
+to see how the server copes with the extra load. It is also useful
+for testing and learning scenarios, for example testing how hunts
+behave when many clients are enrolled.
 
 Each virtual client connects to the server with its own client ID,
 so the server sees a fleet of independent clients. However, all the
@@ -88,16 +90,25 @@ codename hostname made from an adjective and a noun, for example
 `brave-falcon` or `quantum-phoenix`. The codename is also used as the
 fully qualified domain name, reusing the domain of the real host. So
 on a host called `myhost.example.com`, a virtual client might report
-its FQDN as `brave-falcon.example.com`. The rest of the reported
-client information reflects the real host.
+its FQDN as `brave-falcon.example.com`. A number is appended to the
+name only when you run almost ten thousand clients, to keep every
+name unique. The rest of the reported client information reflects the
+real host.
+
+If you run pool clients on several hosts at the same time, two
+virtual clients may end up with the same hostname. This is not a
+problem: the server identifies clients by their client ID, and
+hostname collisions happen in real networks too.
 
 #### How the pool client stores client information
 
 Each virtual client needs its own client ID and private key. By
 default the pool client keeps these in memory, so nothing is written
-to disk and every run starts with fresh clients. To keep the same
-clients between runs, use the `--writeback_dir` flag to store the
-client information in a directory on disk. The codename hostnames are
+to disk and every run starts with fresh clients. This makes it easy
+to spin up clients, run some tests, stop them, and start again
+without having to clean up writeback files. To keep the same clients
+between runs, use the `--writeback_dir` flag to store the client
+information in a directory on disk. The codename hostnames are
 generated fresh each time the pool client starts.
 
 ###### Example
