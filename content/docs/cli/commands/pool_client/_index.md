@@ -1,8 +1,8 @@
 ---
 menutitle: "pool_client"
 title: 'The "pool_client" command'
-date: 2026-09-08
-last_reviewed: 2026-09-08
+date: 2026-09-09
+last_reviewed: 2026-09-09
 draft: false
 weight: 67
 summary: "Run a pool client for load testing"
@@ -31,7 +31,9 @@ pool_client [<flags>]
     Run a pool client for load testing.
 
     --number=NUMBER    Total number of clients to run.
-    --writeback_dir=.  The directory to store all writebacks.
+    --writeback_dir=WRITEBACK_DIR
+                       The directory to store all writebacks. If not
+                       specified, in-memory writebacks are used.
     --concurrency=10   How many real queries to run.
     --start_rate=20    How many clients per second to start.
 ```
@@ -63,8 +65,8 @@ In practice this means:
   the same results as the first time.
 - **The initial interrogation** is shared by all clients. The first
   client to enroll runs `Generic.Client.Info` and the rest reuse its
-  results, so every virtual client reports the same host
-  information.
+  results. Each client then reports its own codename hostname, while
+  the rest of the host information is the same for every client.
 
 This behavior is intentional. The pool client is meant to put load on
 the server (communications, datastore, GUI), not to run the same
@@ -81,9 +83,22 @@ virtual clients, you may need to raise this value so collections and
 hunts finish quickly. Be careful though: each parallel query uses
 host resources, so raising it too far can slow the host down.
 
-To distinguish the virtual clients in the GUI, the pool client
-appends a number to the hostname (for example `myhost-0`, `myhost-1`).
-The rest of the reported client information reflects the real host.
+To distinguish the virtual clients in the GUI, each one gets a unique
+codename hostname made from an adjective and a noun, for example
+`brave-falcon` or `quantum-phoenix`. The codename is also used as the
+fully qualified domain name, reusing the domain of the real host. So
+on a host called `myhost.example.com`, a virtual client might report
+its FQDN as `brave-falcon.example.com`. The rest of the reported
+client information reflects the real host.
+
+#### How the pool client stores client information
+
+Each virtual client needs its own client ID and private key. By
+default the pool client keeps these in memory, so nothing is written
+to disk and every run starts with fresh clients. To keep the same
+clients between runs, use the `--writeback_dir` flag to store the
+client information in a directory on disk. The codename hostnames are
+generated fresh each time the pool client starts.
 
 ###### Example
 
