@@ -20,13 +20,14 @@
     }
     pagefindLoaded = true;
     return new Promise(function (resolve, reject) {
+      var base = window.siteBase || "/";
       var css = document.createElement("link");
       css.rel = "stylesheet";
-      css.href = "/pagefind/pagefind-ui.css";
+      css.href = base + "pagefind/pagefind-ui.css";
       document.head.appendChild(css);
 
       var script = document.createElement("script");
-      script.src = "/pagefind/pagefind-ui.js";
+      script.src = base + "pagefind/pagefind-ui.js";
       script.onload = resolve;
       script.onerror = function () {
         pagefindLoaded = false;
@@ -207,9 +208,9 @@
     return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
   }
   function tagUrlFor(value) {
-    return getTagSlugSet().has("/tags/" + slugifyTag(value) + "/")
-      ? "/tags/" + slugifyTag(value) + "/"
-      : null;
+    var base = window.siteBase || "/";
+    var path = base + "tags/" + slugifyTag(value) + "/";
+    return getTagSlugSet().has(path) ? path : null;
   }
 
   function titleCase(str) {

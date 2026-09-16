@@ -14,7 +14,7 @@
   font-style: normal;
   font-weight: 400;
   src: local("Atkinson Hyperlegible"),
-    url("/fonts/AtkinsonHyperlegible-Regular.woff2") format("woff2");
+    url("../../fonts/AtkinsonHyperlegible-Regular.woff2") format("woff2");
   unicode-range: U+0020-007E, U+0080-00FF;
   font-display: block;
 }
@@ -24,7 +24,7 @@
   font-style: italic;
   font-weight: 400;
   src: local("Atkinson Hyperlegible"),
-    url("/fonts/AtkinsonHyperlegible-Italic.woff2") format("woff2");
+    url("../../fonts/AtkinsonHyperlegible-Italic.woff2") format("woff2");
   unicode-range: U+0020-007E, U+0080-00FF;
   font-display: block;
 }
@@ -34,7 +34,7 @@
   font-style: normal;
   font-weight: 700;
   src: local("Atkinson Hyperlegible"),
-    url("/fonts/AtkinsonHyperlegible-Bold.woff2") format("woff2");
+    url("../../fonts/AtkinsonHyperlegible-Bold.woff2") format("woff2");
   unicode-range: U+0020-007E, U+0080-00FF;
   font-display: block;
 }
@@ -44,7 +44,7 @@
   font-style: italic;
   font-weight: 700;
   src: local("Atkinson Hyperlegible"),
-    url("/fonts/AtkinsonHyperlegible-BoldItalic.woff2") format("woff2");
+    url("../../fonts/AtkinsonHyperlegible-BoldItalic.woff2") format("woff2");
   unicode-range: U+0020-007E, U+0080-00FF;
   font-display: block;
 }
@@ -54,7 +54,7 @@
   font-style: normal;
   font-weight: 400;
   src: local("Iosevka Term"),
-    url("/fonts/iosevka-term-regular-subset.woff2") format("woff2");
+    url("../../fonts/iosevka-term-regular-subset.woff2") format("woff2");
   unicode-range: U+0020-007E, U+0080-00FF;
   font-display: block;
 }
@@ -64,7 +64,7 @@
   font-style: normal;
   font-weight: 500;
   src: local("Iosevka Term"),
-    url("/fonts/iosevka-term-medium-subset.woff2") format("woff2");
+    url("../../fonts/iosevka-term-medium-subset.woff2") format("woff2");
   unicode-range: U+0020-007E, U+0080-00FF;
   font-display: block;
 }
@@ -74,7 +74,7 @@
   font-style: normal;
   font-weight: 700;
   src: local("Iosevka Term"),
-    url("/fonts/iosevka-term-bold-subset.woff2") format("woff2");
+    url("../../fonts/iosevka-term-bold-subset.woff2") format("woff2");
   unicode-range: U+0020-007E, U+0080-00FF;
   font-display: block;
 }

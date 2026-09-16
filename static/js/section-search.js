@@ -17,12 +17,13 @@
 (function () {
   "use strict";
 
+  const BASE = window.siteBase || "/";
   const DATA_URLS = {
-    vql: "/reference/data.json",
-    artifact_reference: "/artifact_reference/data.json",
-    exchange: "/exchange/data.json",
-    kb: "/kb/data.json",
-    blog: "/blog/data.json",
+    vql: BASE + "reference/data.json",
+    artifact_reference: BASE + "artifact_reference/data.json",
+    exchange: BASE + "exchange/data.json",
+    kb: BASE + "kb/data.json",
+    blog: BASE + "blog/data.json",
   };
 
   const PROMPTS = {
@@ -142,7 +143,7 @@
       '<div class="hx:mt-1 hx:mb-4 hx:flex hx:flex-wrap hx:gap-1 hx:px-4">' +
       tags
         .map(function (tag) {
-          const href = "/tags/" + slugify(tag) + "/";
+          const href = BASE + "tags/" + slugify(tag) + "/";
           const label = esc(tag);
           const slugSet = getTagSlugSet();
           if (slugSet && slugSet.has(href)) {
