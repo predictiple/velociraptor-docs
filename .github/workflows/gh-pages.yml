@@ -5,29 +5,19 @@ on:
     branches:
       - gh-pages-preview  # Branch that drives the Pages preview at https://predictiple.github.io/velociraptor-docs/
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: "pages"
-  cancel-in-progress: true
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      contents: write
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v2
         with:
           submodules: true  # Fetch Hugo themes (true OR recursive)
           fetch-depth: 0    # Fetch all history for .GitInfo and .Lastmod
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe
         with:
           go-version: '^1.25'
 
@@ -53,16 +43,8 @@ jobs:
       - name: BuildIndex
         run: make index
 
-      - name: Configure Pages
-        id: pages
-        uses: actions/configure-pages@v5
-
       - name: Build
-        # Use configure-pages' base_url output so all asset paths resolve
-        # under the repo subpath (e.g. /velociraptor-docs/css/...). This is
-        # the official Hugo-on-GitHub-Pages pattern and removes the need for
-        # any relURL/siteBase hacks in templates or assets.
-        run: hugo --baseURL "${{ steps.pages.outputs.base_url }}/"
+        run: hugo
 
       - uses: oven-sh/setup-bun@v2
 
@@ -72,11 +54,10 @@ jobs:
       - name: BuildSearchIndex
         run: bun run pagefind
 
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v4
+        if: github.ref == 'refs/heads/gh-pages-preview'
         with:
-          path: ./public
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
+          force_orphan: true
