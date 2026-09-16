@@ -44,7 +44,11 @@ jobs:
         run: make index
 
       - name: Build
-        run: hugo
+        # Preview lives at a subpath, so Hugo must build with the matching
+        # baseURL or all asset paths come out root-relative and 404 in the
+        # browser. Production (docs.velociraptor.app) is at the root and
+        # does NOT need this.
+        run: hugo --baseURL https://predictiple.github.io/velociraptor-docs/
 
       - uses: oven-sh/setup-bun@v2
 
