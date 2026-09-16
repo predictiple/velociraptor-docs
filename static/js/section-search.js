@@ -121,11 +121,11 @@
     if (section === "vql") {
       const name = (item.name || "").toLowerCase();
       if (item.category) {
-        return "/vql_reference/" + item.category + "/" + name + "/";
+        return BASE + "vql_reference/" + item.category + "/" + name + "/";
       }
-      return "/vql_reference/other/" + name + "/";
+      return BASE + "vql_reference/other/" + name + "/";
     }
-    return item.link;
+    return BASE + (item.link || "").replace(/^\//, "");
   }
 
   // Tags are rendered as pill badges (same .tag-badge styling as
@@ -294,7 +294,7 @@
       meta.push(esc(item.date));
     }
     const extra = pills(item.tags);
-    return card(item.link, item.title, meta.join(" &middot; "), item.description, extra);
+    return card(linkFor("generic", item), item.title, meta.join(" &middot; "), item.description, extra);
   }
 
   function render(section, items) {
