@@ -108,8 +108,10 @@ enableRobotsTXT = true
 # the combined tree of the sidebar-scope sections (docs, vql_reference,
 # artifact_references, exchange, knowledge_base) - see content section front
 # matter (`type: docs` + `cascade`) and the sidebar-related params below.
-# VQL Reference, Artifact Exchange and Knowledge Base are reachable from the
-# sidebar, so they are intentionally not duplicated in the top navbar.
+# VQL Reference is promoted to the top navbar as a button; its sidebar entry
+# remains (the sidebar tree is built from the sections, not from menus.main).
+# Artifact Exchange and Knowledge Base are reachable from the sidebar, so
+# they are intentionally not duplicated in the top navbar.
 #
 # The "Search" entry is Hextra's search trigger; our Pagefind override lives
 # in layouts/_partials/search.html + _partials/scripts/search.html.
@@ -136,6 +138,13 @@ enableRobotsTXT = true
   name = "Downloads"
   pageRef = "/downloads/"
   weight = 30
+  [menus.main.params]
+    button = true
+
+[[menus.main]]
+  name = "VQL Reference"
+  pageRef = "/vql_reference/"
+  weight = 35
   [menus.main.params]
     button = true
 
@@ -236,7 +245,8 @@ enableRobotsTXT = true
 
   [params.theme]
     default = "system"    # valid: light, dark, system (system = follow OS preference for new visitors)
-    displayToggle = true
+    # displayToggle is intentionally unset: the theme's footer/sidebar
+    # theme-toggle rows are removed (the switcher lives in the top navbar).
 
   # Click-to-zoom on figure images (medium-zoom), as on the reference site.
   # Rendered via hextra's scripts/medium-zoom partial when a page sets the
@@ -250,11 +260,12 @@ enableRobotsTXT = true
   [params.navbar]
     width = "normal"      # 80rem; matches the reference docs sites
 
-    # No navbar title: the full-colour VeloR7 mark lives pinned at the top
-    # of the left sidebar (layouts/_partials/sidebar.html).  The bare raptor
-    # mark below shows only on mobile (single-column) — the navbar-title
-    # partial override adds hx:md:hidden — and is hidden on 2/3-column
-    # layouts where the sidebar mark is visible.
+    # No navbar title: the full-colour VeloR7 mark lives at the top of the
+    # scrollable left sidebar (layouts/_partials/sidebar.html).  The bare
+    # raptor mark below shows on mobile (single-column) and on desktop once
+    # the sidebar mark has scrolled out of view (assets/js/navbar-logo.js);
+    # its slot stays reserved (visibility, not display) so the always-visible
+    # navbar buttons never shift.
     displayTitle = false
     [params.navbar.logo]
       path = "images/logo_bare_small.svg"
