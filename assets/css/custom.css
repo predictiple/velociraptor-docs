@@ -95,6 +95,22 @@
   font-size-adjust: 0.53125;
 }
 
+/* --- Root background (navigation paint) ---
+   The theme paints the page background on <body> only and leaves <html>
+   transparent. Chromium uses the root element's background-color for the
+   "base" colour it paints during a navigation or window resize, so with a
+   transparent <html> the browser falls back to white and dark-mode readers
+   see a white flash on each full page load. Mirror the body background onto
+   <html> so the base paint matches the active theme. Unlayered rules here
+   outrank the theme's @layer rules. */
+html {
+  background-color: var(--hx-color-white);
+}
+
+html:where(.dark, .dark *) {
+  background-color: var(--hx-color-dark);
+}
+
 /* Code stays at nominal size regardless of the inherited font-size-adjust
    (its FontFace aspect differs slightly from the 0.53125 target). */
 code,
@@ -140,8 +156,9 @@ pre {
 }
 
 /* --- 404 page (layouts/404.html) ---
-   Centred under the navbar/footer chrome. The big error code uses the
-   theme accent so it inherits dark mode automatically. */
+   Centred in the column to the right of the docs sidebar, under the
+   navbar/footer chrome. The big error code uses the theme accent so it
+   inherits dark mode automatically. */
 .hextra-404 {
   display: flex;
   align-items: center;
@@ -152,16 +169,6 @@ pre {
 
 .hextra-404-inner {
   text-align: center;
-}
-
-.hextra-404-brand {
-  display: inline-block;
-  width: min(320px, 100%);
-}
-
-.hextra-404-brand img {
-  width: 100%;
-  height: auto;
 }
 
 .hextra-404-code {
@@ -353,25 +360,12 @@ html.dark .platform svg path {
    grayscale filter.  (The source SVG should already stay legible on both
    light and dark navbar backgrounds; the 28px height is pinned below.) */
 
-/* Bootstrap size: the raptor mark is a tall/narrow glyph (~0.62 aspect).
-   A global `img { height:auto }` rule makes the height attribute moot, so
-   pin the height here (navbar stays 64px tall; 28px mark fits inside). */
+/* Navbar logo: mobile-only bare raptor mark (hx:md:hidden on the
+   navbar-title wrapper).  The 28px height is pinned here; width scales
+   from the SVG's natural 0.62 aspect ratio. */
 .hextra-navbar-logo img {
   height: 28px;
   width: auto;
-}
-
-/* Navbar title: bottom-align the brand title with the logo mark.  The
-   logo's ink fills its whole box (down to the bottom edge), so the text
-   is pulled down too: flex-end on the wrapper + a tight line-height on
-   the span (the other hx:items-end utility is never compiled by the
-   Tailwind JIT and the default 28px line box leaves a ~4px gap below the
-   glyphs). */
-.hextra-navbar-logo {
-  align-items: flex-end;
-}
-.hextra-navbar-logo span {
-  line-height: 21px;    /* ≈ glyph extent: text bottom sits on the mark's */
 }
 
 /* Footer copyright block: the theme default was py-12 (48px per side →
@@ -468,6 +462,45 @@ html.dark .hextra-nav-btn[aria-current] {
 .hextra-sidebar-container .hextra-sidebar-logo img {
   width: 80% !important;
   height: auto !important;
+}
+
+/* The whole left column is pinned below the navbar for the entire page:
+   give the sidebar a fixed height of 100vh - navbar so its sticky top-16
+   never releases (its bottom stays glued to the viewport bottom, so it
+   cannot scroll up at the end of the page).  The menu flex-fills the
+   space left after the pinned logo and the sticky footer, scrolling
+   internally. */
+@media (min-width: 768px) {
+  .hextra-sidebar-container {
+    height: calc(100vh - var(--navbar-height));
+  }
+
+  .hextra-sidebar-container > .hextra-scrollbar {
+    flex: 1 1 0%;
+    min-height: 0;
+  }
+}
+
+/* --- Sidebar first-paint mask (see layouts/partials/custom/head-end.html) ---
+   The menu is taller than its viewport and Hextra's sidebar.js snaps it to the
+   active item on every DOMContentLoaded. On a full page load the browser paints
+   the menu at scrollTop 0 before that snap - and before
+   assets/js/sidebar-scroll.js has restored the reader's own position - so the
+   menu visibly jumps on every navigation. The inline head script adds
+   html.sidebar-loading during <head> parse, i.e. before the sidebar is even
+   rendered; the deferred script removes the class once the position is settled,
+   so the menu is first seen already in place. visibility (not display) keeps
+   the space reserved, so nothing else on the page shifts. With JS disabled the
+   class is never added and the menu simply stays visible. */
+html.sidebar-loading .hextra-sidebar-container > .hextra-scrollbar {
+  visibility: hidden;
+}
+
+/* Navbar: no brand title anymore, so the nav is justify-start.  The
+   search box (and the icon cluster + theme toggle after it) keep the
+   right edge via margin-left:auto on the search wrapper. */
+.hextra-nav-container .hextra-search-wrapper {
+  margin-left: auto;
 }
 
 /* Cards without a subtitle (e.g. the children shortcode) render the icon
@@ -1149,4 +1182,81 @@ html.dark #ssr-vql .hextra-cards table td {
 
 #ssr-vql .hextra-cards table th {
   font-weight: 600;
+}
+
+/* --- Sidebar footer: "Brought to you by Rapid7" ---
+   Mirrors the legacy docs site footer: a black band pinned to the bottom
+   of the left sidebar, with the white Rapid7 logo and copyright line.
+   The negative horizontal margins cancel the theme-toggle row's mx-4 so
+   the strip spans the full sidebar width. */
+.hextra-sidebar-footer {
+  background-color: #000;
+  color: #b3b3b3;
+  font-size: 13px;
+  margin: 0 -1rem;
+  padding: 0.625rem 1rem;
+}
+
+.hextra-sidebar-footer .rapid7 {
+  float: right;
+  height: 16px;
+}
+
+/* --- FontAwesome icons embedded in content ---
+   GUI icons appear as <i class="fas fa-..."> / <i class="fa-solid fa-...">
+   (FontAwesome 6 Free, vendored in static/fontawesome). Render them at 2x
+   the surrounding text so the small GUI glyphs stay legible. FA's own
+   classes already set line-height:1 and width:1.25em, so scaling font-size
+   alone keeps the inline box tidy; vertical-align nudges the glyph onto
+   the text baseline (FA's recommended inline-icon alignment). */
+i.fas,
+i.fa-solid,
+i.far,
+i.fa-regular,
+i.fab,
+i.fa-brands {
+  font-size: 2em;
+  vertical-align: -0.125em;
+}
+
+/* --- Cross-document View Transitions ---
+   Opt in to the browser's native page-to-page transition. Chrome and
+   Safari animate a same-origin navigation instead of cutting straight to
+   the new document, which removes the last of the flash on a sidebar
+   click. No JavaScript and no framework: the browser snapshots the old
+   page, swaps, snapshots the new one, and cross-fades between the two.
+
+   The navbar and the desktop sidebar are lifted out of the page snapshot
+   with their own view-transition-name so they morph in place instead of
+   cross-fading with the content. They occupy the same position on every
+   page, so the morph is near-identity and the chrome reads as static
+   while only the content and the table of contents change.
+
+   Scoped to >=768px: below that the sidebar is an off-canvas drawer that
+   Hextra translates out of view, and a named transition would try to
+   morph it while it is hidden.
+
+   Browsers without support ignore both rules and keep the current
+   behaviour. */
+@view-transition {
+  navigation: auto;
+}
+
+@media (min-width: 768px) {
+  .hextra-nav-container {
+    view-transition-name: hextra-nav;
+  }
+
+  .hextra-sidebar-container {
+    view-transition-name: hextra-sidebar;
+  }
+}
+
+/* Honour a reduced-motion preference by keeping the navigation instant. */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
 }

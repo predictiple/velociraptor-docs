@@ -147,38 +147,6 @@ enableRobotsTXT = true
     type = "search"
 
 [[menus.main]]
-  name = "RSS"
-  pageRef = "/rss/"
-  weight = 51
-
-  [menus.main.params]
-    icon = "rss"
-
-[[menus.main]]
-  name = "Mailing List"
-  url = "mailto:velociraptor-discuss@googlegroups.com"
-  weight = 52
-
-  [menus.main.params]
-    icon = "mail"
-
-[[menus.main]]
-  name = "Discord"
-  url = "/discord/"
-  weight = 53
-
-  [menus.main.params]
-    icon = "discord"
-
-[[menus.main]]
-  name = "YouTube"
-  url = "/youtube/"
-  weight = 54
-
-  [menus.main.params]
-    icon = "youtube"
-
-[[menus.main]]
   name = "GitHub"
   url = "https://github.com/Velocidex/velociraptor"
   weight = 55
@@ -195,16 +163,56 @@ enableRobotsTXT = true
 
 # -- Sidebar Menu -- (bottom of the left navigation; rendered by the
 # sidebar-footer template in layouts/_partials/sidebar.html)
+# Icon entries (params.icon) render as a compact icon row between the
+# nav tree and the link entries below.
+
+[[menus.sidebar]]
+  name = "RSS"
+  pageRef = "/rss/"
+  weight = 10
+
+  [menus.sidebar.params]
+    icon = "rss"
+
+[[menus.sidebar]]
+  name = "Mailing List"
+  url = "mailto:velociraptor-discuss@googlegroups.com"
+  weight = 20
+
+  [menus.sidebar.params]
+    icon = "mail"
+
+[[menus.sidebar]]
+  name = "Discord"
+  url = "/discord/"
+  weight = 30
+
+  [menus.sidebar.params]
+    icon = "discord"
+
+[[menus.sidebar]]
+  name = "YouTube"
+  url = "/youtube/"
+  weight = 40
+
+  [menus.sidebar.params]
+    icon = "youtube"
 
 [[menus.sidebar]]
   name = "Rapid7 Docs"
   url = "https://docs.rapid7.com/insightidr/velociraptor-integration/"
   weight = 50
 
+  [menus.sidebar.params]
+    icon = "book-open"
+
 [[menus.sidebar]]
   name = "Search"
   pageRef = "/search/"
   weight = 60
+
+  [menus.sidebar.params]
+    icon = "search"
 
 # -- Theme Options (Hextra) --
 
@@ -242,15 +250,22 @@ enableRobotsTXT = true
   [params.navbar]
     width = "normal"      # 80rem; matches the reference docs sites
 
-    # Logo: the bare raptor mark, monochrome-filtered via assets/css/custom.css.
-    # The left-pane sidebar shows the full-colour VeloR7 mark instead
-    # (hardcoded in layouts/_partials/sidebar.html).
+    # No navbar title: the full-colour VeloR7 mark lives pinned at the top
+    # of the left sidebar (layouts/_partials/sidebar.html).  The bare raptor
+    # mark below shows only on mobile (single-column) — the navbar-title
+    # partial override adds hx:md:hidden — and is hidden on 2/3-column
+    # layouts where the sidebar mark is visible.
+    displayTitle = false
     [params.navbar.logo]
       path = "images/logo_bare_small.svg"
       width = "28"
       height = "28"
 
   [params.footer]
+    # Footer moved into the left sidebar (Rapid7 strip below the theme
+    # toggle, see layouts/_partials/sidebar.html); the Hextra page footer
+    # is disabled entirely.
+    enable = false
     width = "normal"
     displayPoweredBy = false
     displayCopyright = true
