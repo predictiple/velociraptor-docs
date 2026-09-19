@@ -9,14 +9,16 @@
 {{- /* Preload the site fonts so they are fetched before the CSS is parsed;
        combined with font-display: block in assets/css/custom.css this avoids
        the fallback-font flash (FOUT) on first paint. crossorigin is required
-       even for same-origin font requests. */ -}}
+even for same-origin font requests. relURL prefixes the deploy base
+       path on subpath sites (the gh-pages Preview); unprefixed paths only
+       resolve when the site is served at the domain root. */ -}}
 <link rel="preload" href="{{ "fonts/iosevka-term-regular-subset.woff2" | relURL }}" as="font" type="font/woff2" crossorigin />
 <link rel="preload" href="{{ "fonts/iosevka-term-medium-subset.woff2" | relURL }}" as="font" type="font/woff2" crossorigin />
 <link rel="preload" href="{{ "fonts/iosevka-term-bold-subset.woff2" | relURL }}" as="font" type="font/woff2" crossorigin />
 {{- /* FontAwesome 6 Free (vendored, self-hosted) for GUI icons embedded in
        content as <i class="fas fa-..."> / <i class="fa-solid fa-...">.
        all.min.css declares solid/regular/brands + v4 shims; browsers only
-       fetch the woff2 actually used thanks to unicode-range. relURL keeps the
+fetch the woff2 actually used thanks to unicode-range. relURL keeps the
        stylesheet subpath-correct on the preview; the @font-face urls inside
        it are relative (../webfonts/...), so they follow the stylesheet. */ -}}
 <link rel="stylesheet" href="{{ "fontawesome/css/all.min.css" | relURL }}" />
